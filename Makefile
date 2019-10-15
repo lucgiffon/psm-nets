@@ -1,11 +1,10 @@
-.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3
+.PHONY: clean lint requirements
 
 #################################################################################
 # GLOBALS                                                                       #
 #################################################################################
 
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
 PROFILE = default
 PROJECT_NAME = palmnet
 PYTHON_INTERPRETER = python3
@@ -26,33 +25,32 @@ requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
 
 ## Make Dataset
-data: requirements
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
+data: svhn
+
+svhn: data/external/svhn.npz
+
+data/external/svhn.npz:
+	$(PYTHON_INTERPRETER) code/data/make_dataset.py svhn data/external
+
+## Make Model
+
+models: mnist_lenet
+
+mnist_lenet: models/external/mnist_lenet_1570207294.h5
+
+models/external/mnist_lenet_1570207294.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py mnist_lenet models/external
 
 ## Delete all compiled Python files
 clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
+	rm -rf data/external/*
+	rm -rf models/external/*
 
 ## Lint using flake8
 lint:
-	flake8 src
-
-## Upload Data to S3
-sync_data_to_s3:
-ifeq (default,$(PROFILE))
-	aws s3 sync data/ s3://$(BUCKET)/data/
-else
-	aws s3 sync data/ s3://$(BUCKET)/data/ --profile $(PROFILE)
-endif
-
-## Download Data from S3
-sync_data_from_s3:
-ifeq (default,$(PROFILE))
-	aws s3 sync s3://$(BUCKET)/data/ data/
-else
-	aws s3 sync s3://$(BUCKET)/data/ data/ --profile $(PROFILE)
-endif
+	flake8 code
 
 ## Set up python interpreter environment
 create_environment:
