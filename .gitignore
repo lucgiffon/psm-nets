@@ -96,6 +96,8 @@ target/
 
 
 *.kilepr
+*.kile
+
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

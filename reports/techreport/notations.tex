@@ -1,0 +1,101 @@
+%\paragraph{Notations}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[t]
+	\centering
+	\begin{footnotesize}
+	\begin{tabular}{ll}\\
+\toprule
+		{\bf Symbol}  & {\bf Meaning}\\
+\midrule
+$\intint{H}$  & set of integers from $1$ to $H$\\
+$\|\cdot\|$ & $L_2$-norm\\
+$\|\cdot\|_F$ &    Frobenius norm  \\
+$\|\cdot\|_0$ & $L_0$-norm\\
+$\|\cdot\|_2$    &    spectral norm  \\
+$\rmD_\rvv$ & diagonal matrix with vector $\rvv$ on the diagonal\\                                                
+% $N$           & number of data points\\
+$D$           & data dimension\\
+$H$           & number of layers in a network\\
+$Q$           & number of sparse factors\\
+$\mathcal{X}_i$ & input space of $f_{i+1}$ and output space of $f_{i}$\\
+$\rvx_1,\ldots, \rvx_N $        &    data points\\
+$\rmX \in\mathbb{R}^{N\times D}$&    data matrix\\
+$\rmS_1, \ldots, \rmS_Q$        &    sparse matrices\\
+$\mathcal{E}_1, \ldots, \mathcal{E}_Q$ & sparsity constraint sets\\
+$\delta_{\mathcal{E}}$ & 		indicator functions for set $\mathcal{E}$\\
+$\floor{\rvx}$ & round $\rvx$ to the flooring integer\\
+% $\tau$  & current iteration \\
+\bottomrule
+	\end{tabular}
+	\end{footnotesize}
+	\caption{Notation used in this paper.}
+	\label{tab:notation}
+\end{table}
+%\begin{table}[t]
+%	\centering
+%	\begin{footnotesize}
+%	\begin{tabular}{cllcl}\\
+%		\cline{1-2}\cline{4-5}\vspace*{1mm}
+%		{\bf Symbol}  & {\bf Meaning}                      &  &    {\bf Symbol}          & {\bf Meaning}                    \\ 		\cline{1-2}\cline{4-5}
+%		$N$           & number of data points              &  &    $\rvx_1,\ldots, \rvx_N $        &    data points            \\
+%		$D$           & data dimension &  &    $\rmX \in\mathbb{R}^{N\times D}$&    data matrix            \\
+%		$K$           & number of clusters                 &  &    $\rvu_1,\ldots, \rvu_K $        &    \kmeans centroids        \\
+%		$\rvt$        &  cluster assignment vector           &  &    $\rmU\in\mathbb{R}^{K\times D}$ &    \kmeans centroid matrix  \\
+%		&                 &  &    $\rvv_1,\ldots, \rvv_K $        &    \qkmeans centroids        \\
+%		&          &  &    $\rmV\in\mathbb{R}^{K\times D}$ &    \qkmeans centroid matrix  \\
+%		$Q$           & number of sparse factors    &  &    $\rmS_1, \ldots, \rmS_Q$        &    sparse matrices        \\
+%		$\|\cdot\|$, & $L_2$-norm&  &    $\|\cdot\|_F$, &    Frobenius norm  \\
+%		$\|\cdot\|_0$ & $L_0$-norm&  &    $\|\cdot\|_2$    &    spectral norm  \\
+%		$\mathcal{E}_1, \ldots, \mathcal{E}_Q$ & sparsity constraint sets           &  & $\delta_{\mathcal{E}}$ & 		indicator functions for set $\mathcal{E}$\\
+%		$\intint{M}$  & set of integers from $1$ to $M$ &  & $\tau$  &                       		current iteration  \\
+%		
+%		$\rmD_\rvv$ & diagonal matrix with vector $\rvv$ on the diagonal\\                                                          		\cline{1-2}\cline{4-5}        \\      
+%	\end{tabular}
+%	\end{footnotesize}
+%	\caption{Notation used in this paper.}
+%	\label{tab:notation}
+%\end{table}
+%\addtocounter{footnote}{0}
+%\footnotetext{We also use the standard notations such as $\mathbb{R}^n$ and $\mathbb{M}_n$.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{table}[t]
+%	\centering
+%	\begin{tabular}{|r|c|l|}
+%		\hline
+%		indices &  $i$, $j$, $m$, $n$, $p$, $q$ &  small  Latin characters  \\
+%		other integers &  $K$, $Q$, $N$, $\ldots$ &  capital  Latin characters \\
+%	%	vector spaces\footnotemark & $\mathcal{X}$, $\mathcal{Y}$, $\mathcal{H}$, $\ldots$ & Calligraphic letters \\ 
+%		vectors (or functions) & $\rvx$, $\rvt$, $\rvk$, $\ldots$ & small bold Latin characters \\
+%		matrices  & $\rmX$, $\rmU$, $\rmK$, $\ldots$ & capital bold Latin characters \\
+%		transpose & $\top$ & $\rmX^\top$ transpose of  $\rmX$ \\
+%		\hline
+%	\end{tabular}
+%	\caption{Notations used in this paper.}
+%	\label{tab:notation}
+%\end{table}
+%\addtocounter{footnote}{0}
+%\footnotetext{We also use the standard notations such as $\mathbb{R}^n$ and $\mathbb{M}_n$.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%The notations frequently used in the paper are summarized in Table~\ref{tab:notation}. 
+%%
+%Throughout the paper we use $\nexamples$ as the number of data samples and $\datadim$ the dimensionality of a data point. 
+%$\rmX \in \R^{\nexamples \times \datadim}$ is the data matrix. 
+%For $K \in \sN$, we define $\intint{K}=\left \lbrace k\in \sN: 1 \leq k \leq K\right \rbrace$.
+%%
+%For a given vector $\rvv$, $\rvv[i]$ is the $i$th component of $\rvv$.
+%%
+%For a given matrix $\rmM$, the notation $\rmM_{[i]}$ (resp. $\rmM^{[i]}$) refers to the $i$th row (column) of $\rmM$, the entry at the $i$th row and the $j$th column is denoted by $\rmM[i,j]$, and $\|\rmM\|_F$ denotes the Frobenius norm, $\|\rmM\|_2$ the spectral norm and $\|\rmM\|_0$ counts the number of non-zero entries in $\rmM$. \addHK{other norms?}
+%
+%
+%
+%
+%\todo[inline]{The text is redundant with the table. In addition, we should remove the "small Latin character0", "capital Latin characters" as they do not provide any meaning. We should prefer the trick with the transpose.}

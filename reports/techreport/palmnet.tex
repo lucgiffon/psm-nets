@@ -1,0 +1,229 @@
+\documentclass[12pt]{article}
+
+\usepackage{xspace}
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{placeins}
+
+\usepackage[table,xcdraw]{xcolor}
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{stmaryrd}
+\usepackage{todonotes}
+\usepackage{dsfont}
+\usepackage{makecell}
+\usepackage{amsthm}
+\usepackage{adjustbox}
+% \usepackage[lofdepth,lotdepth]{subfig}
+
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{varwidth}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{color}
+\usepackage{xspace}
+\usepackage{subcaption}
+\usepackage{caption} 
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{appendix}
+\usepackage{mathtools}
+
+
+\input{math_commands.tex}
+
+
+\def\palm{\texttt{palm4MSA}\xspace}
+\def\hpalm{\texttt{Hierarchical-palm4MSA}\xspace}
+\newcommand{\bigO}[1]{\mathcal{O}\left(#1\right)}
+\def\datadim{D}
+\def\nexamples{N}
+\def\nfactors{Q}
+
+\title{Expressing Neural Network layers as Fast-Transforms}
+\author{
+        Luc Giffon \\
+        QARMA team - LIS\\
+        Aix-Marseille Universit\'e\\
+        Marseille, France
+}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+
+\begin{abstract}
+We apply the \palm algorithm on a pretrained neural network in order to express the fully-connected weights matrices and the matrix of convolutional filters as fast-transforms. This allows a drastic reduction of the number of parameters in the network and the associated speed-up in computation at inference time when deployed on a single-threaded architecture. This post-training modification of neural networks doesn't impair accuracy performance (or we hope so).
+
+\textbf{Motivation}: No GPU needed at inference time? Less RAM needed? Lower carbon footprint?
+
+\end{abstract}
+
+\section{Introduction}
+It is widely accepted that neural networks have been a game changer in the race for best classification accuracy on many image classification and natural language processing (NLP) benchmarks. These, not so new anymore, families of models are able to take advantage of the parallelization power of modern GPUs to learn from udge databases and tune millions of parameters to achieve a given task. 
+
+It must be emphasized though that these amazing results come at a price, both economical and ecological. On one hand, recent work~\cite{DBLP:journals/corr/abs-1906-02243} have pointed out that training some NLP models have a significant energy consumption cost that is directly translatable to financial or carbon footprint considerations. On the other hand, the vast majority of power consumption for neural networks is spent for inference and not for training\cite{amazon_inferencepower} \cite{openai_aiandcompute}. Even though computer vision models aren't as demanding in energy than NLP does yet, it is clear that deploying them at large scale, as they are about to be, will bring concerns of the same nature.
+
+These energy consumption concerns are directly related to the number of parameters necessary to achieve such excellent accuracy results. Indeed, it mainly comes from the many multiplications involved in the inner linear transformations at each layer of neural networks. This udge number of parameter brings also the problem of storing some models in GPUs VRAM, making them particularly unhandy to deploy on small devices such as smartphones. Additionaly, such devices doesn't even have embedded GPU, in which case the amount of computation becomes completely untractable for simple CPU hardware.
+
+\todo[inline]{Introduction to be continued.... mais vous avez saisi l'idée}
+
+
+% \input{notations.tex}
+
+
+Speak about:
+\begin{itemize}
+%  \item Neural networks and particularly CNN are good
+%  \item They run on GPU: take advantage of the many computation cores
+%  \item Use a lot of parameters: may need a lot of RAM on GPU
+%  \item Hence: Difficult to deploy on small devices (e.g. phones/raspberry pi/ etc.)
+ \item We leverage recent advances in optimisation to express layers as factorization of sparse matrices that mimics fast-transform computation and reduce the nbr of parameters in the network + reduce computation time from a single-threaded perspective
+%  \item OpenAI says that ``the majority of neural net compute today is still spent on inference'' \cite{openai_aiandcompute}
+ 
+ 
+\end{itemize}
+
+% \paragraph{Outline}
+% The remainder of this article is organized as follows.
+% Section~\ref{previous work} gives account of previous work.
+% Our new and exciting results are described in Section~\ref{results}.
+% Finally, Section~\ref{conclusions} gives the conclusions.
+
+\section{Related work}\label{sec:related_work}
+
+Speak about:
+\begin{itemize}
+ \item DeepfriedConvnet: leverage fast hadamard transform but induces structural bias on weight matrices + not implemented for convolution layers
+ \item Tensor decomposition: see references in the survey \cite{DBLP:journals/corr/abs-1710-09282}
+ \item Pruning of weights: see references in the survey \cite{DBLP:journals/corr/abs-1710-09282}
+\end{itemize}
+
+\section{Linear transformations in neural networks}
+
+To keep the notations clear, we chose to not use indexes to refer to the position of layers in the following explanations; we assume without loss of generality that the formulas apply to any layer w.r.t. their own dimensions and parameters.
+
+A part of the computation of any layer in a neural network, either fully-connected or convolutional, consist in some linear transformation. In this section, we describe these linear transformations in both cases.
+
+\paragraph{In a fully-connected layer} The output $\rvz \in \R^D$ of a fully-connected layer is given by:
+
+\begin{align}
+    \rvz = \sigma(\rmW\rvx)
+\end{align}
+~\\
+, where $\sigma$ is some non-linear activation function, $\rmW \in \R^{D \times d}$ is the weight matrix of the layer and $\rvx \in \R^d$ is the output of the preceding layer. The fully-connected layer computes first a linear transformation of its input in order to compute the final, non-linear, transformation.
+
+\paragraph{In a convolutional layer} Let us define two reshape operators: 
+
+First, $\mathcal{R}_{h, w}$ parameterized by an height $h$ and a width $w$ that takes a tensor of shape $(H \times W \times C)$ as input:
+
+\begin{align}
+\label{eq:fc_comp}
+    \mathcal{R}_{h, w} : \R^{H \times W \times C} \mapsto \R^{HW \times Chw}
+\end{align}
+~ \\
+. This reshape operation creates the matrix of all vectorized patches of height $h$ and width $w$. We again preserve simplicity in notation here, assuming without loss of generality that the stride used by $\mathcal{R}_{h, w}$ is equal to $1$ (e.g. one patch at each 2-D coordinate of the input tensor) and that the input tensor is padded with $\floor{\frac{h}{2}}$ zeros verticaly and $\floor{\frac{w}{2}}$ zeros horizontaly (e.g. we do not need to worry about what happens on the edges of the input tensor); 
+
+Second, $\mathcal{T}_{H, W}$ parameterized by the height $H$ and width $W$ of the reconstructed tensor:
+
+\begin{align}
+ \mathcal{T}_{H, W}: \R^{HW \times K} \mapsto \R^{H \times W \times K}
+\end{align}
+~\\
+. This reshape operation is an inverse flatten operation on an image with $K$ channels.
+Figure~\ref{fig:reshape} gives a visual representation of these reshape operations.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{figures/reshape.png}
+\caption{Depiction of the reshape operations and localy linear transformations computed in the convolutional layers. We've tried to represent the evolution of the input tensor as it goes along the convolution processing. For each drawing, the mathematical value of what it is supposed to represent is written on top of it. The scale isn't respected between steps but we've tried to bring consistency in the channels depiction. The greyed box represent the receptive field of the convolution filters at one particular coordinate. This coordinate is depicted by the black dot and can be followed along operations. The different colors represent the different channels either in the input ($C$ channels) or the output ($K$ channels) tensor. The whited squares in the second step recall the zero padding of the input.}
+\label{fig:reshape}
+\end{figure}
+
+~\\
+
+With these reshape operators, the output $\rmZ \in \R^{H \times W \times K}$ of a convolutional layer with $K$ filters is given by:
+
+\begin{align}
+\label{eq:convo_comp}
+ \rmZ = \sigma(\mathcal{T}_{H, W} (\mathcal{R}_{h, w}(\rmX)~\rmF))
+\end{align}
+~\\
+, where $\sigma$ is some non-linear activation function, $\rmF \in \R^{Chw \times K}$ is the matrix of weights describing the convolution filters and $\rmX \in \R^{H \times W \times C}$ is the output 3-D tensor of the preceding layer. The convolutional layer uses the matrix of filters $\rmF$ in order to compute localy linear transformations of its input patches defined by the reshape operator $\mathcal{R}_{h, w}$.
+
+\section{Learning fast-transform Structures}
+\label{sec:palm}
+\todo[inline]{This whole section "Learning fast-transform structures" has been copy-pasted from the quick-means paper. Must modify it.}
+\paragraph{Linear operators structured as products of sparse matrices.}
+The popularity of some linear operators from $\R^{D}$ to $\R^{D}$ (with $D<\infty$)
+ like Fourier or Hadamard transforms comes from both their mathematical 
+ properties and their ability to compute the mapping of some input $\rvx\in\R^D$ with efficiency, typically in $\mathcal{O}\left (D\log D\right )$ in lieu of  
+  $\mathcal{O}\left (D^2\right)$ operations.
+The core feature of the related fast algorithms is that the matrix $\rmW\in\sR^{D\times D}$ of such 
+linear operators can be written as the product $\rmW=\Pi_{q\in\intint{\nfactors}}\rmS_q$ 
+of $\nfactors=\bigO{\log D}$ sparse 
+matrices $\rmS_q$ with $\left \|\rmS_q\right \|_0=\mathcal{O}\left( D \right)$ non-zero 
+coefficients per factor \cite{LeMagoarou2016Flexible,Morgenstern1975Linear}:
+for any vector $\rvx\in\sR^M$, $\rmW\rvx$ can thus be computed as $\mathcal{O}\left (\log D\right )$ products $\rmS_0 \left (\rmS_1 \left (\cdots \left (\rmS_{Q-1}\rvx\right )\right )\right )$ between a sparse matrix and a vector, the cost of each product being $\bigO{D}$, amounting to a $\mathcal{O}(D \log D)$ time complexity.
+
+\paragraph{Approximating any matrix by learning a fast transform.} When the linear operator $\rmW$ is an arbitrary matrix, one may approximate it with such a sparse-product structure by learning the factors $\left \lbrace\rmS_q\right \rbrace_{q\in\intint{Q}}$ in order to benefit from a fast algorithm.
+\cite{LeMagoarou2016Flexible} proposed algorithmic strategies to learn such a factorization. Based on the proximal alternating linearized minimization (\texttt{PALM}) algorithm~\cite{bolte2014proximal}, the \texttt{PALM} for Multi-layer Sparse Approximation (\palm) algorithm aims at approximating a matrix $\rmW\in\sR^{D \times d}$ as a product of sparse matrices by solving
+
+
+\begin{align}
+\label{eq:palm4msa}
+\min_{\left \lbrace\rmS_q\right \rbrace_{q\in\intint{Q}}} \left \|\rmU -  \prod_{q\in\intint{\nfactors}}{\rmS_q}\right \|_F^2 + \sum_{q\in\intint{\nfactors}} \delta_{\mathcal{E}_q}(\rmS_q),
+\end{align}
+~\\
+where for each $q\in\intint{Q}$, $\delta_{\mathcal{E}_q}(\rmS_q)=0$ 
+if $\rmS_q \in \mathcal{E}_q$ and $\delta_{\mathcal{E}_q}(\rmS_q)=+\infty$ otherwise. $\mathcal{E}_q$ is a constraint set that typically imposes a sparsity structure on its elements, as well as a scaling constraint. 
+Although this problem is non-convex and the computation of a global optimum cannot be
+ascertained, the \palm algorithm is able to find %good 
+local minima with convergence guarantees. 
+
+\todo[inline]{Fin du copy-pasta}
+
+In~\cite{LeMagoarou2016Flexible}, the authors further propose an extension of \palm called \hpalm that rely on some hierarchical optimization strategy to get better approximation results.
+
+% The matrix-vector multiplication $\rmW\rvx$ , e.g. a linear transformation  of the vector $\rvx \in \R^D$ by the transformation matrix $\rmW \in \R^{D\times D}$, is usually computed in time $\bigO{D^2}$. Nevertheless, some particular linear transforms such as the Hadamard transform come with a fast-algorithm that allows to reduce the computation time of their application to $\bigO{D \log D}$. Recent work~\cite{LeMagoarou2016Flexible} has pointed out that this acceleration is associated with the possible re-writting of such transformation matrix as a product of $Q=\log{D}$ sparse factors $\Pi_{q \in \intint{Q}}S_q$ with $\forall i ||S_i||_0 = \bigO{D}$. Hence, we can compute the matrix-vector multiplication right to left in time $\bigO{D \log D}$. 
+
+\section{Contribution}
+
+In this paper we propose to use the \hpalm algorithm on the various weights matrix of a pretrained neural network so that they all are expressed as product of sparse matrices instead of dense matrices. This simple idea would allow to drastically reduce both the space complexity of any layer in the network \textit{and} the time complexity for their computation on CPU. Indeed, even though GPU usage would definitely benefits from the space complexity saving, their highly parallelized computation wouldn't take advantage of the sparse structure of the matrices. In contrary to~\cite{yang2015deep}, these benefits wouldn't come at the cost of introducing bias on the choice of a fixed fast-transform structure for the weight matrices.
+
+\paragraph{In convolutional layers (Equation~\eqref{eq:convo_comp})} The dense matrices of weights have $\bigO{ChwK}$ parameters. Expressing them as product of $Q = \log K$ sparse factors with each $\bigO{Chw}$ non-zero values allows to reduce this space complexity to $\bigO{Chw \log K}$, assuming $Chw~>~K$. The time complexity saving is tightly associated with this reduction of parameters: it lowers from time $\bigO{HWChwK}$ to time $\bigO{HWChw \log K}$, that is applying the fast-transform to each of the $HW$ patches.
+
+\paragraph{In fully-connected layers (Equation~\ref{eq:fc_comp})} The dense matrices of weights have $\bigO{Dd}$ parameters. Let $A:=\max(D, d)$ and $B:=\min(D, d)$, then expressing these dense matrices as product of  $Q = \log K$ sparse factors with each $\bigO{A}$ non-zero values allows to reduce this space complexity to $\bigO{A \log B}$. The time complexity saving is once again associated to this reduction of parameters: it also lowers from $\bigO{Dd}$ to $\bigO{A \log B}$.
+
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Experimental setting}
+\paragraph{Implementation details} Hardware (CPU frequency etc.) and Software (library, etc.) details
+\paragraph{Datasets} MNIST, SVHN, CIFAR10/CIFAR100, Imagenet
+\paragraph{Models} Download pretrained models from the Internet or re-train them
+\paragraph{\palm algorithm settings} Sparsity level, number of factor, Hierarchical, error delta threshold, number of iteration
+
+\subsection{Number of parameters} In the whole compressed model. Compare to other methods and show that accuracy results are not compromised by the reduction of the nbr of parameter
+
+\subsection{Inference time} Show results on CPU. Maybe make a proof of concept on raspberry
+
+\subsection{Carbon footprint} It would be awesome to present results of accuracy/time versus GPU and give insight on the difference in carbon footprint between CPU and GPU. Need to read about that though. Suivre la meme technique de calcul que~\cite{DBLP:journals/corr/abs-1906-02243}
+
+
+\section{Conclusions}\label{sec:conclusions}
+We worked hard, and achieved very little.
+
+\bibliographystyle{abbrv}
+\bibliography{palmnet}
+
+\end{document}
+This is never printed
