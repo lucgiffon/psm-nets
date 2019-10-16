@@ -10,8 +10,6 @@ from skluc.utils import logger
 
 from palmnet.utils import root_dir
 from skluc.utils.osutils import download_file, check_file_md5
-# import tensorflow as tf
-import keras.backend as K
 import numpy as np
 from palmnet.data import Mnist
 
@@ -29,7 +27,7 @@ def apply_palm(matrix, sparsity_fac=2):
     B = max(left_dim, right_dim)
     assert A == left_dim and B == right_dim, "Dimensionality problem: left dim should be higher than right dim before palm"
 
-    nb_factors = int(np.log(A))
+    nb_factors = int(np.log2(A))
     nb_iter = 300
 
     lst_factors = [np.eye(A) for _ in range(nb_factors + 1)]
@@ -104,7 +102,7 @@ if __name__ == "__main__":
     logger.setLevel(logging.INFO)
     url_mnist = "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/mnist_lenet_1570207294.h5"
     md5sum = "26d44827c84d44a9fc8f4e021b7fe4d2"
-    download_path = download_file(url_mnist, root_dir / "models")
+    download_path = download_file(url_mnist, root_dir / "models/external/")
     check_file_md5(download_path, md5sum)
     (x_train, y_train), (x_test, y_test) = Mnist.load_data()
 

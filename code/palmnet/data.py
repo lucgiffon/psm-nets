@@ -1,6 +1,14 @@
-from keras.datasets import mnist
-import numpy as np
 import keras
+import numpy as np
+from keras.datasets import mnist
+
+
+def mnist_lenet():
+    from palmnet.utils import root_dir
+
+    model_path = root_dir / "models/external" / "mnist_lenet_1570207294.h5"
+    model = keras.models.load_model(str(model_path), compile=False)
+    return model
 
 class Mnist:
     num_classes = 10
@@ -17,3 +25,10 @@ class Mnist:
         y_train = keras.utils.to_categorical(y_train, Mnist.num_classes)
         y_test = keras.utils.to_categorical(y_test, Mnist.num_classes)
         return (x_train, y_train), (x_test, y_test)
+
+    @staticmethod
+    def load_model(name="lenet"):
+        if name == "lenet":
+            return mnist_lenet()
+        else:
+            raise ValueError("Unknown model name {}".format(name))
