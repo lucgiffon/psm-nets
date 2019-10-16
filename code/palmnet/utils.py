@@ -1,6 +1,8 @@
 import re
 from keras.models import Model
 from pathlib import Path
+import keras.backend as K
+
 
 root_dir = Path(__file__).parent.parent.parent
 
@@ -73,3 +75,40 @@ def insert_layer_nonseq(model, layer_regex, insert_layer_factory,
         network_dict['new_output_tensor_of'].update({layer.name: x})
 
     return Model(inputs=model.inputs, outputs=x)
+
+
+def imagette_flatten(X, window_h, window_w, window_c, out_h, out_w, stride=1, padding=0):
+    X_padded = K.pad(X, [[0, 0], [padding, padding], [padding, padding], [0, 0]])
+
+    windows = []
+    for y in range(out_h):
+        for x in range(out_w):
+            window = K.slice(X_padded, [0, y * stride, x * stride, 0], [-1, window_h, window_w, -1])
+            windows.append(window)
+    stacked = K.stack(windows)  # shape : [out_h, out_w, n, filter_h, filter_w, c]
+
+    return K.reshape(stacked, [-1, window_c * window_w * window_h])
+
+def convolution(X, W, b, padding, stride):
+    """
+
+    :param X: The input 3D tensor.
+    :param W: The 4D tensor of filters.
+    :param b: The bias for each filter.
+    :param padding: The padding size in both dimension.
+    :param stride: The stride size in both dimension.
+    :return:
+    """
+    # todo padding "half" on the basis of W
+    sample_size, input_height, input_width, nb_in_channels = map(lambda d: d.value, X.get_shape())
+    filter_height, filter_width, filter_in_channels, filter_nbr = [d.value for d in W.get_shape()]
+
+    output_height = (input_height + 2*padding - filter_height) // stride + 1
+    output_width = (input_width + 2*padding - filter_width) // stride + 1
+
+    X_flat = imagette_flatten(X, filter_height, filter_width, nb_in_channels, output_height, output_width, stride, padding)
+    W_flat = K.reshape(W, [filter_height*filter_width*nb_in_channels, filter_nbr])
+
+    z = K.dot(X_flat, W_flat) + b     # b: 1 X filter_n
+
+    return K.permute_dimensions(K.reshape(z, [output_height, output_width, sample_size, filter_nbr]), [2, 0, 1, 3])

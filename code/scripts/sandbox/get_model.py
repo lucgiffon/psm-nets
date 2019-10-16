@@ -1,7 +1,11 @@
+import logging
 from copy import deepcopy
 
 import keras
 from keras.layers import Conv2D, Dense
+from qkmeans.core.utils import build_constraint_set_smart
+from qkmeans.palm.palm_fast import hierarchical_palm4msa
+
 from skluc.utils import logger
 
 from palmnet.utils import root_dir
@@ -11,47 +15,48 @@ import keras.backend as K
 import numpy as np
 from palmnet.data import Mnist
 
+def apply_palm(matrix, sparsity_fac=2):
+    logging.info("Applying palm function to matrix with shape {}".format(matrix.shape))
+    transposed = False
 
-def imagette_flatten(X, window_h, window_w, window_c, out_h, out_w, stride=1, padding=0):
-    X_padded = K.pad(X, [[0, 0], [padding, padding], [padding, padding], [0, 0]])
+    if matrix.shape[0] > matrix.shape[1]:
+        # we want the bigger dimension to be on right due to the residual computation that should remain big
+        matrix = matrix.T
+        transposed = True
 
-    windows = []
-    for y in range(out_h):
-        for x in range(out_w):
-            window = K.slice(X_padded, [0, y * stride, x * stride, 0], [-1, window_h, window_w, -1])
-            windows.append(window)
-    stacked = K.stack(windows)  # shape : [out_h, out_w, n, filter_h, filter_w, c]
+    left_dim, right_dim = matrix.shape
+    A = min(left_dim, right_dim)
+    B = max(left_dim, right_dim)
+    assert A == left_dim and B == right_dim, "Dimensionality problem: left dim should be higher than right dim before palm"
 
-    return K.reshape(stacked, [-1, window_c * window_w * window_h])
+    nb_factors = int(np.log(A))
+    nb_iter = 300
 
-def convolution(X, W, b, padding, stride):
-    """
+    lst_factors = [np.eye(A) for _ in range(nb_factors + 1)]
+    lst_factors[-1] = np.zeros((A, B))
+    _lambda = 1.  # init the scaling factor at 1
 
-    :param X: The input 3D tensor.
-    :param W: The 4D tensor of filters.
-    :param b: The bias for each filter.
-    :param padding: The padding size in both dimension.
-    :param stride: The stride size in both dimension.
-    :return:
-    """
-    # todo padding "half" on the basis of W
-    sample_size, input_height, input_width, nb_in_channels = map(lambda d: d.value, X.get_shape())
-    filter_height, filter_width, filter_in_channels, filter_nbr = [d.value for d in W.get_shape()]
+    lst_proj_op_by_fac_step, lst_proj_op_by_fac_step_desc = build_constraint_set_smart(left_dim=left_dim,
+                                                                                       right_dim=right_dim,
+                                                                                       nb_factors=nb_factors + 1, # this is due to constant as first factor (so will be identity)
+                                                                                       sparsity_factor=sparsity_fac,
+                                                                                       residual_on_right=True,
+                                                                                       fast_unstable_proj=False)
 
-    output_height = (input_height + 2*padding - filter_height) // stride + 1
-    output_width = (input_width + 2*padding - filter_width) // stride + 1
+    final_lambda, final_factors, final_X, _, _ = hierarchical_palm4msa(
+        arr_X_target=matrix,
+        lst_S_init=lst_factors,
+        lst_dct_projection_function=lst_proj_op_by_fac_step,
+        f_lambda_init=_lambda,
+        nb_iter=nb_iter,
+        update_right_to_left=True,
+        residual_on_right=True)
 
-    X_flat = imagette_flatten(X, filter_height, filter_width, nb_in_channels, output_height, output_width, stride, padding)
-    W_flat = K.reshape(W, [filter_height*filter_width*nb_in_channels, filter_nbr])
+    if transposed:
+        return final_X.T
+    else:
+        return final_X
 
-    z = K.dot(X_flat, W_flat) + b     # b: 1 X filter_n
-
-    return K.permute_dimensions(K.reshape(z, [output_height, output_width, sample_size, filter_nbr]), [2, 0, 1, 3])
-
-def apply_palm(matrix):
-    logger.warning("'Apply palm function' doesn't do anything!")
-    return matrix
-    # return np.ones_like(matrix)
 
 def palminize_layer(layer_obj):
     """
@@ -63,7 +68,7 @@ def palminize_layer(layer_obj):
     :return: The new weights
     """
     if isinstance(layer_obj, Conv2D):
-        logger.debug("Find {}".format(layer_obj.__class__.__name__))
+        logger.info("Find {}".format(layer_obj.__class__.__name__))
         layer_weights, layer_bias = layer_obj.get_weights()
         filter_height, filter_width, in_chan, out_chan = layer_weights.shape
         filter_matrix = layer_weights.reshape(filter_height*filter_width*in_chan, out_chan)
@@ -72,7 +77,7 @@ def palminize_layer(layer_obj):
         layer_obj.set_weights((new_layer_weights, layer_bias))
         return new_layer_weights
     elif isinstance(layer_obj, Dense):
-        logger.debug("Find {}".format(layer_obj.__class__.__name__))
+        logger.info("Find {}".format(layer_obj.__class__.__name__))
         layer_weights, layer_bias = layer_obj.get_weights()
         reconstructed_dense_matrix = apply_palm(layer_weights)
         new_layer_weights = reconstructed_dense_matrix
@@ -96,6 +101,7 @@ def palminize_model(model):
     return model
 
 if __name__ == "__main__":
+    logger.setLevel(logging.INFO)
     url_mnist = "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/mnist_lenet_1570207294.h5"
     md5sum = "26d44827c84d44a9fc8f4e021b7fe4d2"
     download_path = download_file(url_mnist, root_dir / "models")
@@ -110,12 +116,14 @@ if __name__ == "__main__":
                   optimizer="adam",
                   metrics=['accuracy'])
 
+    model_init.compile(loss='binary_crossentropy',
+                  optimizer="adam",
+                  metrics=['accuracy'])
+
+
     score, acc = model.evaluate(x_test, y_test)
-
-
-
-    print(score, acc)
-
-
+    print("palminized", score, acc)
+    score, acc = model_init.evaluate(x_test, y_test)
+    print("init", score, acc)
 
     print(download_path)
