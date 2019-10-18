@@ -2,7 +2,9 @@ import logging
 from copy import deepcopy
 
 import keras
-from keras.layers import Conv2D, Dense
+from keras import Sequential
+from keras.initializers import he_normal
+from keras.layers import Conv2D, Dense, MaxPooling2D, Flatten, BatchNormalization, Activation
 from qkmeans.core.utils import build_constraint_set_smart
 from qkmeans.palm.palm_fast import hierarchical_palm4msa
 
@@ -11,7 +13,8 @@ from skluc.utils import logger
 from palmnet.utils import root_dir
 from skluc.utils.osutils import download_file, check_file_md5
 import numpy as np
-from palmnet.data import Mnist
+from palmnet.data import Mnist, random_small_model, Test
+
 
 def apply_palm(matrix, sparsity_fac=2):
     logging.info("Applying palm function to matrix with shape {}".format(matrix.shape))
@@ -107,21 +110,21 @@ if __name__ == "__main__":
     (x_train, y_train), (x_test, y_test) = Mnist.load_data()
 
     model = keras.models.load_model(download_path, compile=False)
+
     model_init = deepcopy(model)
 
     model = palminize_model(model)
-    model.compile(loss='binary_crossentropy',
+    model.compile(loss='categorical_crossentropy',
                   optimizer="adam",
-                  metrics=['accuracy'])
+                  metrics=['categorical_accuracy'])
 
-    model_init.compile(loss='binary_crossentropy',
+    model_init.compile(loss='categorical_crossentropy',
                   optimizer="adam",
-                  metrics=['accuracy'])
+                  metrics=['categorical_accuracy'])
 
 
     score, acc = model.evaluate(x_test, y_test)
     print("palminized", score, acc)
     score, acc = model_init.evaluate(x_test, y_test)
     print("init", score, acc)
-
-    print(download_path)
+    # print(download_path)

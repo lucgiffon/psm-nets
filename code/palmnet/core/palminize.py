@@ -12,11 +12,18 @@ import numpy as np
 
 class Palminizable:
     def __init__(self, keras_model, palminizer):
-        self.base_keras_model = keras_model
-        self.keras_model = deepcopy(keras_model)
-        self.sparsely_factorized_layers = {}
+        self.base_model = keras_model
+        self.compressed_model = deepcopy(keras_model)
+        self.sparsely_factorized_layers = {} # tuples: (base model, compressed model)
+        self.param_by_layer = {} # tuples: (base model, compressed model)
+        self.flop_by_layer = {}
         self.is_palminized = False
         self.palminizer = palminizer
+
+        self.total_nb_param_base = None
+        self.total_nb_param_compressed = None
+        self.total_nb_flop_base = None
+        self.total_nb_flop_compressed = None
 
 
     def palminize(self):
@@ -28,13 +35,102 @@ class Palminizable:
         :param model: Keras model
         :return: The same, model object with new weights.
         """
-        for layer in self.keras_model.layers:
+        for layer in self.compressed_model.layers:
             _lambda, op_sparse_factors, _ = self.palminizer.palminize_layer(layer)
             self.sparsely_factorized_layers[layer.name] = (_lambda, op_sparse_factors)
 
         self.is_palminized = True
-        return self.keras_model
+        return self.compressed_model
 
+    def count_nb_param_layer(self, layer):
+        nb_param_layer = (np.prod(layer.kernel.shape) + np.prod(layer.bias.shape)).value
+        nb_param_compressed_layer = self.sparsely_factorized_layers[layer.name][1].get_nb_param() + 1 + np.prod(layer.bias.shape).value  # +1 for lambda
+        return nb_param_layer, nb_param_compressed_layer
+
+    @staticmethod
+    def count_nb_flop_conv_layer(layer, nb_param_layer, nb_param_compressed_layer):
+        if layer.padding == "valid":
+            padding_horizontal = 0
+            padding_vertical = 0
+        elif layer.padding == "same":
+            padding_horizontal = np.floor(layer.kernel.shape[0])
+            padding_vertical = np.floor(layer.kernel.shape[1])
+        else:
+            raise ValueError("Unknown padding value for convolutional layer {}.".format(layer.name))
+
+        nb_patch_horizontal = (layer.input_shape[1] + 2 * padding_horizontal - layer.kernel.shape[0]) // layer.strides[0]
+        nb_patch_vertical = (layer.input_shape[2] + 2 * padding_vertical - layer.kernel.shape[1]) // layer.strides[1]
+
+        imagette_matrix_size = (nb_patch_horizontal * nb_patch_vertical).value
+
+        nb_flop_layer_for_one_imagette = nb_param_layer
+        nb_flop_compressed_layer_for_one_imagette = nb_param_compressed_layer
+
+        # *2 for the multiplcations and then sum
+        nb_flop_layer = imagette_matrix_size * nb_flop_layer_for_one_imagette * 2
+        nb_flop_compressed_layer = imagette_matrix_size * nb_flop_compressed_layer_for_one_imagette * 2
+
+        return nb_flop_layer, nb_flop_compressed_layer
+
+    @staticmethod
+    def count_nb_flop_dense_layer(layer, nb_param_layer, nb_param_compressed_layer):
+        # *2 for the multiplcations and then sum
+        nb_flop_layer = nb_param_layer * 2
+        nb_flop_compressed_layer = nb_param_compressed_layer * 2
+        return nb_flop_layer, nb_flop_compressed_layer
+
+    def count_model_param_and_flops(self):
+        """
+        Return the number of params and the number of flops of 2DConvolutional Layers and Dense Layers for both the base model and the compressed model.
+
+        :return:
+        """
+        nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed = 0, 0, 0, 0
+
+        for layer in self.base_model.layers:
+
+            if isinstance(layer, Conv2D):
+                nb_param_layer, nb_param_compressed_layer = self.count_nb_param_layer(layer)
+                nb_flop_layer, nb_flop_compressed_layer = self.count_nb_flop_conv_layer(layer, nb_param_layer, nb_param_compressed_layer)
+
+            elif isinstance(layer, Dense):
+                nb_param_layer, nb_param_compressed_layer = self.count_nb_param_layer(layer)
+                nb_flop_layer, nb_flop_compressed_layer = self.count_nb_flop_dense_layer(layer, nb_param_layer, nb_param_compressed_layer)
+
+            else:
+                logger.warning("Layer {}, class {}, hasn't been compressed".format(layer.name, layer.__class__.__name__))
+                nb_param_compressed_layer, nb_param_layer, nb_flop_layer, nb_flop_compressed_layer = 0, 0, 0, 0
+
+            self.param_by_layer[layer.name] = (nb_param_layer, nb_param_compressed_layer)
+            self.flop_by_layer[layer.name] = (nb_flop_layer, nb_flop_compressed_layer)
+
+            nb_param_base += nb_param_layer
+            nb_param_compressed += nb_param_compressed_layer
+            nb_flop_base += nb_flop_layer
+            nb_flop_compressed += nb_flop_compressed_layer
+
+        self.total_nb_param_base = nb_param_base
+        self.total_nb_param_compressed = nb_param_compressed
+        self.total_nb_flop_base = nb_flop_base
+        self.total_nb_flop_compressed = nb_flop_compressed
+
+        return nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed
+
+    @staticmethod
+    def compile_model(model):
+        model.compile(loss='categorical_crossentropy',
+                       optimizer="adam",
+                       metrics=['categorical_accuracy'])
+
+    def evaluate(self, x_test, y_test):
+
+        self.compile_model(self.compressed_model)
+        self.compile_model(self.base_model)
+
+        score_base, acc_base = self.base_model.evaluate(x_test, y_test)
+        score_compressed, acc_compressed = self.compressed_model.evaluate(x_test, y_test)
+
+        return score_base, acc_base, score_compressed, acc_compressed
 
 class Palminizer:
     def __init__(self, sparsity_fac=2, nb_iter=300, delta_threshold_palm=1e-6):
@@ -88,9 +184,9 @@ class Palminizer:
             delta_objective_error_threshold_palm=self.delta_threshold_palm)
 
         if transposed:
-            return final_lambda, final_lambda.transpose(), final_X.T
+            return final_lambda, final_factors.transpose(), final_X.T
         else:
-            return final_lambda, final_lambda, final_X
+            return final_lambda, final_factors, final_X
 
     def palminize_layer(self, layer_obj):
         """

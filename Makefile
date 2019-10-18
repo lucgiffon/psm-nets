@@ -34,12 +34,28 @@ data/external/svhn.npz:
 
 ## Make Model
 
-models: mnist_lenet
+models: mnist_lenet cifar10_vgg19 cifar100_vgg19 svhn_vgg19
 
 mnist_lenet: models/external/mnist_lenet_1570207294.h5
 
+cifar10_vgg19: models/external/cifar10_vgg19_1570693209.h5
+
+cifar100_vgg19: models/external/cifar100_vgg19_1570789868.h5
+
+svhn_vgg19: models/external/svhn_vgg19_1570786657.h5
+
+
 models/external/mnist_lenet_1570207294.h5:
 	$(PYTHON_INTERPRETER) code/models/make_models.py mnist_lenet models/external
+
+models/external/cifar10_vgg19_1570693209.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar10_vgg19 models/external
+
+models/external/cifar100_vgg19_1570789868.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_vgg19 models/external
+
+models/external/svhn_vgg19_1570786657.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py svhn_vgg19 models/external
 
 ## Delete all compiled Python files
 clean:

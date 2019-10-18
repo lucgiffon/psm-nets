@@ -8,7 +8,7 @@ import keras.backend as K
 import numpy as np
 import os
 
-from palmnet.data import Mnist
+from palmnet.data import Mnist, Test, Cifar10, Cifar100, Svhn
 
 root_dir = Path(__file__).parent.parent.parent
 
@@ -142,7 +142,7 @@ class ParameterManager(dict):
 
     def __init_output_file(self):
         self["output_file_resprinter"] = Path(self["identifier"] + "_results.csv")
-        self["output_file_modelprinter"] = Path(self["identifier"] + "_model_layers.npz")
+        self["output_file_modelprinter"] = Path(self["identifier"] + "_model_layers.pckle")
 
     def __init_seed(self):
         self["--seed"] = int(self["--seed"])
@@ -163,12 +163,33 @@ class ParameterManager(dict):
         if self["--mnist"]:
             (x_train, y_train), (x_test, y_test) =  Mnist.load_data()
             return (x_train, y_train), (x_test, y_test)
+        elif self["--cifar10"]:
+            (x_train, y_train), (x_test, y_test) = Cifar10.load_data()
+            return (x_train, y_train), (x_test, y_test)
+        elif self["--cifar100"]:
+            (x_train, y_train), (x_test, y_test) = Cifar100.load_data()
+            return (x_train, y_train), (x_test, y_test)
+        elif self["--svhn"]:
+            (x_train, y_train), (x_test, y_test) = Svhn.load_data()
+            return (x_train, y_train), (x_test, y_test)
+        elif self["--test-data"]:
+            (x_train, y_train), (x_test, y_test) = Test.load_data()
+            return (x_train, y_train), (x_test, y_test)
+
         else:
             raise NotImplementedError("No dataset specified.")
 
     def get_model(self):
-        if self["--mnist"]:
+        if self["--mnist-lenet"]:
             return Mnist.load_model() # for now there is only one model for each dataset... it may change
+        elif self["--cifar10-vgg19"]:
+            return Cifar10.load_model()
+        elif self["--cifar100-vgg19"]:
+            return Cifar100.load_model()
+        elif self["--svhn-vgg19"]:
+            return Svhn.load_model()
+        elif self["--test-model"]:
+            return Test.load_model()
         else:
             raise NotImplementedError("No dataset specified.")
 

@@ -13,10 +13,16 @@ from skluc.utils.osutils import download_file, check_file_md5
 
 MAP_DATA_MODEL_URL = {
     "mnist_lenet": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/mnist_lenet_1570207294.h5",
+    "cifar10_vgg19": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/cifar10_vgg19_1570693209.h5",
+    "cifar100_vgg19": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/cifar100_vgg19_1570789868.h5",
+    "svhn_vgg19": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/svhn_vgg19_1570786657.h5"
 }
 
 MAP_DATA_MODEL_MD5SUM = {
-    "mnist_lenet": "26d44827c84d44a9fc8f4e021b7fe4d2"
+    "mnist_lenet": "26d44827c84d44a9fc8f4e021b7fe4d2",
+    "cifar10_vgg19": "a3ece534a8e02d17453dffc095048f65",
+    "cifar100_vgg19": "cb1bd8558f385030c6c68808023918e0",
+    "svhn_vgg19": "204e41afbc84d1806822a60a9558ea52"
 }
 
 def _download_single_model(output_dirpath, model):
