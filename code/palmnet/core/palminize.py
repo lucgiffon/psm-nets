@@ -43,8 +43,8 @@ class Palminizable:
         return self.compressed_model
 
     def count_nb_param_layer(self, layer):
-        nb_param_layer = (np.prod(layer.kernel.shape) + np.prod(layer.bias.shape)).value
-        nb_param_compressed_layer = self.sparsely_factorized_layers[layer.name][1].get_nb_param() + 1 + np.prod(layer.bias.shape).value  # +1 for lambda
+        nb_param_layer = int(np.prod(layer.kernel.shape) + np.prod(layer.bias.shape))
+        nb_param_compressed_layer = int(self.sparsely_factorized_layers[layer.name][1].get_nb_param() + 1 + np.prod(layer.bias.shape))  # +1 for lambda
         return nb_param_layer, nb_param_compressed_layer
 
     @staticmethod
