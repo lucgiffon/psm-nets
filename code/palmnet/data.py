@@ -7,10 +7,12 @@ from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchNormalizatio
 
 MAP_EXTERNAL_MODEL_FILENAME = {
     "mnist_lenet": "mnist_lenet_1570207294.h5",
-    "cifar10_vgg19": "cifar10_vgg19_1570693209.h5",
-    "cifar100_vgg19": "cifar100_vgg19_1570789868.h5",
-    "svhn_vgg19": "svhn_vgg19_1570786657.h5",
-
+    "cifar10_vgg19_4096x4096": "cifar10_vgg19_4096x4096_1570693209.h5",
+    "cifar100_vgg19_4096x4096": "cifar100_vgg19_4096x4096_1570789868.h5",
+    "svhn_vgg19_4096x4096": "svhn_vgg19_4096x4096_1570786657.h5",
+    "cifar10_vgg19_2048x2048": "cifar10_vgg19_2048x2048_1572303047.h5",
+    "cifar100_vgg19_2048x2048": "cifar100_vgg19_2048x2048_1572278802.h5",
+    "svhn_vgg19_2048x2048": "svhn_vgg19_2048x2048_1572278831.h5",
 }
 
 def get_external_model(name):
@@ -109,7 +111,7 @@ class Cifar10:
         return (x_train, y_train), (x_test, y_test)
 
     @staticmethod
-    def load_model(name="cifar10_vgg19"):
+    def load_model(name="cifar10_vgg19_2048x2048"):
         return get_external_model(name)
 
 class Cifar100:
@@ -134,7 +136,7 @@ class Cifar100:
         return (x_train, y_train), (x_test, y_test)
 
     @staticmethod
-    def load_model(name="cifar100_vgg19"):
+    def load_model(name="cifar100_vgg19_2048x2048"):
         return get_external_model(name)
 
 class Svhn:
@@ -159,5 +161,5 @@ class Svhn:
         return (x_train, y_train), (x_test, y_test)
 
     @staticmethod
-    def load_model(name="svhn_vgg19"):
+    def load_model(name="svhn_vgg19_2048x2048"):
         return get_external_model(name)

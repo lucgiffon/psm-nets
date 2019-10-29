@@ -13,16 +13,22 @@ from skluc.utils.osutils import download_file, check_file_md5
 
 MAP_DATA_MODEL_URL = {
     "mnist_lenet": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/mnist_lenet_1570207294.h5",
-    "cifar10_vgg19": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/cifar10_vgg19_1570693209.h5",
-    "cifar100_vgg19": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/cifar100_vgg19_1570789868.h5",
-    "svhn_vgg19": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/svhn_vgg19_1570786657.h5"
+    "cifar10_vgg19_4096x4096": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/cifar10_vgg19_4096x4096_1570693209.h5",
+    "cifar100_vgg19_4096x4096": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/cifar100_vgg19_4096x4096_1570789868.h5",
+    "svhn_vgg19_4096x4096": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/svhn_vgg19_4096x4096_1570786657.h5",
+    "cifar10_vgg19_2048x2048": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/cifar10_vgg19_2048x2048_1572303047.h5",
+    "cifar100_vgg19_2048x2048": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/cifar100_vgg19_2048x2048_1572278802.h5",
+    "svhn_vgg19_2048x2048": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/svhn_vgg19_2048x2048_1572278831.h5",
 }
 
 MAP_DATA_MODEL_MD5SUM = {
     "mnist_lenet": "26d44827c84d44a9fc8f4e021b7fe4d2",
-    "cifar10_vgg19": "a3ece534a8e02d17453dffc095048f65",
-    "cifar100_vgg19": "cb1bd8558f385030c6c68808023918e0",
-    "svhn_vgg19": "204e41afbc84d1806822a60a9558ea52"
+    "cifar10_vgg19_4096x4096": "a3ece534a8e02d17453dffc095048f65",
+    "cifar100_vgg19_4096x4096": "cb1bd8558f385030c6c68808023918e0",
+    "svhn_vgg19_4096x4096": "204e41afbc84d1806822a60a9558ea52",
+    "cifar10_vgg19_2048x2048": "98cece5432051adc2330699a40940dfd",
+    "cifar100_vgg19_2048x2048": "57d6bf6434428a81e702271367eac4d1",
+    "svhn_vgg19_2048x2048": "d5697042804bcc646bf9882a45dedd9e"
 }
 
 def _download_single_model(output_dirpath, model):

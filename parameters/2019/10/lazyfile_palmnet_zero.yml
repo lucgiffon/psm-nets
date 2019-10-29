@@ -10,6 +10,7 @@ all:
 
 base:
   sparsity_fac: {"--sparsity-factor": [2, 3, 4, 5]}
+  verbosity: ["-v"]
 
 palmnet_mnist:
   base:

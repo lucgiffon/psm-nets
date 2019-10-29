@@ -61,7 +61,7 @@ class Palminizable:
         nb_patch_horizontal = (layer.input_shape[1] + 2 * padding_horizontal - layer.kernel.shape[0]) // layer.strides[0]
         nb_patch_vertical = (layer.input_shape[2] + 2 * padding_vertical - layer.kernel.shape[1]) // layer.strides[1]
 
-        imagette_matrix_size = (nb_patch_horizontal * nb_patch_vertical).value
+        imagette_matrix_size = int(nb_patch_horizontal * nb_patch_vertical)
 
         nb_flop_layer_for_one_imagette = nb_param_layer
         nb_flop_compressed_layer_for_one_imagette = nb_param_compressed_layer
@@ -88,7 +88,7 @@ class Palminizable:
         nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed = 0, 0, 0, 0
 
         for layer in self.base_model.layers:
-
+            logger.warning("Process layer {}".format(layer.name))
             if isinstance(layer, Conv2D):
                 nb_param_layer, nb_param_compressed_layer = self.count_nb_param_layer(layer)
                 nb_flop_layer, nb_flop_compressed_layer = self.count_nb_flop_conv_layer(layer, nb_param_layer, nb_param_compressed_layer)
