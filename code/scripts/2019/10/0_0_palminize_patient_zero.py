@@ -2,7 +2,7 @@
 This script is the experiment script for palminizing models.
 
 Usage:
-    script.py [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float]
+    script.py [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical]
 
 Options:
   -h --help                             Show this screen.
@@ -28,6 +28,7 @@ Palm-Specifc options:
   --sparsity-factor=int                 Integer coefficient from which is computed the number of value in each factor.
   --nb-iteration-palm=int               Number of iterations in the inner palm4msa calls. [default: 300]
   --delta-threshold=float               Threshold value before stopping palm iterations. [default: 1e-6]
+  --hierarchical                        Tells if palm should use the hierarchical euristic or not. Muhc longer but better approximation results.
 """
 import logging
 import pickle
@@ -54,7 +55,10 @@ def main():
 
     palminizer = Palminizer(sparsity_fac=paraman["--sparsity-factor"],
                             nb_iter=paraman["--nb-iteration-palm"],
-                            delta_threshold_palm=paraman["--delta-threshold"])
+                            delta_threshold_palm=paraman["--delta-threshold"],
+                            hierarchical=paraman["--hierarchical"],
+                            fast_unstable_proj=True)
+
     palminizable = Palminizable(base_model, palminizer)
     start_palminize = time.time()
     palminizable.palminize()

@@ -3,7 +3,8 @@ from copy import deepcopy
 
 from keras.layers import Conv2D, Dense
 from qkmeans.core.utils import build_constraint_set_smart
-from qkmeans.palm.palm_fast import hierarchical_palm4msa
+from qkmeans.data_structures import SparseFactors
+from qkmeans.palm.palm_fast import hierarchical_palm4msa, palm4msa
 
 from skluc.utils import logger
 
@@ -53,8 +54,8 @@ class Palminizable:
             padding_horizontal = 0
             padding_vertical = 0
         elif layer.padding == "same":
-            padding_horizontal = np.floor(layer.kernel.shape[0])
-            padding_vertical = np.floor(layer.kernel.shape[1])
+            padding_horizontal = int(layer.kernel.shape[0]) // 2
+            padding_vertical = int(layer.kernel.shape[1]) // 2
         else:
             raise ValueError("Unknown padding value for convolutional layer {}.".format(layer.name))
 
@@ -133,10 +134,12 @@ class Palminizable:
         return score_base, acc_base, score_compressed, acc_compressed
 
 class Palminizer:
-    def __init__(self, sparsity_fac=2, nb_iter=300, delta_threshold_palm=1e-6):
+    def __init__(self, sparsity_fac=2, nb_iter=300, delta_threshold_palm=1e-6, hierarchical=True, fast_unstable_proj=True):
         self.sparsity_fac = sparsity_fac
         self.nb_iter = nb_iter
         self.delta_threshold_palm = delta_threshold_palm
+        self.hierarchical = hierarchical
+        self.fast_unstable_proj = fast_unstable_proj
 
     def apply_palm(self, matrix):
         """
@@ -160,28 +163,42 @@ class Palminizer:
         B = max(left_dim, right_dim)
         assert A == left_dim and B == right_dim, "Dimensionality problem: left dim should be higher than right dim before palm"
 
-        nb_factors = int(np.log2(A))
+        nb_factors = int(np.log2(B))
 
-        lst_factors = [np.eye(A) for _ in range(nb_factors + 1)]
+        lst_factors = [np.eye(A) for _ in range(nb_factors)]
         lst_factors[-1] = np.zeros((A, B))
         _lambda = 1.  # init the scaling factor at 1
 
         lst_proj_op_by_fac_step, lst_proj_op_by_fac_step_desc = build_constraint_set_smart(left_dim=left_dim,
                                                                                            right_dim=right_dim,
-                                                                                           nb_factors=nb_factors + 1, # this is due to constant as first factor (so will be identity)
+                                                                                           nb_factors=nb_factors,
                                                                                            sparsity_factor=self.sparsity_fac,
                                                                                            residual_on_right=True,
-                                                                                           fast_unstable_proj=False)
+                                                                                           fast_unstable_proj=self.fast_unstable_proj,
+                                                                                           constant_first=False,
+                                                                                           hierarchical=self.hierarchical)
 
-        final_lambda, final_factors, final_X, _, _ = hierarchical_palm4msa(
-            arr_X_target=matrix,
-            lst_S_init=lst_factors,
-            lst_dct_projection_function=lst_proj_op_by_fac_step,
-            f_lambda_init=_lambda,
-            nb_iter=self.nb_iter,
-            update_right_to_left=True,
-            residual_on_right=True,
-            delta_objective_error_threshold_palm=self.delta_threshold_palm)
+        if self.hierarchical:
+            final_lambda, final_factors, final_X, _, _ = hierarchical_palm4msa(
+                arr_X_target=matrix,
+                lst_S_init=lst_factors,
+                lst_dct_projection_function=lst_proj_op_by_fac_step,
+                f_lambda_init=_lambda,
+                nb_iter=self.nb_iter,
+                update_right_to_left=True,
+                residual_on_right=True,
+                delta_objective_error_threshold_palm=self.delta_threshold_palm,)
+        else:
+            final_lambda, final_factors, final_X, _, _ = \
+                palm4msa(arr_X_target=matrix,
+                         lst_S_init=lst_factors,
+                         nb_factors=len(lst_factors),
+                         lst_projection_functions=lst_proj_op_by_fac_step,
+                         f_lambda_init=1.,
+                         nb_iter=self.nb_iter,
+                         update_right_to_left=True,
+                         delta_objective_error_threshold=self.delta_threshold_palm,
+                         track_objective=False)
 
         if transposed:
             return final_lambda, final_factors.transpose(), final_X.T

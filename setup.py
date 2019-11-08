@@ -11,9 +11,9 @@ LICENSE = 'MIT'
 URL = 'https://gitlab.lis-lab.fr/luc.giffon/palmnet'
 AUTHOR = 'Luc Giffon'
 AUTHOR_EMAIL = ('luc.giffon@lis-lab.fr')
-INSTALL_REQUIRES = ['numpy', 'daiquiri', 'matplotlib', 'pandas', 'keras',
-                    'docopt', 'pillow', 'scikit-learn', 'psutil', 'yafe',
-                    'xarray', 'tensorflow', 'scipy==1.2.1', 'scikit-luc==2']
+INSTALL_REQUIRES = ['numpy', 'daiquiri', 'matplotlib', 'pandas',
+                    'docopt', 'pillow', 'scikit-learn', 'psutil', 'yafe', "click", "python-dotenv",
+                    'xarray', 'tensorflow==1.13.1', 'keras', 'scipy==1.2.1', 'scikit-luc==2']
 EXTRAS_REQUIRE = {
     'dev': ['coverage', 'pytest', 'pytest-cov', 'pytest-randomly'],
     'doc': ['nbsphinx', 'numpydoc', 'sphinx']}

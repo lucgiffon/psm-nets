@@ -1,16 +1,16 @@
---sparsity-factor 2 -v --mnist --mnist-lenet
---sparsity-factor 3 -v --mnist --mnist-lenet
---sparsity-factor 4 -v --mnist --mnist-lenet
---sparsity-factor 5 -v --mnist --mnist-lenet
---sparsity-factor 2 -v --svhn --svhn-vgg19
---sparsity-factor 3 -v --svhn --svhn-vgg19
---sparsity-factor 4 -v --svhn --svhn-vgg19
---sparsity-factor 5 -v --svhn --svhn-vgg19
---sparsity-factor 2 -v --cifar10 --cifar10-vgg19
---sparsity-factor 3 -v --cifar10 --cifar10-vgg19
---sparsity-factor 4 -v --cifar10 --cifar10-vgg19
---sparsity-factor 5 -v --cifar10 --cifar10-vgg19
---sparsity-factor 2 -v --cifar100 --cifar100-vgg19
---sparsity-factor 3 -v --cifar100 --cifar100-vgg19
---sparsity-factor 4 -v --cifar100 --cifar100-vgg19
---sparsity-factor 5 -v --cifar100 --cifar100-vgg19
+--sparsity-factor 2 -v --hierarchical --mnist --mnist-lenet
+--sparsity-factor 3 -v --hierarchical --mnist --mnist-lenet
+--sparsity-factor 4 -v --hierarchical --mnist --mnist-lenet
+--sparsity-factor 5 -v --hierarchical --mnist --mnist-lenet
+--sparsity-factor 2 -v --hierarchical --svhn --svhn-vgg19
+--sparsity-factor 3 -v --hierarchical --svhn --svhn-vgg19
+--sparsity-factor 4 -v --hierarchical --svhn --svhn-vgg19
+--sparsity-factor 5 -v --hierarchical --svhn --svhn-vgg19
+--sparsity-factor 2 -v --hierarchical --cifar10 --cifar10-vgg19
+--sparsity-factor 3 -v --hierarchical --cifar10 --cifar10-vgg19
+--sparsity-factor 4 -v --hierarchical --cifar10 --cifar10-vgg19
+--sparsity-factor 5 -v --hierarchical --cifar10 --cifar10-vgg19
+--sparsity-factor 2 -v --hierarchical --cifar100 --cifar100-vgg19
+--sparsity-factor 3 -v --hierarchical --cifar100 --cifar100-vgg19
+--sparsity-factor 4 -v --hierarchical --cifar100 --cifar100-vgg19
+--sparsity-factor 5 -v --hierarchical --cifar100 --cifar100-vgg19
