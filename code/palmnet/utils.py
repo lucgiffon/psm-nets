@@ -1,16 +1,59 @@
+import pickle
+
+import pathlib
 import random
 import re
 import time
-
+from keras import Input, Sequential
+from keras.engine import InputLayer
+from keras.layers import Input
 from keras.models import Model
 from pathlib import Path
 import keras.backend as K
 import numpy as np
 import os
+from collections import defaultdict
+from palmnet.visualization.utils import get_dct_result_files_by_root, build_df
+
+from skluc.utils import logger
 
 from palmnet.data import Mnist, Test, Cifar10, Cifar100, Svhn
 
 root_dir = Path(__file__).parent.parent.parent
+
+def replace_intermediate_layer_in_keras(model, layer_name, new_layer):
+    raise NotImplementedError("Doesn't work for bizarre layers")
+    from keras.models import Model
+
+    if not isinstance(model .layers[0], InputLayer):
+        model = Model(input=model.input, output=model.output)
+
+    layers = [l for l in model.layers]
+
+    x = layers[0].output
+    for layer in layers:
+        if layer_name == layer.name:
+            x = new_layer(x)
+        else:
+            x = layers(x)
+
+    new_model = Model(input=layers[0].input, output=x)
+    return new_model
+
+def insert_intermediate_layer_in_keras(model, layer_id, new_layer):
+    raise NotImplementedError("Doesn't work for bizarre layers")
+    from keras.models import Model
+
+    layers = [l for l in model.layers]
+
+    x = layers[0].output
+    for i in range(1, len(layers)):
+        if i == layer_id:
+            x = new_layer(x)
+        x = layers[i](x)
+
+    new_model = Model(input=layers[0].input, output=x)
+    return new_model
 
 def insert_layer_nonseq(model, layer_regex, insert_layer_factory,
                         insert_layer_name=None, position='after'):
@@ -24,19 +67,19 @@ def insert_layer_nonseq(model, layer_regex, insert_layer_factory,
     :param position: `before`, `after` or `replace`
     :return:
     """
-
+    # raise NotImplementedError("Doesn't work")
     # Auxiliary dictionary to describe the network graph
-    network_dict = {'input_layers_of': {}, 'new_output_tensor_of': {}}
+    network_dict = {'input_layers_of': defaultdict(lambda: []), 'new_output_tensor_of': defaultdict(lambda: [])}
+
+    if not isinstance(model .layers[0], InputLayer):
+        model = Model(input=model.input, output=model.output)
 
     # Set the input layers of each layer
     for layer in model.layers:
-        for node in layer.outbound_nodes:
-            layer_name = node.outbound_layer.name
-            if layer_name not in network_dict['input_layers_of']:
-                network_dict['input_layers_of'].update(
-                        {layer_name: [layer.name]})
-            else:
-                network_dict['input_layers_of'][layer_name].append(layer.name)
+        # each layer is set as `input` layer of all its outbound layers
+        for node in layer._outbound_nodes:
+            outbound_layer_name = node.outbound_layer.name
+            network_dict['input_layers_of'].update({outbound_layer_name: [layer.name]})
 
     # Set the output tensor of the input layer
     network_dict['new_output_tensor_of'].update(
@@ -69,7 +112,7 @@ def insert_layer_nonseq(model, layer_regex, insert_layer_factory,
                 new_layer.name = '{}_{}'.format(layer.name,
                                                 new_layer.name)
             x = new_layer(x)
-            print('Layer {} inserted after layer {}'.format(new_layer.name,
+            logger.debug('Layer {} inserted after layer {}'.format(new_layer.name,
                                                             layer.name))
             if position == 'before':
                 x = layer(x)
@@ -80,44 +123,9 @@ def insert_layer_nonseq(model, layer_regex, insert_layer_factory,
         # layer)
         network_dict['new_output_tensor_of'].update({layer.name: x})
 
-    return Model(inputs=model.inputs, outputs=x)
+    newModel = Model(inputs=model.inputs, outputs=x)
 
-
-def imagette_flatten(X, window_h, window_w, window_c, out_h, out_w, stride=1, padding=0):
-    X_padded = K.pad(X, [[0, 0], [padding, padding], [padding, padding], [0, 0]])
-
-    windows = []
-    for y in range(out_h):
-        for x in range(out_w):
-            window = K.slice(X_padded, [0, y * stride, x * stride, 0], [-1, window_h, window_w, -1])
-            windows.append(window)
-    stacked = K.stack(windows)  # shape : [out_h, out_w, n, filter_h, filter_w, c]
-
-    return K.reshape(stacked, [-1, window_c * window_w * window_h])
-
-def convolution(X, W, b, padding, stride):
-    """
-
-    :param X: The input 3D tensor.
-    :param W: The 4D tensor of filters.
-    :param b: The bias for each filter.
-    :param padding: The padding size in both dimension.
-    :param stride: The stride size in both dimension.
-    :return:
-    """
-    # todo padding "half" on the basis of W
-    sample_size, input_height, input_width, nb_in_channels = map(lambda d: d.value, X.get_shape())
-    filter_height, filter_width, filter_in_channels, filter_nbr = [d.value for d in W.get_shape()]
-
-    output_height = (input_height + 2*padding - filter_height) // stride + 1
-    output_width = (input_width + 2*padding - filter_width) // stride + 1
-
-    X_flat = imagette_flatten(X, filter_height, filter_width, nb_in_channels, output_height, output_width, stride, padding)
-    W_flat = K.reshape(W, [filter_height*filter_width*nb_in_channels, filter_nbr])
-
-    z = K.dot(X_flat, W_flat) + b     # b: 1 X filter_n
-
-    return K.permute_dimensions(K.reshape(z, [output_height, output_width, sample_size, filter_nbr]), [2, 0, 1, 3])
+    return newModel
 
 
 class ParameterManager(dict):
@@ -194,6 +202,49 @@ class ParameterManager(dict):
             raise NotImplementedError("No dataset specified.")
 
 
+class ParameterManagerFinetune(ParameterManager):
+    def __init__(self, dct_params, **kwargs):
+        super().__init__(dct_params, **kwargs)
+
+        self["--input-dir"] = pathlib.Path(self["--input-dir"])
+
+        self.__init_model_path()
+        self.__init_output_file()
+
+    def __init_output_file(self):
+        self["output_file_resprinter"] = Path(self["identifier"] + "_results.csv")
+        self["output_file_modelprinter"] = Path(self["identifier"] + "_model.h5")
+
+    def __init_model_path(self):
+        df = get_df(self["--input-dir"])
+        keys_of_interest = ['--cifar10',
+                            '--cifar10-vgg19',
+                            '--cifar100',
+                            '--cifar100-vgg19',
+                            '--delta-threshold',
+                            '--hierarchical',
+                            '--mnist',
+                            '--mnist-lenet',
+                            '--nb-iteration-palm',
+                            '--sparsity-factor',
+                            '--svhn',
+                            '--svhn-vgg19',
+                            '--test-data',
+                            '--test-model',
+                            ]
+        queries = []
+        for k in keys_of_interest:
+            query = "(df['{}']=={})".format(k, self[k])
+            queries.append(query)
+
+        s_query = " & ".join(queries)
+        s_eval = "df[({})]".format(s_query)
+        line_of_interest = eval(s_eval)
+
+        assert len(line_of_interest) == 1, "The parameters doesn't allow to discriminate only one pre-trained model in directory"
+
+        self["input_model_path"] = self["--input-dir"] / line_of_interest["output_file_modelprinter"][0]
+
 class ResultPrinter:
     """
     Class that handles 1-level dictionnaries and is able to print/write their values in a csv like format.
@@ -241,3 +292,35 @@ class ResultPrinter:
                 if self.__header:
                     out_f.write(s_headers + "\n")
                 out_f.write(s_values + "\n")
+
+def get_palminized_model_and_df(path):
+    src_result_dir = pathlib.Path(path)
+    dct_output_files_by_root = get_dct_result_files_by_root(src_results_dir=src_result_dir, old_filename_objective=True)
+
+    col_to_delete = []
+
+    dct_oarid_palminized_model = {}
+    for root_name, job_files in dct_output_files_by_root.items():
+        objective_file_path = src_result_dir / job_files["palminized_model"]
+        loaded_model = pickle.load(open(objective_file_path, 'rb'))
+        dct_oarid_palminized_model[root_name] = loaded_model
+
+    df_results = build_df(src_result_dir, dct_output_files_by_root, col_to_delete)
+    return dct_oarid_palminized_model, df_results
+
+def get_df(path):
+    src_result_dir = pathlib.Path(path)
+    dct_output_files_by_root = get_dct_result_files_by_root(src_results_dir=src_result_dir, old_filename_objective=True)
+
+    col_to_delete = []
+
+    df_results = build_df(src_result_dir, dct_output_files_by_root, col_to_delete)
+    return df_results
+
+
+def get_sparsity_pattern(arr):
+    non_zero = arr != 0
+    sparsity_pattern = np.zeros_like(arr)
+    sparsity_pattern[non_zero] = 1
+    return sparsity_pattern
+
