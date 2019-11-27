@@ -74,12 +74,13 @@ image_data_generator_cifar_svhn = ImageDataGenerator(horizontal_flip=True,
                              cval=0.)
 
 cifar10_param_training = param_training(
-    batch_size=128,
+    batch_size=64,
     epochs=300,
-    optimizer=keras.optimizers.SGD(lr=0.1, momentum=0.9, nesterov=True),
+    optimizer=keras.optimizers.Adam(lr=1e-4),
     loss="categorical_crossentropy",
     image_data_generator=image_data_generator_cifar_svhn,
-    callbacks=[LearningRateScheduler(scheduler)]
+    # callbacks=[LearningRateScheduler(scheduler)]
+    callbacks=[]
 )
 
 cifar100_param_training = cifar10_param_training
