@@ -5,6 +5,7 @@ from keras.engine import Layer
 from keras.utils import conv_utils
 
 import tensorflow as tf
+from keras.layers import Conv2D
 
 class Conv2DCustom(Layer, metaclass=ABCMeta):
     """
@@ -76,6 +77,28 @@ class Conv2DCustom(Layer, metaclass=ABCMeta):
 
         self.strides_height = self.strides[0]
         self.strides_width = self.strides[1]
+
+
+    def get_config(self):
+        base_config = super().get_config()
+
+        config = {
+            'filters': self.filters,
+            'kernel_size': self.kernel_size,
+            'strides': self.strides,
+            'padding': self.padding,
+            'activation': activations.serialize(self.activation),
+            'use_bias': self.use_bias,
+            'kernel_initializer': initializers.serialize(self.kernel_initializer),
+            'bias_initializer': initializers.serialize(self.bias_initializer),
+            'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
+            'bias_regularizer': regularizers.serialize(self.bias_regularizer),
+            'kernel_constraint': constraints.serialize(self.kernel_constraint),
+            'bias_constraint': constraints.serialize(self.bias_constraint)
+        }
+        config.update(base_config)
+
+        return config
 
     @staticmethod
     def imagette_flatten(X, window_h, window_w, window_c, out_h, out_w, stride=(1, 1), padding=(0, 0)):

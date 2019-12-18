@@ -1,0 +1,1 @@
+--sparsity-factor 2 -v --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --walltime 90 --svhn --svhn-vgg19

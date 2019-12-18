@@ -1,12 +1,19 @@
 from abc import abstractmethod
 
 from keras import backend as K, activations, initializers, regularizers, constraints
-from keras.layers import Layer
+from keras.layers import Layer, Dense, Conv2D
 from keras.utils import conv_utils
 import tensorflow as tf
 from scipy.sparse import coo_matrix
-
+import numpy as np
 from palmnet.layers import Conv2DCustom
+
+
+def cast_sparsity_pattern(sparsity_pattern):
+    try:
+        return np.array(sparsity_pattern)
+    except:
+        raise ValueError("Sparsity pattern isn't well formed")
 
 
 class SparseFixed(Layer):
@@ -145,13 +152,14 @@ class SparseFactorisationDense(Layer):
         if 'input_shape' not in kwargs and 'input_dim' in kwargs:
             kwargs['input_shape'] = (kwargs.pop('input_dim'),)
 
-        assert [sparsity_patterns[i].shape[1] == sparsity_patterns[i+1].shape[0] for i in range(len(sparsity_patterns)-1)]
-        assert sparsity_patterns[-1].shape[1] == units, "sparsity pattern last dim should be equal to output dim in {}".format(__class__.__name__)
 
         super(SparseFactorisationDense, self).__init__(**kwargs)
 
-        self.sparsity_patterns = sparsity_patterns
+        self.sparsity_patterns = [cast_sparsity_pattern(s) for s in sparsity_patterns]
         self.nb_factor = len(sparsity_patterns)
+
+        assert [self.sparsity_patterns[i].shape[1] == self.sparsity_patterns[i+1].shape[0] for i in range(len(self.sparsity_patterns)-1)]
+        assert self.sparsity_patterns[-1].shape[1] == units, "sparsity pattern last dim should be equal to output dim in {}".format(__class__.__name__)
 
 
         self.units = units
@@ -169,6 +177,22 @@ class SparseFactorisationDense(Layer):
         self.scaler_regularizer = regularizers.get(scaler_regularizer)
         self.scaler_constraint = constraints.get(scaler_constraint)
 
+    def get_config(self):
+        base_config = super().get_config()
+        config = {
+            'units': self.units,
+            'activation': activations.serialize(self.activation),
+            'use_bias': self.use_bias,
+            'kernel_initializer': initializers.serialize(self.kernel_initializer),
+            'bias_initializer': initializers.serialize(self.bias_initializer),
+            'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
+            'bias_regularizer': regularizers.serialize(self.bias_regularizer),
+            'kernel_constraint': constraints.serialize(self.kernel_constraint),
+            'bias_constraint': constraints.serialize(self.bias_constraint),
+            'sparsity_patterns': self.sparsity_patterns
+        }
+        config.update(base_config)
+        return config
 
     def build(self, input_shape):
         assert len(input_shape) >= 2
@@ -250,15 +274,21 @@ class SparseFactorisationConv2D(Conv2DCustom):
         super(SparseFactorisationConv2D, self).__init__(*args, **kwargs)
 
 
-        self.sparsity_patterns = sparsity_patterns
+        self.sparsity_patterns = [cast_sparsity_pattern(s) for s in sparsity_patterns]
         self.nb_factor = len(sparsity_patterns)
 
         self.scaler_initializer = initializers.get(scaler_initializer)
         self.scaler_regularizer = regularizers.get(scaler_regularizer)
         self.scaler_constraint = constraints.get(scaler_constraint)
 
-        assert [sparsity_patterns[i].shape[1] == sparsity_patterns[i+1].shape[0] for i in range(len(sparsity_patterns)-1)]
-        assert sparsity_patterns[-1].shape[1] == self.filters, "sparsity pattern last dim should be equal to the number of filters in {}".format(__class__.__name__)
+        assert [self.sparsity_patterns[i].shape[1] == self.sparsity_patterns[i+1].shape[0] for i in range(len(self.sparsity_patterns)-1)]
+        assert self.sparsity_patterns[-1].shape[1] == self.filters, "sparsity pattern last dim should be equal to the number of filters in {}".format(__class__.__name__)
+
+
+    def get_config(self):
+        config = super().get_config()
+        config['sparsity_patterns'] = self.sparsity_patterns
+        return config
 
     def build(self, input_shape):
         if input_shape[-1] is None:

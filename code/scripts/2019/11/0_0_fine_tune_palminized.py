@@ -2,13 +2,15 @@
 This script finds a palminized model with given arguments then finetune it.
 
 Usage:
-    script.py --input-dir path [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical]
+    script.py --input-dir path [-h] [-v|-vv] --walltime int [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical]
 
 Options:
   -h --help                             Show this screen.
   -vv                                   Set verbosity to debug.
   -v                                    Set verbosity to info.
   --input-dir path                      Path to input directory where to find previously generated results.
+  --walltime int                        The number of hour before training is stopped.
+  --tb                                  Tell if tensorboard should be printed.
 
 Dataset:
   --mnist                               Use Mnist dataset.
@@ -32,7 +34,9 @@ Palm-Specifc options:
   --hierarchical                        Tells if palm should use the hierarchical euristic or not. Muhc longer but better approximation results.
 """
 import logging
+import os
 import pickle
+import pandas as pd
 import sys
 from collections import defaultdict
 
@@ -40,14 +44,14 @@ import time
 from copy import deepcopy
 import keras
 from keras.engine import Model, InputLayer
-
+import signal
 import docopt
 from scipy.sparse import coo_matrix
 
 from palmnet.core.palminize import Palminizer, Palminizable
 from palmnet.data import Mnist, Test, Svhn, Cifar100, Cifar10
 from palmnet.layers.sparse_tensor import SparseFactorisationDense, SparseFactorisationConv2D
-from palmnet.utils import ParameterManager, ResultPrinter, ParameterManagerFinetune, get_sparsity_pattern, insert_layer_nonseq
+from palmnet.utils import ParameterManager, ResultPrinter, ParameterManagerFinetune, get_sparsity_pattern, insert_layer_nonseq, timeout_signal_handler
 from skluc.utils import logger, log_memory_usage
 from keras.layers import Dense, Conv2D
 import numpy as np
@@ -162,61 +166,91 @@ def main():
     else:
         raise NotImplementedError("No dataset specified.")
 
-
-    mypalminizedmodel = pickle.load(open(paraman["input_model_path"], "rb"))  # type: Palminizable
-
     (x_train, y_train), (x_test, y_test) = paraman.get_dataset()
 
-    base_model = mypalminizedmodel.base_model
-    dct_name_facto = mypalminizedmodel.sparsely_factorized_layers
-    base_score = base_model.evaluate(x_test, y_test, verbose=0)
-    print(base_score)
-    palminized_model = mypalminizedmodel.compressed_model
-    palminized_score = palminized_model.evaluate(x_test, y_test, verbose=1)
-    print(palminized_score)
-    fine_tuned_model = replace_layers_with_sparse_facto(palminized_model, dct_name_facto)
+    if os.path.exists(paraman["output_file_notfinishedprinter"]):
+        df = pd.read_csv(paraman["output_file_resprinter"])
+        init_nb_epoch = len(pd.read_csv(paraman["output_file_csvcbprinter"]))
+        base_score = float(df["base_score"])
+        before_finetuned_score = float(df["before_finetuned_score"])
+        palminized_score = float(df["palminized_score"])
+        fine_tuned_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={'SparseFactorisationConv2D':SparseFactorisationConv2D,
+                                                                            "SparseFactorisationDense": SparseFactorisationDense})
 
+    else:
+        init_nb_epoch = 0
 
-    layer_outputs = [layer.get_output_at(-1) for layer in fine_tuned_model.layers][1:] # remove input
-    activation_model = Model(inputs=fine_tuned_model.input, outputs=layer_outputs)
-    activations = activation_model.predict(x_test[:10])
+        mypalminizedmodel = pickle.load(open(paraman["input_model_path"], "rb"))  # type: Palminizable
 
-    fine_tuned_model.compile(loss=param_train_dataset.loss,
-                             optimizer=param_train_dataset.optimizer,
-                             metrics=['categorical_accuracy'])
+        base_model = mypalminizedmodel.base_model
+        dct_name_facto = mypalminizedmodel.sparsely_factorized_layers
+        base_score = base_model.evaluate(x_test, y_test, verbose=0)[1]
+        print(base_score)
+        palminized_model = mypalminizedmodel.compressed_model
+        palminized_score = palminized_model.evaluate(x_test, y_test, verbose=1)[1]
+        print(palminized_score)
+        fine_tuned_model = replace_layers_with_sparse_facto(palminized_model, dct_name_facto)
 
-    before_finetuned_score = fine_tuned_model.evaluate(x_test, y_test, verbose=1)
-    print(before_finetuned_score)
-    assert before_finetuned_score[1] == palminized_score[1], "the reconstructed model with sparse facto should equal in perf to the reconstructed model with dense product. {} != {}".format(before_finetuned_score, palminized_score)
+        fine_tuned_model.compile(loss=param_train_dataset.loss,
+                                 optimizer=param_train_dataset.optimizer,
+                                 metrics=['categorical_accuracy'])
 
+        before_finetuned_score = fine_tuned_model.evaluate(x_test, y_test, verbose=1)[1]
+        print(before_finetuned_score)
+
+    # results must be already printed once in case process is killed afterward
+    dct_results = {
+        "finetuned_score": None,
+        "before_finetuned_score": before_finetuned_score,
+        "base_score": base_score,
+        "palminized_score": palminized_score,
+    }
+    resprinter.add(dct_results)
+    resprinter.print()
+
+    assert before_finetuned_score == palminized_score, "the reconstructed model with sparse facto should equal in perf to the reconstructed model with dense product. {} != {}".format(before_finetuned_score, palminized_score)
     fine_tuned_model.summary()
 
+    call_backs = []
+
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(str(paraman["output_file_modelprinter"]), monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, mode='auto', period=1)
-
-    # layer_outputs = [layer.output for layer in fine_tuned_model.layers]
-    # activation_model = Model(inputs=fine_tuned_model.input, outputs=layer_outputs)
-    # activations = activation_model.predict(x_test[:10])
-    # print(activations)
-
-    fine_tuned_model.fit(param_train_dataset.image_data_generator.flow(x_train, y_train, batch_size=param_train_dataset.batch_size),
-                         epochs=param_train_dataset.epochs,
-                         verbose=1,
-                         validation_data=(x_test, y_test),
-                         callbacks=param_train_dataset.callbacks + [model_checkpoint_callback])
+    call_backs.append(model_checkpoint_callback)
+    if paraman["--tb"]:
+        tbCallBack = keras.callbacks.TensorBoard(log_dir=str(paraman["output_file_tensorboardprinter"]), histogram_freq=20, write_graph=False, write_images=False, batch_size=param_train_dataset.batch_size, write_grads=True, update_freq="epoch")
+        call_backs.append(tbCallBack)
+    csvcallback = keras.callbacks.callbacks.CSVLogger(str(paraman["output_file_csvcbprinter"]), separator=',', append=True)
+    call_backs.append(csvcallback)
 
 
-    finetuned_score = fine_tuned_model.evaluate(x_test, y_test, verbose=1)
-    print(finetuned_score)
+    signal.signal(signal.SIGALRM, timeout_signal_handler)
+    signal.alarm(int(paraman["--walltime"] * 3600))  # start alarm
+    try:
+        open(paraman["output_file_notfinishedprinter"], 'w').close()
+        history = fine_tuned_model.fit(param_train_dataset.image_data_generator.flow(x_train, y_train, batch_size=param_train_dataset.batch_size),
+                                       epochs=param_train_dataset.epochs - init_nb_epoch,
+                                       # epochs=2 - init_nb_epoch,
+                                       verbose=1,
+                                       validation_data=(x_test, y_test),
+                                       callbacks=param_train_dataset.callbacks + call_backs)
+        signal.alarm(0)  # stop alarm for next evaluation
+        finetuned_score = fine_tuned_model.evaluate(x_test, y_test, verbose=1)[1]
+        print(finetuned_score)
 
-    dct_results = {
-        "finetuned_score": finetuned_score[-1],
-        "before_finetuned_score": before_finetuned_score[-1],
-        "base_score": base_score[-1],
-        "palminized_score": palminized_score[-1],
-    }
-
-    fine_tuned_model.save(str(paraman["output_file_modelprinter"]))
-    resprinter.add(dct_results)
+        if os.path.exists(paraman["output_file_notfinishedprinter"]):
+            os.remove(paraman["output_file_notfinishedprinter"])
+    # except TimeoutError as te:
+    except Exception as e:
+        logging.error("Caught exception: {}".format(e))
+        finetuned_score = None
+    finally:
+        dct_results = {
+            "finetuned_score": finetuned_score,
+            "before_finetuned_score": before_finetuned_score,
+            "base_score": base_score,
+            "palminized_score": palminized_score,
+        }
+        fine_tuned_model.save(str(paraman["output_file_modelprinter"]))
+        resprinter.add(dct_results)
 
 
 if __name__ == "__main__":
@@ -238,6 +272,11 @@ if __name__ == "__main__":
     logger.warning("Verbosity set to warning")
     logger.info("Verbosity set to info")
     logger.debug("Verbosity set to debug")
+
+    if not os.path.exists(paraman["output_file_notfinishedprinter"]) and \
+        os.path.exists(paraman["output_file_resprinter"]) and \
+        os.path.exists(paraman["output_file_modelprinter"]):
+        sys.exit("Expe {} already executed. Exit".format(paraman["hash"]))
 
     has_failed = False
     try:

@@ -1,5 +1,5 @@
 import pickle
-
+import zlib
 import pathlib
 import random
 import re
@@ -202,18 +202,44 @@ class ParameterManager(dict):
             raise NotImplementedError("No dataset specified.")
 
 
+def timeout_signal_handler(signum, frame):
+    raise TimeoutError("TOO MUCH TIME FORCE EXIT")
+
 class ParameterManagerFinetune(ParameterManager):
     def __init__(self, dct_params, **kwargs):
         super().__init__(dct_params, **kwargs)
+        self.__init_hash_expe()
 
         self["--input-dir"] = pathlib.Path(self["--input-dir"])
+        self["--walltime"] = int(self["--walltime"])
 
         self.__init_model_path()
         self.__init_output_file()
 
+    def __init_hash_expe(self):
+        lst_elem_to_remove_for_hash = [
+            'output_file_modelprinter',
+            'identifier',
+            'output_file_resprinter',
+            '-v',
+            '--help',
+            '--input-dir',
+            "--walltime"
+        ]
+        keys_expe = sorted(self.keys())
+        any(keys_expe.remove(item) for item in lst_elem_to_remove_for_hash)
+        val_expe = [self[k] for k in keys_expe]
+        str_expe = [str(val) for pair in zip(keys_expe, val_expe) for val in pair]
+        self["hash"] = hex(zlib.crc32(str.encode("".join(str_expe))))
+
+
     def __init_output_file(self):
-        self["output_file_resprinter"] = Path(self["identifier"] + "_results.csv")
-        self["output_file_modelprinter"] = Path(self["identifier"] + "_model.h5")
+        self["output_file_resprinter"] = Path(self["hash"] + "_results.csv")
+        self["output_file_modelprinter"] = Path(self["hash"] + "_model.h5")
+        self["output_file_notfinishedprinter"] = Path(self["hash"] + ".notfinished")
+        self["output_file_finishedprinter"] = Path(self["hash"] + ".finished")
+        self["output_file_tensorboardprinter"] = Path(self["hash"] + ".tb")
+        self["output_file_csvcbprinter"] = Path(self["hash"] + "_history.csv")
 
     def __init_model_path(self):
         df = get_df(self["--input-dir"])

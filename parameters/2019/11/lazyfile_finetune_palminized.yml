@@ -13,6 +13,7 @@ base:
   verbosity: ["-v"]
   hierarchical: ["--hierarchical"]
   input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize"]}
+  walltime: {"--walltime": [90]}
 
 palmnet_mnist:
   base:

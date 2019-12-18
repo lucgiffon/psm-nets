@@ -1,0 +1,7 @@
+--sparsity-factor 3 -v --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --walltime 90 --svhn --svhn-vgg19
+--sparsity-factor 4 -v --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --walltime 90 --svhn --svhn-vgg19
+--sparsity-factor 5 -v --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --walltime 90 --svhn --svhn-vgg19
+--sparsity-factor 2 -v --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --walltime 90 --cifar100 --cifar100-vgg19
+--sparsity-factor 3 -v --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --walltime 90 --cifar100 --cifar100-vgg19
+--sparsity-factor 4 -v --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --walltime 90 --cifar100 --cifar100-vgg19
+--sparsity-factor 5 -v --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --walltime 90 --cifar100 --cifar100-vgg19
