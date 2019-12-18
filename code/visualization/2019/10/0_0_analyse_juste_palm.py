@@ -51,17 +51,25 @@ if __name__ == "__main__":
 
     src_results_dir = root_source_dir / expe_path
 
-    root_output_dir = pathlib.Path("/home/luc/PycharmProjects/qalm_qmeans/reports/figures/")
+    root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
     output_dir = root_output_dir / expe_path / "histogrammes"
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     palminized_model, df = get_palminized_model_and_df(src_results_dir)
     for dataname in datasets:
         df_dataset = df[df[datasets[dataname]]]
+        print(dataname)
         for task_name, (task_base, task_compressed) in tasks.items():
+            print(task_name)
             fig, ax = plt.subplots()
             values_base = df_dataset[task_base].values
+            print("{} base: {}".format(task_name, values_base))
             values_compressed = df_dataset[task_compressed].values
+            print("{} comrpessed: {}".format(task_name, values_compressed))
             sparsy_vals = df_dataset["--sparsity-factor"].values
+            print("{} sparsity values". format(sparsy_vals))
+            compression_rates = [values_base[i_s] / values_compressed[i_s] for i_s, s_val in enumerate(sparsy_vals)]
+            print("{} compreession rate".format(compression_rates))
             ax.bar(sparsy_vals, values_compressed, width=0.2,
                    label='Compressed', zorder=10, color="g")
             ax.bar(sparsy_vals + 0.2, values_base, width=0.2,
