@@ -16,6 +16,7 @@ from collections import defaultdict
 from palmnet.visualization.utils import get_dct_result_files_by_root, build_df
 
 from skluc.utils import logger
+import scipy
 
 from palmnet.data import Mnist, Test, Cifar10, Cifar100, Svhn
 
@@ -350,3 +351,87 @@ def get_sparsity_pattern(arr):
     sparsity_pattern[non_zero] = 1
     return sparsity_pattern
 
+
+def create_random_block_diag(dim1, dim2, block_size, mask=False, greedy=True):
+    """
+    Create a random block diagonal matrix.
+
+    :param dim1: Number of lines
+    :param dim2: Number of cols
+    :param block_size: Size of each square block (square if possible)
+    :param mask: Return a mask for block diagonal matrix (ones instead of random values)
+    :param greedy: Always try to put the biggest possible blocks: result in a matrix with less values (and more concentrated)
+    :return:
+    """
+    min_dim = min(dim1, dim2)
+    max_dim = max(dim1, dim2)
+
+    # block create function will be used like: block_creation_function(block_shape)
+    if mask:
+        block_creation_function = np.ones
+    else:
+        block_creation_function = lambda shape: np.random.rand(*shape)
+
+    block_diagonals = []
+    remaining_out = max_dim
+    while remaining_out > 0:
+
+        blocks = []  # blocks = [np.random.rand(block_size, block_size) for _ in range(min_dim//block_size + 1)]
+        remaining_in = min_dim
+        while remaining_in > 0:
+            block = block_creation_function((block_size, block_size))
+            blocks.append(block)
+            remaining_in -= block_size
+
+        if remaining_in != 0:  # case min_dim % block_size != 0
+            if max_dim == dim1 and greedy:
+                blocks[-1] = blocks[-1][:, :remaining_in]
+            elif max_dim == dim2 and greedy:
+                blocks[-1] = blocks[-1][:remaining_in, :]
+            else:
+                blocks[-1] = blocks[-1][:remaining_in, :remaining_in]
+
+        block_diag = scipy.linalg.block_diag(*blocks)
+        block_diagonals.append(block_diag)
+
+        if max_dim == dim1:
+            remaining_out -= block_diag.shape[0]
+        else:
+            remaining_out -= block_diag.shape[1]
+
+    if remaining_out != 0:  # case max_dim % min_dim != 0
+        if max_dim == dim1:
+            block_diagonals[-1] = block_diagonals[-1][:remaining_out, :]
+        else:
+            block_diagonals[-1] = block_diagonals[-1][:, :remaining_out]
+
+    if max_dim == dim1:
+        final_matrix = np.vstack(block_diagonals)
+    else:
+        final_matrix = np.hstack(block_diagonals)
+
+    return final_matrix
+
+def create_sparse_matrix_pattern(shape, block_size):
+    """
+    Create a random mask for a sparse matrix with (+/- 1) `block_size` value in each line and each col.
+
+    If you want exactly `block_size` value in each line and each col, shape must be square and block_size can divide shape
+    :param shape: The shape of the matrix
+    :param block_size:
+    :return:
+    """
+    base_block_diag = create_random_block_diag(shape[0], shape[1], block_size, mask=True)
+    lines_permutation = np.random.permutation(shape[0])
+    column_permutation = np.random.permutation(shape[1])
+    final_sparse_matrix = base_block_diag[lines_permutation]
+    final_sparse_matrix = final_sparse_matrix[:, column_permutation]
+    return final_sparse_matrix
+
+def create_sparse_factorization_pattern(shape, block_size, nb_factors):
+    min_dim = min(*shape)
+    sparse_factors = [create_sparse_matrix_pattern((shape[0], min_dim), block_size)]
+    for _ in range(nb_factors-2):
+        sparse_factors.append(create_sparse_matrix_pattern((min_dim, min_dim), block_size))
+    sparse_factors.append(create_sparse_matrix_pattern((min_dim, shape[1]), block_size))
+    return sparse_factors

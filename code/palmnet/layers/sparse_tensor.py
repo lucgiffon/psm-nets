@@ -7,6 +7,7 @@ import tensorflow as tf
 from scipy.sparse import coo_matrix
 import numpy as np
 from palmnet.layers import Conv2DCustom
+from palmnet.utils import create_sparse_factorization_pattern
 
 
 def cast_sparsity_pattern(sparsity_pattern):
@@ -155,12 +156,14 @@ class SparseFactorisationDense(Layer):
 
         super(SparseFactorisationDense, self).__init__(**kwargs)
 
-        self.sparsity_patterns = [cast_sparsity_pattern(s) for s in sparsity_patterns]
-        self.nb_factor = len(sparsity_patterns)
+        if sparsity_patterns is not None:
+            self.sparsity_patterns = [cast_sparsity_pattern(s) for s in sparsity_patterns]
+            self.nb_factor = len(sparsity_patterns)
 
-        assert [self.sparsity_patterns[i].shape[1] == self.sparsity_patterns[i+1].shape[0] for i in range(len(self.sparsity_patterns)-1)]
-        assert self.sparsity_patterns[-1].shape[1] == units, "sparsity pattern last dim should be equal to output dim in {}".format(__class__.__name__)
-
+            assert [self.sparsity_patterns[i].shape[1] == self.sparsity_patterns[i+1].shape[0] for i in range(len(self.sparsity_patterns)-1)]
+            assert self.sparsity_patterns[-1].shape[1] == units, "sparsity pattern last dim should be equal to output dim in {}".format(__class__.__name__)
+        else:
+            self.sparsity_patterns = None
 
         self.units = units
         self.activation = activations.get(activation)
@@ -196,7 +199,10 @@ class SparseFactorisationDense(Layer):
 
     def build(self, input_shape):
         assert len(input_shape) >= 2
-        assert input_shape[-1] == self.sparsity_patterns[0].shape[0], "input shape should be equal to 1st dim of sparsity pattern in {}".format(__class__.__name__)
+        if self.sparsity_patterns is not None:
+            assert input_shape[-1] == self.sparsity_patterns[0].shape[0], "input shape should be equal to 1st dim of sparsity pattern in {}".format(__class__.__name__)
+        else:
+            raise ValueError("No sparsity pattern found.")
 
         self.scaling = self.add_weight(shape=(1,),
                                       initializer=self.scaler_initializer,
@@ -274,15 +280,19 @@ class SparseFactorisationConv2D(Conv2DCustom):
         super(SparseFactorisationConv2D, self).__init__(*args, **kwargs)
 
 
-        self.sparsity_patterns = [cast_sparsity_pattern(s) for s in sparsity_patterns]
-        self.nb_factor = len(sparsity_patterns)
+        if sparsity_patterns is not None:
+            self.sparsity_patterns = [cast_sparsity_pattern(s) for s in sparsity_patterns]
+            self.nb_factor = len(sparsity_patterns)
+
+            assert [self.sparsity_patterns[i].shape[1] == self.sparsity_patterns[i + 1].shape[0] for i in range(len(self.sparsity_patterns) - 1)]
+            assert self.sparsity_patterns[-1].shape[1] == self.filters, "sparsity pattern last dim should be equal to the number of filters in {}".format(__class__.__name__)
+        else:
+            self.sparsity_patterns = None
 
         self.scaler_initializer = initializers.get(scaler_initializer)
         self.scaler_regularizer = regularizers.get(scaler_regularizer)
         self.scaler_constraint = constraints.get(scaler_constraint)
 
-        assert [self.sparsity_patterns[i].shape[1] == self.sparsity_patterns[i+1].shape[0] for i in range(len(self.sparsity_patterns)-1)]
-        assert self.sparsity_patterns[-1].shape[1] == self.filters, "sparsity pattern last dim should be equal to the number of filters in {}".format(__class__.__name__)
 
 
     def get_config(self):
@@ -294,6 +304,10 @@ class SparseFactorisationConv2D(Conv2DCustom):
         if input_shape[-1] is None:
             raise ValueError('The channel dimension of the inputs '
                              'should be defined. Found `None`.')
+
+        if self.sparsity_patterns is None:
+            raise ValueError("No sparsity pattern found.")
+
 
         self.scaling = self.add_weight(shape=(1,),
                                        initializer=self.scaler_initializer,
@@ -343,7 +357,6 @@ class SparseFactorisationConv2D(Conv2DCustom):
 
         output = tf.transpose(X_flat)
         for i in range(self.nb_factor):
-            # multiply by the constant mask tensor so that gradient is 0 for zero entries.
             output = tf.sparse.sparse_dense_matmul(tf.sparse.transpose(tf.sparse.reorder(self.sparse_ops[i])), output)
 
         output = tf.transpose(self.scaling * output)
@@ -357,3 +370,34 @@ class SparseFactorisationConv2D(Conv2DCustom):
         return self._compute_output_shape(input_shape, self.kernel_shape, self.padding_height, self.padding_width, self.strides_height, self.strides_width)
 
 
+class RandomSparseFactorisationDense(SparseFactorisationDense):
+    def __init__(self, units, sparsity_factor, nb_sparse_factors=None, **kwargs):
+
+        self.nb_factor = nb_sparse_factors
+        self.sparsity_factor = sparsity_factor
+
+        super(RandomSparseFactorisationDense, self).__init__(units, None, **kwargs)
+
+    def build(self, input_shape):
+
+        if self.nb_factor is None:
+            self.nb_factor = int(np.log(max(input_shape[-1], self.units)))
+        self.sparsity_patterns = create_sparse_factorization_pattern((input_shape[-1], self.units), self.sparsity_factor, self.nb_factor)
+
+        super(RandomSparseFactorisationDense, self).build(input_shape)
+
+
+class RandomSparseFactorisationConv2D(SparseFactorisationConv2D):
+    def __init__(self, sparsity_factor, nb_sparse_factors=None, **kwargs):
+        self.nb_factor = nb_sparse_factors
+        self.sparsity_factor = sparsity_factor
+
+        super(RandomSparseFactorisationConv2D, self).__init__(None, **kwargs)
+
+    def build(self, input_shape):
+        dim1, dim2 = np.prod(self.kernel_size) * input_shape[-1], self.filters
+        if self.nb_factor is None:
+            self.nb_factor = int(np.log(max(dim1, dim2)))
+        self.sparsity_patterns = create_sparse_factorization_pattern((dim1, dim2), self.sparsity_factor, self.nb_factor)
+
+        super(RandomSparseFactorisationConv2D, self).build(input_shape)
