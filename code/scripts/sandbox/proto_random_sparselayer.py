@@ -7,7 +7,7 @@ from keras.layers import Dense, Flatten
 from scipy.sparse import coo_matrix
 
 from palmnet.layers.sparse_tensor import RandomSparseFactorisationDense, RandomSparseFactorisationConv2D
-from palmnet.utils import create_sparse_factorization_pattern, get_sparsity_pattern
+from palmnet.utils import create_sparse_factorization_pattern, get_sparsity_pattern, count_model_param_and_flops
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -87,6 +87,8 @@ def main():
     model.compile(loss=keras.losses.categorical_crossentropy,
                   optimizer=keras.optimizers.Adadelta(),
                   metrics=['accuracy'])
+
+    count_model_param_and_flops(model)
 
     weights_before_dense = deepcopy(model.layers[2].get_weights())[1:-1]
     sparsity_patterns_dense = model.layers[2].sparsity_patterns

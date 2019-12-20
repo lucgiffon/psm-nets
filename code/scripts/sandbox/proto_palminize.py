@@ -13,7 +13,8 @@ from skluc.utils import logger
 from palmnet.utils import root_dir
 from skluc.utils.osutils import download_file, check_file_md5
 import numpy as np
-from palmnet.data import Mnist, random_small_model, Test
+from palmnet.data import Mnist, Test
+from palmnet.models import random_small_model
 
 
 def apply_palm(matrix, sparsity_fac=2):

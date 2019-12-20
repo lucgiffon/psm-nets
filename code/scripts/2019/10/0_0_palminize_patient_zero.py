@@ -38,7 +38,7 @@ import time
 import docopt
 
 from palmnet.core.palminize import Palminizer, Palminizable
-from palmnet.utils import ParameterManager, ResultPrinter
+from palmnet.experiments.utils import ParameterManagerPalminize, ResultPrinter
 from skluc.utils import logger, log_memory_usage
 
 lst_results_header = [
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     logger.info("Command line: " + " ".join(sys.argv))
     log_memory_usage("Memory at startup")
     arguments = docopt.docopt(__doc__)
-    paraman = ParameterManager(arguments)
+    paraman = ParameterManagerPalminize(arguments)
     initialized_results = dict((v, None) for v in lst_results_header)
     resprinter = ResultPrinter(output_file=paraman["output_file_resprinter"])
     resprinter.add(initialized_results)

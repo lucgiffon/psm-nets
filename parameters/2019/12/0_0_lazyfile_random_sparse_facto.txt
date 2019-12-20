@@ -1,0 +1,72 @@
+--sparsity-factor 2 -v --walltime 90 --nb-factor 2 --mnist --mnist-lenet
+--sparsity-factor 2 -v --walltime 90 --nb-factor 3 --mnist --mnist-lenet
+--sparsity-factor 2 -v --walltime 90 --nb-factor None --mnist --mnist-lenet
+--sparsity-factor 2 -v --walltime 90 --no-permutation --nb-factor 2 --mnist --mnist-lenet
+--sparsity-factor 2 -v --walltime 90 --no-permutation --nb-factor 3 --mnist --mnist-lenet
+--sparsity-factor 2 -v --walltime 90 --no-permutation --nb-factor None --mnist --mnist-lenet
+--sparsity-factor 3 -v --walltime 90 --nb-factor 2 --mnist --mnist-lenet
+--sparsity-factor 3 -v --walltime 90 --nb-factor 3 --mnist --mnist-lenet
+--sparsity-factor 3 -v --walltime 90 --nb-factor None --mnist --mnist-lenet
+--sparsity-factor 3 -v --walltime 90 --no-permutation --nb-factor 2 --mnist --mnist-lenet
+--sparsity-factor 3 -v --walltime 90 --no-permutation --nb-factor 3 --mnist --mnist-lenet
+--sparsity-factor 3 -v --walltime 90 --no-permutation --nb-factor None --mnist --mnist-lenet
+--sparsity-factor 4 -v --walltime 90 --nb-factor 2 --mnist --mnist-lenet
+--sparsity-factor 4 -v --walltime 90 --nb-factor 3 --mnist --mnist-lenet
+--sparsity-factor 4 -v --walltime 90 --nb-factor None --mnist --mnist-lenet
+--sparsity-factor 4 -v --walltime 90 --no-permutation --nb-factor 2 --mnist --mnist-lenet
+--sparsity-factor 4 -v --walltime 90 --no-permutation --nb-factor 3 --mnist --mnist-lenet
+--sparsity-factor 4 -v --walltime 90 --no-permutation --nb-factor None --mnist --mnist-lenet
+--sparsity-factor 5 -v --walltime 90 --nb-factor 2 --mnist --mnist-lenet
+--sparsity-factor 5 -v --walltime 90 --nb-factor 3 --mnist --mnist-lenet
+--sparsity-factor 5 -v --walltime 90 --nb-factor None --mnist --mnist-lenet
+--sparsity-factor 5 -v --walltime 90 --no-permutation --nb-factor 2 --mnist --mnist-lenet
+--sparsity-factor 5 -v --walltime 90 --no-permutation --nb-factor 3 --mnist --mnist-lenet
+--sparsity-factor 5 -v --walltime 90 --no-permutation --nb-factor None --mnist --mnist-lenet
+--sparsity-factor 2 -v --walltime 90 --nb-factor 2 --svhn --svhn-vgg19
+--sparsity-factor 2 -v --walltime 90 --nb-factor 3 --svhn --svhn-vgg19
+--sparsity-factor 2 -v --walltime 90 --nb-factor None --svhn --svhn-vgg19
+--sparsity-factor 2 -v --walltime 90 --no-permutation --nb-factor 2 --svhn --svhn-vgg19
+--sparsity-factor 2 -v --walltime 90 --no-permutation --nb-factor 3 --svhn --svhn-vgg19
+--sparsity-factor 2 -v --walltime 90 --no-permutation --nb-factor None --svhn --svhn-vgg19
+--sparsity-factor 3 -v --walltime 90 --nb-factor 2 --svhn --svhn-vgg19
+--sparsity-factor 3 -v --walltime 90 --nb-factor 3 --svhn --svhn-vgg19
+--sparsity-factor 3 -v --walltime 90 --nb-factor None --svhn --svhn-vgg19
+--sparsity-factor 3 -v --walltime 90 --no-permutation --nb-factor 2 --svhn --svhn-vgg19
+--sparsity-factor 3 -v --walltime 90 --no-permutation --nb-factor 3 --svhn --svhn-vgg19
+--sparsity-factor 3 -v --walltime 90 --no-permutation --nb-factor None --svhn --svhn-vgg19
+--sparsity-factor 4 -v --walltime 90 --nb-factor 2 --svhn --svhn-vgg19
+--sparsity-factor 4 -v --walltime 90 --nb-factor 3 --svhn --svhn-vgg19
+--sparsity-factor 4 -v --walltime 90 --nb-factor None --svhn --svhn-vgg19
+--sparsity-factor 4 -v --walltime 90 --no-permutation --nb-factor 2 --svhn --svhn-vgg19
+--sparsity-factor 4 -v --walltime 90 --no-permutation --nb-factor 3 --svhn --svhn-vgg19
+--sparsity-factor 4 -v --walltime 90 --no-permutation --nb-factor None --svhn --svhn-vgg19
+--sparsity-factor 5 -v --walltime 90 --nb-factor 2 --svhn --svhn-vgg19
+--sparsity-factor 5 -v --walltime 90 --nb-factor 3 --svhn --svhn-vgg19
+--sparsity-factor 5 -v --walltime 90 --nb-factor None --svhn --svhn-vgg19
+--sparsity-factor 5 -v --walltime 90 --no-permutation --nb-factor 2 --svhn --svhn-vgg19
+--sparsity-factor 5 -v --walltime 90 --no-permutation --nb-factor 3 --svhn --svhn-vgg19
+--sparsity-factor 5 -v --walltime 90 --no-permutation --nb-factor None --svhn --svhn-vgg19
+--sparsity-factor 2 -v --walltime 90 --nb-factor 2 --cifar10 --cifar10-vgg19
+--sparsity-factor 2 -v --walltime 90 --nb-factor 3 --cifar10 --cifar10-vgg19
+--sparsity-factor 2 -v --walltime 90 --nb-factor None --cifar10 --cifar10-vgg19
+--sparsity-factor 2 -v --walltime 90 --no-permutation --nb-factor 2 --cifar10 --cifar10-vgg19
+--sparsity-factor 2 -v --walltime 90 --no-permutation --nb-factor 3 --cifar10 --cifar10-vgg19
+--sparsity-factor 2 -v --walltime 90 --no-permutation --nb-factor None --cifar10 --cifar10-vgg19
+--sparsity-factor 3 -v --walltime 90 --nb-factor 2 --cifar10 --cifar10-vgg19
+--sparsity-factor 3 -v --walltime 90 --nb-factor 3 --cifar10 --cifar10-vgg19
+--sparsity-factor 3 -v --walltime 90 --nb-factor None --cifar10 --cifar10-vgg19
+--sparsity-factor 3 -v --walltime 90 --no-permutation --nb-factor 2 --cifar10 --cifar10-vgg19
+--sparsity-factor 3 -v --walltime 90 --no-permutation --nb-factor 3 --cifar10 --cifar10-vgg19
+--sparsity-factor 3 -v --walltime 90 --no-permutation --nb-factor None --cifar10 --cifar10-vgg19
+--sparsity-factor 4 -v --walltime 90 --nb-factor 2 --cifar10 --cifar10-vgg19
+--sparsity-factor 4 -v --walltime 90 --nb-factor 3 --cifar10 --cifar10-vgg19
+--sparsity-factor 4 -v --walltime 90 --nb-factor None --cifar10 --cifar10-vgg19
+--sparsity-factor 4 -v --walltime 90 --no-permutation --nb-factor 2 --cifar10 --cifar10-vgg19
+--sparsity-factor 4 -v --walltime 90 --no-permutation --nb-factor 3 --cifar10 --cifar10-vgg19
+--sparsity-factor 4 -v --walltime 90 --no-permutation --nb-factor None --cifar10 --cifar10-vgg19
+--sparsity-factor 5 -v --walltime 90 --nb-factor 2 --cifar10 --cifar10-vgg19
+--sparsity-factor 5 -v --walltime 90 --nb-factor 3 --cifar10 --cifar10-vgg19
+--sparsity-factor 5 -v --walltime 90 --nb-factor None --cifar10 --cifar10-vgg19
+--sparsity-factor 5 -v --walltime 90 --no-permutation --nb-factor 2 --cifar10 --cifar10-vgg19
+--sparsity-factor 5 -v --walltime 90 --no-permutation --nb-factor 3 --cifar10 --cifar10-vgg19
+--sparsity-factor 5 -v --walltime 90 --no-permutation --nb-factor None --cifar10 --cifar10-vgg19

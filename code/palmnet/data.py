@@ -1,14 +1,11 @@
 from collections import namedtuple
-from copy import deepcopy
 
 import keras
 import numpy as np
-from keras import Sequential
-from keras.callbacks import LearningRateScheduler
 from keras.datasets import mnist, cifar10, cifar100
-from keras.initializers import he_normal
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchNormalization, Activation
 from keras.preprocessing.image import ImageDataGenerator
+
+from palmnet.models import random_small_model
 
 MAP_EXTERNAL_MODEL_FILENAME = {
     "mnist_lenet": "mnist_lenet_1570207294.h5",
@@ -112,19 +109,6 @@ def get_svhn():
 
     return (loaded_npz["x_train"], loaded_npz["y_train"]), (loaded_npz["x_test"], loaded_npz["y_test"])
 
-
-def random_small_model(input_shape, num_classes):
-    model = Sequential()
-    model.add(Conv2D(1, tuple([v-7 for v in input_shape[:2]]), padding='valid', activation='relu', kernel_initializer=he_normal(), input_shape=input_shape))
-    model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-    model.add(Flatten(name='flatten'))
-    model.add(Dense(1, use_bias=True, kernel_initializer=he_normal(), name='fc1'))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(Dense(num_classes, kernel_initializer=he_normal(), name='predictions'))
-    model.add(BatchNormalization())
-    model.add(Activation('softmax'))
-    return model
 
 class Test:
     num_classes = 10

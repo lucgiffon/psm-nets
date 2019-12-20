@@ -43,42 +43,97 @@ class Palminizable:
         self.is_palminized = True
         return self.compressed_model
 
-    def count_nb_param_layer(self, layer):
-        nb_param_layer = int(np.prod(layer.kernel.shape) + np.prod(layer.bias.shape))
-        nb_param_compressed_layer = int(self.sparsely_factorized_layers[layer.name][1].get_nb_param() + 1 + np.prod(layer.bias.shape))  # +1 for lambda
-        return nb_param_layer, nb_param_compressed_layer
+    @staticmethod
+    def count_nb_param_layer(layer, dct_layer_sparse_facto_op=None):
+        params = layer.get_weights()
+        nb_param_layer = 0
+        for w in params:
+            nb_param_layer += w.size
+
+        if dct_layer_sparse_facto_op is not None:
+            nb_param_compressed_layer = int(dct_layer_sparse_facto_op[layer.name][1].get_nb_param() + 1 + np.prod(layer.bias.shape))  # +1 for lambda
+            return nb_param_layer, nb_param_compressed_layer
+        else:
+            return nb_param_layer, 0
 
     @staticmethod
-    def count_nb_flop_conv_layer(layer, nb_param_layer, nb_param_compressed_layer):
+    def count_nb_flop_conv_layer(layer, nb_param_layer, nb_param_compressed_layer=None):
         if layer.padding == "valid":
             padding_horizontal = 0
             padding_vertical = 0
         elif layer.padding == "same":
-            padding_horizontal = int(layer.kernel.shape[0]) // 2
-            padding_vertical = int(layer.kernel.shape[1]) // 2
+            padding_horizontal = int(layer.kernel_size[0]) // 2
+            padding_vertical = int(layer.kernel_size[1]) // 2
         else:
             raise ValueError("Unknown padding value for convolutional layer {}.".format(layer.name))
 
-        nb_patch_horizontal = (layer.input_shape[1] + 2 * padding_horizontal - layer.kernel.shape[0]) // layer.strides[0]
-        nb_patch_vertical = (layer.input_shape[2] + 2 * padding_vertical - layer.kernel.shape[1]) // layer.strides[1]
+        nb_patch_horizontal = (layer.input_shape[1] + 2 * padding_horizontal - layer.kernel_size[0]) // layer.strides[0]
+        nb_patch_vertical = (layer.input_shape[2] + 2 * padding_vertical - layer.kernel_size[1]) // layer.strides[1]
 
         imagette_matrix_size = int(nb_patch_horizontal * nb_patch_vertical)
 
         nb_flop_layer_for_one_imagette = nb_param_layer
-        nb_flop_compressed_layer_for_one_imagette = nb_param_compressed_layer
-
         # *2 for the multiplcations and then sum
         nb_flop_layer = imagette_matrix_size * nb_flop_layer_for_one_imagette * 2
-        nb_flop_compressed_layer = imagette_matrix_size * nb_flop_compressed_layer_for_one_imagette * 2
 
-        return nb_flop_layer, nb_flop_compressed_layer
+        if nb_param_compressed_layer is not None:
+            nb_flop_compressed_layer_for_one_imagette = nb_param_compressed_layer
+            nb_flop_compressed_layer = imagette_matrix_size * nb_flop_compressed_layer_for_one_imagette * 2
+
+            return nb_flop_layer, nb_flop_compressed_layer
+        else:
+            return nb_flop_layer, 0
 
     @staticmethod
-    def count_nb_flop_dense_layer(layer, nb_param_layer, nb_param_compressed_layer):
+    def count_nb_flop_dense_layer(layer, nb_param_layer, nb_param_compressed_layer=None):
         # *2 for the multiplcations and then sum
         nb_flop_layer = nb_param_layer * 2
-        nb_flop_compressed_layer = nb_param_compressed_layer * 2
-        return nb_flop_layer, nb_flop_compressed_layer
+        if nb_param_compressed_layer is not None:
+            nb_flop_compressed_layer = nb_param_compressed_layer * 2
+            return nb_flop_layer, nb_flop_compressed_layer
+        else:
+            return nb_flop_layer, 0
+
+    @staticmethod
+    def count_model_param_and_flops_(model, dct_layer_sparse_facto_op=None):
+        """
+        Return the number of params and the number of flops of 2DConvolutional Layers and Dense Layers for both the base model and the compressed model.
+
+        :return:
+        """
+        from keras.layers import Conv2D, Dense
+
+        from palmnet.layers import Conv2DCustom
+        from palmnet.layers.sparse_tensor import SparseFactorisationDense
+
+        nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed = 0, 0, 0, 0
+
+        param_by_layer = {}
+        flop_by_layer = {}
+
+        for layer in model.layers:
+            logger.warning("Process layer {}".format(layer.name))
+            if isinstance(layer, Conv2D) or isinstance(layer, Conv2DCustom):
+                nb_param_layer, nb_param_compressed_layer = Palminizable.count_nb_param_layer(layer, dct_layer_sparse_facto_op)
+                nb_flop_layer, nb_flop_compressed_layer = Palminizable.count_nb_flop_conv_layer(layer, nb_param_layer, nb_param_compressed_layer)
+
+            elif isinstance(layer, Dense) or isinstance(layer, SparseFactorisationDense):
+                nb_param_layer, nb_param_compressed_layer = Palminizable.count_nb_param_layer(layer, dct_layer_sparse_facto_op)
+                nb_flop_layer, nb_flop_compressed_layer = Palminizable.count_nb_flop_dense_layer(layer, nb_param_layer, nb_param_compressed_layer)
+
+            else:
+                logger.warning("Layer {}, class {}, hasn't been compressed".format(layer.name, layer.__class__.__name__))
+                nb_param_compressed_layer, nb_param_layer, nb_flop_layer, nb_flop_compressed_layer = 0, 0, 0, 0
+
+            param_by_layer[layer.name] = nb_param_layer
+            flop_by_layer[layer.name] = nb_flop_layer
+
+            nb_param_base += nb_param_layer
+            nb_param_compressed += nb_param_compressed_layer
+            nb_flop_base += nb_flop_layer
+            nb_flop_compressed += nb_flop_compressed_layer
+
+        return nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed, param_by_layer, flop_by_layer
 
     def count_model_param_and_flops(self):
         """
@@ -86,36 +141,34 @@ class Palminizable:
 
         :return:
         """
-        nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed = 0, 0, 0, 0
+        self.total_nb_param_base, self.total_nb_param_compressed, self.total_nb_flop_base, self.total_nb_flop_compressed, self.param_by_layer, self.flop_by_layer = self.count_model_param_and_flops_(self.base_model, self.sparsely_factorized_layers)
+        #
+        # nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed = 0, 0, 0, 0
+        #
+        # for layer in self.base_model.layers:
+        #     logger.warning("Process layer {}".format(layer.name))
+        #     if isinstance(layer, Conv2D):
+        #         nb_param_layer, nb_param_compressed_layer = self.count_nb_param_layer(layer, self.sparsely_factorized_layers)
+        #         nb_flop_layer, nb_flop_compressed_layer = self.count_nb_flop_conv_layer(layer, nb_param_layer, nb_param_compressed_layer)
+        #
+        #     elif isinstance(layer, Dense):
+        #         nb_param_layer, nb_param_compressed_layer = self.count_nb_param_layer(layer, self.sparsely_factorized_layers)
+        #         nb_flop_layer, nb_flop_compressed_layer = self.count_nb_flop_dense_layer(layer, nb_param_layer, nb_param_compressed_layer)
+        #
+        #     else:
+        #         logger.warning("Layer {}, class {}, hasn't been compressed".format(layer.name, layer.__class__.__name__))
+        #         nb_param_compressed_layer, nb_param_layer, nb_flop_layer, nb_flop_compressed_layer = 0, 0, 0, 0
+        #
+        #     self.param_by_layer[layer.name] = (nb_param_layer, nb_param_compressed_layer)
+        #     self.flop_by_layer[layer.name] = (nb_flop_layer, nb_flop_compressed_layer)
+        #
+        #     nb_param_base += nb_param_layer
+        #     nb_param_compressed += nb_param_compressed_layer
+        #     nb_flop_base += nb_flop_layer
+        #     nb_flop_compressed += nb_flop_compressed_layer
 
-        for layer in self.base_model.layers:
-            logger.warning("Process layer {}".format(layer.name))
-            if isinstance(layer, Conv2D):
-                nb_param_layer, nb_param_compressed_layer = self.count_nb_param_layer(layer)
-                nb_flop_layer, nb_flop_compressed_layer = self.count_nb_flop_conv_layer(layer, nb_param_layer, nb_param_compressed_layer)
 
-            elif isinstance(layer, Dense):
-                nb_param_layer, nb_param_compressed_layer = self.count_nb_param_layer(layer)
-                nb_flop_layer, nb_flop_compressed_layer = self.count_nb_flop_dense_layer(layer, nb_param_layer, nb_param_compressed_layer)
-
-            else:
-                logger.warning("Layer {}, class {}, hasn't been compressed".format(layer.name, layer.__class__.__name__))
-                nb_param_compressed_layer, nb_param_layer, nb_flop_layer, nb_flop_compressed_layer = 0, 0, 0, 0
-
-            self.param_by_layer[layer.name] = (nb_param_layer, nb_param_compressed_layer)
-            self.flop_by_layer[layer.name] = (nb_flop_layer, nb_flop_compressed_layer)
-
-            nb_param_base += nb_param_layer
-            nb_param_compressed += nb_param_compressed_layer
-            nb_flop_base += nb_flop_layer
-            nb_flop_compressed += nb_flop_compressed_layer
-
-        self.total_nb_param_base = nb_param_base
-        self.total_nb_param_compressed = nb_param_compressed
-        self.total_nb_flop_base = nb_flop_base
-        self.total_nb_flop_compressed = nb_flop_compressed
-
-        return nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed
+        return self.total_nb_param_base, self.total_nb_param_compressed, self.total_nb_flop_base, self.total_nb_flop_compressed
 
     @staticmethod
     def compile_model(model):

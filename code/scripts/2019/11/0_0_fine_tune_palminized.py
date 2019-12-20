@@ -51,7 +51,8 @@ from scipy.sparse import coo_matrix
 from palmnet.core.palminize import Palminizer, Palminizable
 from palmnet.data import Mnist, Test, Svhn, Cifar100, Cifar10
 from palmnet.layers.sparse_tensor import SparseFactorisationDense, SparseFactorisationConv2D
-from palmnet.utils import ParameterManager, ResultPrinter, ParameterManagerFinetune, get_sparsity_pattern, insert_layer_nonseq, timeout_signal_handler
+from palmnet.utils import get_sparsity_pattern, insert_layer_nonseq, timeout_signal_handler
+from palmnet.experiments.utils import ParameterManagerPalminize, ParameterManagerPalminizeFinetune, ResultPrinter
 from skluc.utils import logger, log_memory_usage
 from keras.layers import Dense, Conv2D
 import numpy as np
@@ -257,7 +258,7 @@ if __name__ == "__main__":
     logger.info("Command line: " + " ".join(sys.argv))
     log_memory_usage("Memory at startup")
     arguments = docopt.docopt(__doc__)
-    paraman = ParameterManagerFinetune(arguments)
+    paraman = ParameterManagerPalminizeFinetune(arguments)
     initialized_results = dict((v, None) for v in lst_results_header)
     resprinter = ResultPrinter(output_file=paraman["output_file_resprinter"])
     resprinter.add(initialized_results)
