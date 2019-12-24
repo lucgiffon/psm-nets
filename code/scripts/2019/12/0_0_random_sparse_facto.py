@@ -81,7 +81,11 @@ def main():
 
     if os.path.exists(paraman["output_file_notfinishedprinter"]):
         df = pd.read_csv(paraman["output_file_resprinter"])
-        init_nb_epoch = len(pd.read_csv(paraman["output_file_csvcbprinter"]))
+        try:
+            init_nb_epoch = len(pd.read_csv(paraman["output_file_csvcbprinter"]))
+        except Exception as e:
+            logger.error("Caught exception while reading csv history: {}".format(str(e)))
+            init_nb_epoch = 0
         base_score = float(df["base_score"])
         base_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={'RandomSparseFactorisationConv2D': RandomSparseFactorisationConv2D,
                                                                             "RandomSparseFactorisationDense": RandomSparseFactorisationDense})
