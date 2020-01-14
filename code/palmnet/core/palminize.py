@@ -46,18 +46,25 @@ class Palminizable:
     @staticmethod
     def count_nb_param_layer(layer, dct_layer_sparse_facto_op=None):
         params = layer.get_weights()
+        if layer.bias:
+            assert len(params[-1].shape) == 1, "Last weight matrix in get_weights of layer {} should be of len(shape) == 1. Shape is length {}".format(layer.name, len(layer.shape))
+            nb_param_layer_bias = params[-1].size
+            params = params[:-1]
+        else:
+            nb_param_layer_bias = 0
+
         nb_param_layer = 0
         for w in params:
             nb_param_layer += w.size
 
         if dct_layer_sparse_facto_op is not None:
             nb_param_compressed_layer = int(dct_layer_sparse_facto_op[layer.name][1].get_nb_param() + 1 + np.prod(layer.bias.shape))  # +1 for lambda
-            return nb_param_layer, nb_param_compressed_layer
+            return nb_param_layer, nb_param_compressed_layer, nb_param_layer_bias
         else:
-            return nb_param_layer, 0
+            return nb_param_layer, 0, nb_param_layer_bias
 
     @staticmethod
-    def count_nb_flop_conv_layer(layer, nb_param_layer, nb_param_compressed_layer=None):
+    def count_nb_flop_conv_layer(layer, nb_param_layer, nb_param_layer_bias, nb_param_compressed_layer=None):
         if layer.padding == "valid":
             padding_horizontal = 0
             padding_vertical = 0
@@ -72,9 +79,9 @@ class Palminizable:
 
         imagette_matrix_size = int(nb_patch_horizontal * nb_patch_vertical)
 
-        nb_flop_layer_for_one_imagette = nb_param_layer
+        nb_flop_layer_for_one_imagette = nb_param_layer * 2 + nb_param_layer_bias
         # *2 for the multiplcations and then sum
-        nb_flop_layer = imagette_matrix_size * nb_flop_layer_for_one_imagette * 2
+        nb_flop_layer = imagette_matrix_size * nb_flop_layer_for_one_imagette
 
         if nb_param_compressed_layer is not None:
             nb_flop_compressed_layer_for_one_imagette = nb_param_compressed_layer
@@ -85,11 +92,11 @@ class Palminizable:
             return nb_flop_layer, 0
 
     @staticmethod
-    def count_nb_flop_dense_layer(layer, nb_param_layer, nb_param_compressed_layer=None):
+    def count_nb_flop_dense_layer(layer, nb_param_layer, nb_param_layer_bias, nb_param_compressed_layer=None):
         # *2 for the multiplcations and then sum
         nb_flop_layer = nb_param_layer * 2
         if nb_param_compressed_layer is not None:
-            nb_flop_compressed_layer = nb_param_compressed_layer * 2
+            nb_flop_compressed_layer = nb_param_compressed_layer * 2 + nb_param_layer_bias
             return nb_flop_layer, nb_flop_compressed_layer
         else:
             return nb_flop_layer, 0
@@ -187,12 +194,13 @@ class Palminizable:
         return score_base, acc_base, score_compressed, acc_compressed
 
 class Palminizer:
-    def __init__(self, sparsity_fac=2, nb_iter=300, delta_threshold_palm=1e-6, hierarchical=True, fast_unstable_proj=True):
+    def __init__(self, sparsity_fac=2, nb_factor=None, nb_iter=300, delta_threshold_palm=1e-6, hierarchical=True, fast_unstable_proj=True):
         self.sparsity_fac = sparsity_fac
         self.nb_iter = nb_iter
         self.delta_threshold_palm = delta_threshold_palm
         self.hierarchical = hierarchical
         self.fast_unstable_proj = fast_unstable_proj
+        self.nb_factor = nb_factor
 
     def apply_palm(self, matrix):
         """
@@ -216,7 +224,10 @@ class Palminizer:
         B = max(left_dim, right_dim)
         assert A == left_dim and B == right_dim, "Dimensionality problem: left dim should be higher than right dim before palm"
 
-        nb_factors = int(np.log2(B))
+        if self.nb_factor is None:
+            nb_factors = int(np.log2(B))
+        else:
+            nb_factors = self.nb_factor
 
         lst_factors = [np.eye(A) for _ in range(nb_factors)]
         lst_factors[-1] = np.zeros((A, B))

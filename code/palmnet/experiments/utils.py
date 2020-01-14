@@ -87,6 +87,7 @@ class ParameterManagerPalminize(ParameterManager):
         self["--sparsity-factor"] = int(self["--sparsity-factor"]) if self["--sparsity-factor"] is not None else None
         self["--nb-iteration-palm"] = int(self["--nb-iteration-palm"]) if self["--nb-iteration-palm"] is not None else None
         self["--delta-threshold"] = float(self["--delta-threshold"]) if self["--delta-threshold"] is not None else None
+        self["--nb-factor"] = int(self["--nb-factor"]) if self["--nb-factor"] is not None else None
 
 class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
     def __init__(self, dct_params, **kwargs):

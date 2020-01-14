@@ -79,7 +79,7 @@ def main():
         raise NotImplementedError("No dataset specified.")
 
 
-    if os.path.exists(paraman["output_file_notfinishedprinter"]):
+    if os.path.exists(paraman["output_file_notfinishedprinter"]) and os.path.exists(paraman["output_file_modelprinter"]):
         df = pd.read_csv(paraman["output_file_resprinter"])
         try:
             init_nb_epoch = len(pd.read_csv(paraman["output_file_csvcbprinter"]))

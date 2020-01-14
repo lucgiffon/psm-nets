@@ -2,7 +2,7 @@
 This script is the experiment script for palminizing models.
 
 Usage:
-    script.py [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical]
+    script.py [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--nb-factor=int] [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical]
 
 Options:
   -h --help                             Show this screen.
@@ -29,6 +29,7 @@ Palm-Specifc options:
   --nb-iteration-palm=int               Number of iterations in the inner palm4msa calls. [default: 300]
   --delta-threshold=float               Threshold value before stopping palm iterations. [default: 1e-6]
   --hierarchical                        Tells if palm should use the hierarchical euristic or not. Muhc longer but better approximation results.
+  --nb-factor=int                       Tells the number of factors for palm
 """
 import logging
 import pickle
@@ -54,6 +55,7 @@ def main():
     (x_train, y_train), (x_test, y_test) = paraman.get_dataset()
 
     palminizer = Palminizer(sparsity_fac=paraman["--sparsity-factor"],
+                            nb_factor=paraman["--nb-factor"],
                             nb_iter=paraman["--nb-iteration-palm"],
                             delta_threshold_palm=paraman["--delta-threshold"],
                             hierarchical=paraman["--hierarchical"],
