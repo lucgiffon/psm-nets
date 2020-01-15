@@ -79,7 +79,8 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
             if isinstance(layer, Dense):
                 hidden_layer_dim = layer.units
                 activation = layer.activation
-                replacing_layer = SparseFactorisationDense(units=hidden_layer_dim, sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias, activation=activation)
+                regularizer = layer.kernel_regularizer
+                replacing_layer = SparseFactorisationDense(units=hidden_layer_dim, sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias, activation=activation, kernel_regularizer=regularizer)
                 replacing_weights = [np.array(scaling)[None]] + factor_data + [layer.get_weights()[-1]] if layer.use_bias else []
                 # new_model = insert_layer_nonseq(new_model, layer_name, lambda: replacing_layer, position="replace")
                 # replacing_layer.set_weights(replacing_weights)
@@ -89,7 +90,8 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
                 kernel_size = layer.kernel_size
                 activation = layer.activation
                 padding = layer.padding
-                replacing_layer = SparseFactorisationConv2D(filters=nb_filters, kernel_size=kernel_size, sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias, activation=activation, padding=padding)
+                regularizer = layer.kernel_regularizer
+                replacing_layer = SparseFactorisationConv2D(filters=nb_filters, kernel_size=kernel_size, sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias, activation=activation, padding=padding, kernel_regularizer=regularizer)
                 replacing_weights = [np.array(scaling)[None]] + factor_data + [layer.get_weights()[-1]] if layer.use_bias else []
                 # new_model = insert_layer_nonseq(new_model, layer_name, lambda: replacing_layer, position="replace")
                 # replacing_layer.set_weights(replacing_weights)
