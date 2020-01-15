@@ -79,6 +79,6 @@ if __name__ == "__main__":
             title = "{} {}".format(dataname, task_name)
             plt.title(title)
             plt.legend()
-            plt.savefig(output_dir / title.replace(" ", "_").replace(":", ""))
+            # plt.savefig(output_dir / title.replace(" ", "_").replace(":", ""))
             plt.show()
 

@@ -10,7 +10,8 @@ from pathlib import Path
 import time
 
 from palmnet.data import Mnist, Cifar10, Cifar100, Svhn, Test
-from palmnet.utils import get_df
+from palmnet.visualization.utils import get_df
+
 
 class ParameterManager(dict):
     def __init__(self, dct_params, **kwargs):

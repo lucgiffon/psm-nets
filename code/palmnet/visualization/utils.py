@@ -1,3 +1,7 @@
+import pickle
+
+import pathlib
+
 import re
 from io import StringIO
 import pandas as pd
@@ -160,6 +164,8 @@ def build_df(path_results_dir, dct_output_files_by_root, col_to_delete=[]):
             lst_df_results.append(df_expe)
         except KeyError:
             logger.warning("No 'results' entry for root name {}".format(root_name))
+        except FileNotFoundError:
+            logger.warning("File '{}' not found".format(root_name))
 
     df_results = pd.concat(lst_df_results)
 
@@ -167,3 +173,28 @@ def build_df(path_results_dir, dct_output_files_by_root, col_to_delete=[]):
         df_results = df_results.drop([c], axis=1)
     return df_results
 
+
+def get_palminized_model_and_df(path):
+    src_result_dir = pathlib.Path(path)
+    dct_output_files_by_root = get_dct_result_files_by_root(src_results_dir=src_result_dir, old_filename_objective=True)
+
+    col_to_delete = []
+
+    dct_oarid_palminized_model = {}
+    for root_name, job_files in dct_output_files_by_root.items():
+        objective_file_path = src_result_dir / job_files["palminized_model"]
+        loaded_model = pickle.load(open(objective_file_path, 'rb'))
+        dct_oarid_palminized_model[root_name] = loaded_model
+
+    df_results = build_df(src_result_dir, dct_output_files_by_root, col_to_delete)
+    return dct_oarid_palminized_model, df_results
+
+
+def get_df(path):
+    src_result_dir = pathlib.Path(path)
+    dct_output_files_by_root = get_dct_result_files_by_root(src_results_dir=src_result_dir, old_filename_objective=True)
+
+    col_to_delete = []
+
+    df_results = build_df(src_result_dir, dct_output_files_by_root, col_to_delete)
+    return df_results

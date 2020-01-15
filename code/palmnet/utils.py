@@ -1,5 +1,3 @@
-import pickle
-import pathlib
 import re
 from keras.engine import InputLayer
 from keras.models import Model
@@ -8,7 +6,6 @@ import numpy as np
 from collections import defaultdict
 
 from palmnet.core.palminize import Palminizable
-from palmnet.visualization.utils import get_dct_result_files_by_root, build_df
 
 from skluc.utils import logger
 import scipy
@@ -165,31 +162,6 @@ def count_model_param_and_flops(model, dct_layer_sparse_facto_op=None):
         nb_flop_compressed += nb_flop_compressed_layer
 
     return nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed, param_by_layer, flop_by_layer
-
-
-def get_palminized_model_and_df(path):
-    src_result_dir = pathlib.Path(path)
-    dct_output_files_by_root = get_dct_result_files_by_root(src_results_dir=src_result_dir, old_filename_objective=True)
-
-    col_to_delete = []
-
-    dct_oarid_palminized_model = {}
-    for root_name, job_files in dct_output_files_by_root.items():
-        objective_file_path = src_result_dir / job_files["palminized_model"]
-        loaded_model = pickle.load(open(objective_file_path, 'rb'))
-        dct_oarid_palminized_model[root_name] = loaded_model
-
-    df_results = build_df(src_result_dir, dct_output_files_by_root, col_to_delete)
-    return dct_oarid_palminized_model, df_results
-
-def get_df(path):
-    src_result_dir = pathlib.Path(path)
-    dct_output_files_by_root = get_dct_result_files_by_root(src_results_dir=src_result_dir, old_filename_objective=True)
-
-    col_to_delete = []
-
-    df_results = build_df(src_result_dir, dct_output_files_by_root, col_to_delete)
-    return df_results
 
 
 def get_sparsity_pattern(arr):
