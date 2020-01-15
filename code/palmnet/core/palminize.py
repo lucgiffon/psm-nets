@@ -46,7 +46,7 @@ class Palminizable:
     @staticmethod
     def count_nb_param_layer(layer, dct_layer_sparse_facto_op=None):
         params = layer.get_weights()
-        if layer.bias:
+        if layer.bias is not None:
             assert len(params[-1].shape) == 1, "Last weight matrix in get_weights of layer {} should be of len(shape) == 1. Shape is length {}".format(layer.name, len(layer.shape))
             nb_param_layer_bias = params[-1].size
             params = params[:-1]
@@ -121,12 +121,12 @@ class Palminizable:
         for layer in model.layers:
             logger.warning("Process layer {}".format(layer.name))
             if isinstance(layer, Conv2D) or isinstance(layer, Conv2DCustom):
-                nb_param_layer, nb_param_compressed_layer = Palminizable.count_nb_param_layer(layer, dct_layer_sparse_facto_op)
-                nb_flop_layer, nb_flop_compressed_layer = Palminizable.count_nb_flop_conv_layer(layer, nb_param_layer, nb_param_compressed_layer)
+                nb_param_layer, nb_param_compressed_layer, nb_param_layer_bias = Palminizable.count_nb_param_layer(layer, dct_layer_sparse_facto_op)
+                nb_flop_layer, nb_flop_compressed_layer = Palminizable.count_nb_flop_conv_layer(layer, nb_param_layer, nb_param_layer_bias, nb_param_compressed_layer)
 
             elif isinstance(layer, Dense) or isinstance(layer, SparseFactorisationDense):
-                nb_param_layer, nb_param_compressed_layer = Palminizable.count_nb_param_layer(layer, dct_layer_sparse_facto_op)
-                nb_flop_layer, nb_flop_compressed_layer = Palminizable.count_nb_flop_dense_layer(layer, nb_param_layer, nb_param_compressed_layer)
+                nb_param_layer, nb_param_compressed_layer, nb_param_layer_bias = Palminizable.count_nb_param_layer(layer, dct_layer_sparse_facto_op)
+                nb_flop_layer, nb_flop_compressed_layer = Palminizable.count_nb_flop_dense_layer(layer, nb_param_layer, nb_param_layer_bias, nb_param_compressed_layer)
 
             else:
                 logger.warning("Layer {}, class {}, hasn't been compressed".format(layer.name, layer.__class__.__name__))

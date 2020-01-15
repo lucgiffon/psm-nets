@@ -11,11 +11,7 @@ all:
 base:
   sparsity_fac: {"--sparsity-factor": [2, 3, 4, 5]}
   verbosity: ["-v"]
-#  hierarchical: ["--hierarchical"]  # not hierarchical because it is made for a log(max) setting (split in 2 at each iteration) and then it is not relevant for 2 or 3 factors
-  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero"]}
-  walltime: {"--walltime": [90]}
-  nb_fac: {"--nb-factor": [2, 3]}
-
+#  hierarchical: ["--hierarchical"]
 
 palmnet_mnist:
   base:

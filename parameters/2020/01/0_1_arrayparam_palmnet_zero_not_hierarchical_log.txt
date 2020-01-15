@@ -1,0 +1,12 @@
+--sparsity-factor 2 -v --mnist --mnist-lenet
+--sparsity-factor 3 -v --mnist --mnist-lenet
+--sparsity-factor 4 -v --mnist --mnist-lenet
+--sparsity-factor 5 -v --mnist --mnist-lenet
+--sparsity-factor 2 -v --svhn --svhn-vgg19
+--sparsity-factor 3 -v --svhn --svhn-vgg19
+--sparsity-factor 4 -v --svhn --svhn-vgg19
+--sparsity-factor 5 -v --svhn --svhn-vgg19
+--sparsity-factor 2 -v --cifar10 --cifar10-vgg19
+--sparsity-factor 3 -v --cifar10 --cifar10-vgg19
+--sparsity-factor 4 -v --cifar10 --cifar10-vgg19
+--sparsity-factor 5 -v --cifar10 --cifar10-vgg19
