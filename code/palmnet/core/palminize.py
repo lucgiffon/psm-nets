@@ -263,6 +263,7 @@ class Palminizer:
                          update_right_to_left=True,
                          delta_objective_error_threshold=self.delta_threshold_palm,
                          track_objective=False)
+            final_X *= final_lambda # added later because palm4msa actually doesn't return the final_X multiplied by lambda contrary to hierarchical
 
         if transposed:
             return final_lambda, final_factors.transpose(), final_X.T

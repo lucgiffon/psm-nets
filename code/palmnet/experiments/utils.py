@@ -141,6 +141,7 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
                             '--svhn-vgg19',
                             '--test-data',
                             '--test-model',
+                            "--nb-factor"
                             ]
         queries = []
         for k in keys_of_interest:

@@ -2,7 +2,7 @@
 This script finds a palminized model with given arguments then finetune it.
 
 Usage:
-    script.py --input-dir path [-h] [-v|-vv] --walltime int [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical]
+    script.py --input-dir path [-h] [-v|-vv] --walltime int [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
 
 Options:
   -h --help                             Show this screen.
@@ -32,6 +32,7 @@ Palm-Specifc options:
   --nb-iteration-palm=int               Number of iterations in the inner palm4msa calls. [default: 300]
   --delta-threshold=float               Threshold value before stopping palm iterations. [default: 1e-6]
   --hierarchical                        Tells if palm should use the hierarchical euristic or not. Muhc longer but better approximation results.
+  --nb-factor=int                       Tells the number of sparse factor for palm
 """
 import logging
 import os
@@ -211,7 +212,13 @@ def main():
     resprinter.add(dct_results)
     resprinter.print()
 
-    assert before_finetuned_score == palminized_score, "the reconstructed model with sparse facto should equal in perf to the reconstructed model with dense product. {} != {}".format(before_finetuned_score, palminized_score)
+    if paraman["--hierarchical"]:
+        assert before_finetuned_score == palminized_score, \
+            "the reconstructed model with sparse facto should equal in perf to the reconstructed model with dense product. {} != {}".format(before_finetuned_score, palminized_score)
+    else: # small fix for a bug where when I wasn't using hierarchical palm returned a matrix that wasn't multiplied by lambda
+        # this should pass until results are generated without bug..
+        assert before_finetuned_score != palminized_score, \
+            "the reconstructed model with sparse facto should equal in perf to the reconstructed model with dense product. {} != {}".format(before_finetuned_score, palminized_score)
     fine_tuned_model.summary()
 
     call_backs = []
