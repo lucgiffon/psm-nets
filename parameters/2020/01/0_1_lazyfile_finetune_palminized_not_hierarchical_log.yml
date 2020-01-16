@@ -1,0 +1,39 @@
+#  script.py [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data)
+# [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+# --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float]
+
+all:
+  palmnet_mnist:
+  palmnet_svhn:
+  palmnet_cifar10:
+#  palmnet_cifar100:
+
+base:
+  sparsity_fac: {"--sparsity-factor": [2, 3, 4, 5]}
+  verbosity: ["-v"]
+#  hierarchical: ["--hierarchical"]  # not hierarchical because it is made for a log(max) setting (split in 2 at each iteration) and then it is not relevant for 2 or 3 factors
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log"]}
+  walltime: {"--walltime": [90]}
+#  nb_fac: {"--nb-factor": [2, 3]}
+
+
+palmnet_mnist:
+  base:
+  mnist: ["--mnist"]
+  mnist_lenet: ["--mnist-lenet"]
+
+palmnet_svhn:
+  base:
+  svhn: ["--svhn"]
+  svhn_vgg19: ["--svhn-vgg19"]
+
+palmnet_cifar10:
+  base:
+  cifar10: ["--cifar10"]
+  cifar10_vgg19: ["--cifar10-vgg19"]
+
+palmnet_cifar100:
+  base:
+  cifar100: ["--cifar100"]
+  cifar100_vgg19: ["--cifar100-vgg19"]
+

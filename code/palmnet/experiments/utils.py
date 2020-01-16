@@ -8,6 +8,7 @@ import numpy as np
 from pathlib import Path
 
 import time
+from skluc.utils import logger
 
 from palmnet.data import Mnist, Cifar10, Cifar100, Svhn, Test
 from palmnet.visualization.utils import get_df
@@ -145,12 +146,20 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
                             ]
         queries = []
         for k in keys_of_interest:
-            query = "(df['{}']=={})".format(k, self[k])
+            logger.debug("{}, {}, {}".format(self[k], type(self[k]), k))
+            if self[k] is None:
+                str_k = "'None'"
+            else:
+                str_k = self[k]
+
+            query = "(df['{}']=={})".format(k, str_k)
             queries.append(query)
 
         s_query = " & ".join(queries)
         s_eval = "df[({})]".format(s_query)
         line_of_interest = eval(s_eval)
+        logger.debug(line_of_interest)
+        logger.debug(s_eval)
 
         assert len(line_of_interest) == 1, "The parameters doesn't allow to discriminate only one pre-trained model in directory"
 

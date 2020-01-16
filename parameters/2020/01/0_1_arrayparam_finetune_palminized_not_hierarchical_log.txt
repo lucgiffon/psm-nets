@@ -1,0 +1,12 @@
+--sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log --walltime 90 --mnist --mnist-lenet
+--sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log --walltime 90 --mnist --mnist-lenet
+--sparsity-factor 4 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log --walltime 90 --mnist --mnist-lenet
+--sparsity-factor 5 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log --walltime 90 --mnist --mnist-lenet
+--sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log --walltime 90 --svhn --svhn-vgg19
+--sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log --walltime 90 --svhn --svhn-vgg19
+--sparsity-factor 4 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log --walltime 90 --svhn --svhn-vgg19
+--sparsity-factor 5 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log --walltime 90 --svhn --svhn-vgg19
+--sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log --walltime 90 --cifar10 --cifar10-vgg19
+--sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log --walltime 90 --cifar10 --cifar10-vgg19
+--sparsity-factor 4 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log --walltime 90 --cifar10 --cifar10-vgg19
+--sparsity-factor 5 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01_bis_tmp/0_1_palmnet_zero_not_hierarchical_log --walltime 90 --cifar10 --cifar10-vgg19

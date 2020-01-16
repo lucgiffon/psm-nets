@@ -231,6 +231,13 @@ def create_random_block_diag(dim1, dim2, block_size, mask=False, greedy=True):
 
     return final_matrix
 
+def create_permutation_matrix(d, dtype=float):
+    lines_permutation = np.random.permutation(d)
+    column_permutation = np.random.permutation(d)
+    final_sparse_matrix = np.eye(d, dtype=dtype)[lines_permutation]
+    final_sparse_matrix = final_sparse_matrix[:, column_permutation]
+    return final_sparse_matrix
+
 def create_sparse_matrix_pattern(shape, block_size, permutation=True):
     """
     Create a random mask for a sparse matrix with (+/- 1) `block_size` value in each line and each col.
