@@ -1,0 +1,75 @@
+
+all:
+  palmnet_mnist_dense:
+  palmnet_svhn_dense:
+  palmnet_cifar10_dense:
+#  palmnet_cifar100_dense:
+  palmnet_mnist_pbp:
+  palmnet_svhn_pbp:
+  palmnet_cifar10_pbp:
+#  palmnet_cifar100_pbp:
+
+base:
+  verbosity: ["-v"]
+  walltime: {"--walltime": [9]}
+  seeds: {"--seed": [1, 2, 3]}
+  nb_units: {"--nb-units-dense-layer": ["100", "100-100", "200", "200-200", "500", "500-500", "1000", "1000-1000"]}
+
+pbp:
+  entropy_param: {"--param-reg-softmax-entropy": ["100", "10", "1", "0.1", "0.01"]}
+  nb_fac: {"--nb-factor": [2, 3, "None"]}
+  sparsity_fac: {"--sparsity-factor": [2, 3, 4, 5]}
+
+palmnet_mnist:
+  base:
+  mnist: ["--mnist"]
+#  mnist_lenet: ["--mnist-lenet"]
+
+palmnet_svhn:
+  base:
+  svhn: ["--svhn"]
+#  svhn_vgg19: ["--svhn-vgg19"]
+
+palmnet_cifar10:
+  base:
+  cifar10: ["--cifar10"]
+#  cifar10_vgg19: ["--cifar10-vgg19"]
+
+palmnet_cifar100:
+  base:
+  cifar100: ["--cifar100"]
+#  cifar100_vgg19: ["--cifar100-vgg19"]
+
+palmnet_mnist_dense:
+  palmnet_mnist:
+  model: ["--dense-layers"]
+
+palmnet_svhn_dense:
+  palmnet_svhn:
+  model: ["--dense-layers"]
+
+palmnet_cifar10_dense:
+  palmnet_cifar10:
+  model: ["--dense-layers"]
+
+palmnet_cifar100_dense:
+  palmnet_cifar100:
+  model: ["--dense-layers"]
+
+palmnet_mnist_pbp:
+  palmnet_mnist:
+  pbp:
+  model: ["--pbp-dense-layers"]
+palmnet_svhn_pbp:
+  palmnet_svhn:
+  pbp:
+  model: ["--pbp-dense-layers"]
+palmnet_cifar10_pbp:
+  palmnet_cifar10:
+  pbp:
+  model: ["--pbp-dense-layers"]
+palmnet_cifar100_pbp:
+  palmnet_cifar100:
+  pbp:
+  model: ["--pbp-dense-layers"]
+

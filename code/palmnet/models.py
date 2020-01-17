@@ -3,6 +3,7 @@ from keras import Sequential
 from keras.initializers import he_normal
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchNormalization, Activation, Dropout
 
+from palmnet.layers.pbp_layer import PBPDense
 from palmnet.layers.sparse_tensor import RandomSparseFactorisationConv2D, RandomSparseFactorisationDense
 
 
@@ -19,7 +20,39 @@ def random_small_model(input_shape, num_classes):
     model.add(Activation('softmax'))
     return model
 
+def create_pbp_model(input_shape, num_classes, sparsity_factor, nb_sparse_factors, units, soft_entropy_regularisation):
+    model = Sequential()
+    model.add(PBPDense(input_shape=input_shape, units=units[0], activation='relu', nb_factor=nb_sparse_factors, sparsity_factor=sparsity_factor, entropy_regularization_parameter=soft_entropy_regularisation))
+    for nb_unit_layer in units[1:]:
+        model.add(PBPDense(units=nb_unit_layer, nb_factor=nb_sparse_factors, activation='relu', sparsity_factor=sparsity_factor, entropy_regularization_parameter=soft_entropy_regularisation))
+    model.add(Dense(num_classes, activation='softmax'))
+    return model
+
+def create_dense_model(input_shape, num_classes,  units):
+    model = Sequential()
+    model.add(Dense(input_shape=input_shape, units=units[0]))
+    for nb_unit_layer in units[1:]:
+        model.add(Dense(units=nb_unit_layer, activation='relu'))
+    model.add(Dense(num_classes, activation='softmax'))
+    return model
+
 def sparse_random_lenet_model(input_shape, num_classes, sparsity_factor, nb_sparse_factors, permutation=True, weight_decay=1e-4):
+    model = Sequential()
+    model.add(RandomSparseFactorisationConv2D(input_shape=input_shape, permutation=permutation, filters=6, kernel_size=(5, 5), activation='relu', kernel_initializer=he_normal(), padding="valid", sparsity_factor=sparsity_factor, nb_sparse_factors=nb_sparse_factors))
+    model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+    model.add(RandomSparseFactorisationConv2D(input_shape=input_shape, permutation=permutation, filters=16, kernel_size=(5, 5), activation='relu', kernel_initializer=he_normal(), padding="valid", sparsity_factor=sparsity_factor, nb_sparse_factors=nb_sparse_factors))
+    model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+    model.add(Flatten(name='flatten'))
+    model.add(RandomSparseFactorisationDense(1024, permutation=permutation, sparsity_factor=sparsity_factor, nb_sparse_factors=nb_sparse_factors, use_bias=True, kernel_regularizer=keras.regularizers.l2(weight_decay), kernel_initializer=he_normal(), name='fc1'))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+    model.add(RandomSparseFactorisationDense(num_classes, permutation=permutation, sparsity_factor=sparsity_factor, nb_sparse_factors=nb_sparse_factors, kernel_regularizer=keras.regularizers.l2(weight_decay), kernel_initializer=he_normal(), name='predictions_mnist'))
+    model.add(BatchNormalization())
+    model.add(Activation('softmax'))
+    return model
+
+def pbp_lenet_model(input_shape, num_classes, sparsity_factor, nb_sparse_factors, permutation=True, weight_decay=1e-4):
+    raise NotImplementedError
     model = Sequential()
     model.add(RandomSparseFactorisationConv2D(input_shape=input_shape, permutation=permutation, filters=6, kernel_size=(5, 5), activation='relu', kernel_initializer=he_normal(), padding="valid", sparsity_factor=sparsity_factor, nb_sparse_factors=nb_sparse_factors))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))

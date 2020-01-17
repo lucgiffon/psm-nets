@@ -141,6 +141,7 @@ class Test:
 
 class Mnist:
     num_classes = 10
+    shape = (28, 28, 1)
 
     @staticmethod
     def load_data():
@@ -166,6 +167,7 @@ class Mnist:
 
 class Cifar10:
     num_classes = 10
+    shape = (32, 32, 3)
 
     @staticmethod
     def load_data():
@@ -195,6 +197,7 @@ class Cifar10:
 
 class Cifar100:
     num_classes = 100
+    shape = (32, 32, 3)
 
     @staticmethod
     def load_data():
@@ -225,6 +228,7 @@ class Cifar100:
 
 class Svhn:
     num_classes = 10
+    shape = (32, 32, 3)
 
     @staticmethod
     def load_data():

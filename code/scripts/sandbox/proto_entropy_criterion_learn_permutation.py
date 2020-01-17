@@ -16,6 +16,7 @@ from tensorflow.python.keras.engine.base_layer import InputSpec
 
 from palmnet.core.palminize import Palminizable
 # from palmnet.layers.sparse_masked import SparseFixed, SparseFactorisationConv2D#, SparseFactorisationDense
+from palmnet.layers.pbp_layer import PBPDense
 from palmnet.utils import insert_layer_nonseq, get_sparsity_pattern, create_random_block_diag, create_permutation_matrix
 import pickle
 from keras.layers import Layer
@@ -23,160 +24,6 @@ import keras.backend as K
 import tensorflow as tf
 
 
-class SparseFactorisationDense(Layer):
-    """
-    Layer which implements a sparse factorization with fixed sparsity pattern for all factors. The gradient will only be computed for non-zero entries.
-
-    `SparseFactorisationDense` implements the operation:
-    `output = activation(dot(input, prod([kernel[i] * sparsity_pattern[i] for i in range(nb_factor)]) + bias)`
-    where `activation` is the element-wise activation function
-    passed as the `activation` argument, `kernel` is a weights matrix
-    created by the layer, `sparsity_pattern` is a mask matrix for the `kernel` and `bias` is a bias vector created by the layer
-    (only applicable if `use_bias` is `True`).
-
-    """
-    def __init__(self, units, nb_factor, sparsity_factor,
-                 entropy_regularization_parameter,
-                 activation=None,
-                 use_bias=True,
-                 scaler_initializer='glorot_uniform',
-                 kernel_initializer='glorot_uniform',
-                 bias_initializer='zeros',
-                 scaler_regularizer=None,
-                 kernel_regularizer=None,
-                 bias_regularizer=None,
-                 scaler_constraint=None,
-                 kernel_constraint=None,
-                 bias_constraint=None,
-                 **kwargs):
-
-        if 'input_shape' not in kwargs and 'input_dim' in kwargs:
-            kwargs['input_shape'] = (kwargs.pop('input_dim'),)
-
-        super(SparseFactorisationDense, self).__init__(**kwargs)
-
-        assert nb_factor >=2, "Layer must have at least two sparse factors"
-        self.nb_factor = nb_factor
-        self.sparsity_factor = sparsity_factor
-
-        self.entropy_regularization_parameter = entropy_regularization_parameter
-
-        self.units = units
-        self.activation = activations.get(activation)
-        self.use_bias = use_bias
-        # todo faire un initialiseur particulier (type glorot) qui prend en compte la sparsité
-        self.kernel_initializer = initializers.get(kernel_initializer)
-        self.bias_initializer = initializers.get(bias_initializer)
-        self.kernel_regularizer = regularizers.get(kernel_regularizer)
-        self.bias_regularizer = regularizers.get(bias_regularizer)
-        self.kernel_constraint = constraints.get(kernel_constraint)
-        self.bias_constraint = constraints.get(bias_constraint)
-
-        self.scaler_initializer = initializers.get(scaler_initializer)
-        self.scaler_regularizer = regularizers.get(scaler_regularizer)
-        self.scaler_constraint = constraints.get(scaler_constraint)
-
-    @staticmethod
-    def entropy(matrix):
-        p_logp =  tf.multiply(matrix, K.log(matrix))
-        return -K.sum(p_logp)
-
-    @staticmethod
-    def sum_to_one_constraint(matrix):
-        columns = K.sum(matrix, axis=0) - K.ones((matrix.shape[1],))
-        lines = K.sum(matrix, axis=1) - K.ones((matrix.shape[1],))
-        return K.sum(columns) + K.sum(lines)
-
-    def regularization_softmax_entropy(self, weight_matrix):
-        # sum to one
-        weight_matrix_proba = K.softmax(weight_matrix)
-        # high entropy
-        entropy = self.entropy(weight_matrix_proba)
-        regularization = self.entropy_regularization_parameter * entropy
-        return regularization
-
-    def add_block_diag(self, shape, name="block_diag_B"):
-        block_diag = create_random_block_diag(*shape, self.sparsity_factor)
-        sparse_block_diag = coo_matrix(block_diag)
-        kernel_block_diag = self.add_weight(shape=sparse_block_diag.data.shape,
-                                     initializer=self.kernel_initializer,
-                                     name=name,
-                                     regularizer=self.kernel_regularizer,
-                                     constraint=self.kernel_constraint)
-        sparse_tensor_block_diag = tf.sparse.SparseTensor(list(zip(sparse_block_diag.row, sparse_block_diag.col)), kernel_block_diag, sparse_block_diag.shape)
-        return kernel_block_diag, sparse_tensor_block_diag
-
-    def add_permutation(self, d, name="permutation_P"):
-        permutation = self.add_weight(
-            shape=(d, d),
-            initializer=lambda shape, dtype: create_permutation_matrix(shape[0], dtype),
-            name=name,
-            regularizer=self.regularization_softmax_entropy
-        )
-        return permutation
-
-    def build(self, input_shape):
-        assert len(input_shape) >= 2
-
-        input_dim = input_shape[-1]
-        inner_dim = min(input_dim, self.units)
-
-        # create first P: dense with regularization
-        self.permutations = [self.add_permutation(input_dim, name="permutation_P_input")]
-
-        # create first B; sparse block diag
-        kernel_block_diag, sparse_tensor_block_diag = self.add_block_diag((input_dim, inner_dim), name="block_diag_B_input")
-        self.kernels = [kernel_block_diag]
-        self.sparse_block_diag_ops = [sparse_tensor_block_diag]
-
-        for i in range(self.nb_factor-1):
-
-            # create P: dense with regularization
-            self.permutations.append(self.add_permutation(inner_dim, name="permutation_P_{}".format(i+1)))
-
-            if i < (self.nb_factor-1)-1:
-                # create B: sparse block diagonal
-                kernel_block_diag, sparse_tensor_block_diag = self.add_block_diag((inner_dim, inner_dim), name="block_diag_B_{}".format(i))
-                self.kernels.append(kernel_block_diag)
-                self.sparse_block_diag_ops.append(sparse_tensor_block_diag)
-
-        # create last B: block diagonal sparse
-        kernel_block_diag, sparse_tensor_block_diag = self.add_block_diag((inner_dim, self.units), name="block_diag_B_output")
-        self.kernels.append(kernel_block_diag)
-        self.sparse_block_diag_ops.append(sparse_tensor_block_diag)
-
-        # create last P: dense with regularization
-        self.permutations.append(self.add_permutation(self.units, name="permutation_P_output"))
-
-        if self.use_bias:
-            self.bias = self.add_weight(shape=(self.units,),
-                                        initializer=self.bias_initializer,
-                                        name='bias',
-                                        regularizer=self.bias_regularizer,
-                                        constraint=self.bias_constraint)
-        else:
-            self.bias = None
-
-        super(SparseFactorisationDense, self).build(input_shape)  # Be sure to call this at the end
-
-    def call(self, inputs):
-
-        output = tf.transpose(inputs)
-        output = K.dot(K.softmax(self.permutations[0], axis=1), output)
-        for i in range(self.nb_factor):
-            output = tf.sparse.sparse_dense_matmul(tf.sparse.transpose(tf.sparse.reorder(self.sparse_block_diag_ops[i])), output)
-            output = K.dot(K.softmax(self.permutations[i+1], axis=1), output)
-
-        output = tf.transpose(output)
-
-        if self.use_bias:
-            output = K.bias_add(output, self.bias, data_format='channels_last')
-        if self.activation is not None:
-            output = self.activation(output)
-        return output
-
-    def compute_output_shape(self, input_shape):
-        return (input_shape[0], self.units)
 
 def show_weights(nb_sparse_factors, sparsity_patterns, weights_before, weights_after, name):
     an_weights_before = [w[:100, :] for w in weights_before]
@@ -210,7 +57,7 @@ def mainSparseFactorisation():
     img_rows, img_cols = 28,  28
     num_classes = 10
     batch_size = 64
-    epochs = 1
+    epochs = 10
     hidden_layer_dim = 100
     sparse_factors = 3
     nb_filter = 5
@@ -232,7 +79,7 @@ def mainSparseFactorisation():
     model = Sequential()
     # model.add(SparseFactorisationConv2D(sparsity_patterns=sparsity_patterns_conv, input_shape=input_shape, filters=nb_filter, kernel_size=kernel_size, padding=padding))
     # model.add(Flatten())
-    model.add(SparseFactorisationDense(input_shape=input_shape, units=hidden_layer_dim, nb_factor=sparse_factors, sparsity_factor=sparsity_factor, entropy_regularization_parameter=1))
+    model.add(PBPDense(input_shape=input_shape, units=hidden_layer_dim, nb_factor=sparse_factors, sparsity_factor=sparsity_factor, entropy_regularization_parameter=1))
     model.add(Dense(num_classes, activation='softmax'))
 
     tb = keras.callbacks.tensorboard_v1.TensorBoard(log_dir='./logs', histogram_freq=1, batch_size=32, write_graph=True, write_grads=1, write_images=True, embeddings_freq=0,

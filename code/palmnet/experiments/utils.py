@@ -51,20 +51,25 @@ class ParameterManager(dict):
         :return:
         """
         if self["--mnist"]:
-            (x_train, y_train), (x_test, y_test) =  Mnist.load_data()
-            return (x_train, y_train), (x_test, y_test)
+            # (x_train, y_train), (x_test, y_test) =  Mnist.load_data()
+            # return (x_train, y_train), (x_test, y_test)
+            return Mnist
         elif self["--cifar10"]:
-            (x_train, y_train), (x_test, y_test) = Cifar10.load_data()
-            return (x_train, y_train), (x_test, y_test)
+            # (x_train, y_train), (x_test, y_test) = Cifar10.load_data()
+            # return (x_train, y_train), (x_test, y_test)
+            return Cifar10
         elif self["--cifar100"]:
-            (x_train, y_train), (x_test, y_test) = Cifar100.load_data()
-            return (x_train, y_train), (x_test, y_test)
+            # (x_train, y_train), (x_test, y_test) = Cifar100.load_data()
+            # return (x_train, y_train), (x_test, y_test)
+            return Cifar100
         elif self["--svhn"]:
-            (x_train, y_train), (x_test, y_test) = Svhn.load_data()
-            return (x_train, y_train), (x_test, y_test)
+            # (x_train, y_train), (x_test, y_test) = Svhn.load_data()
+            # return (x_train, y_train), (x_test, y_test)
+            return Svhn
         elif self["--test-data"]:
-            (x_train, y_train), (x_test, y_test) = Test.load_data()
-            return (x_train, y_train), (x_test, y_test)
+            # (x_train, y_train), (x_test, y_test) = Test.load_data()
+            # return (x_train, y_train), (x_test, y_test)
+            return Test
 
         else:
             raise NotImplementedError("No dataset specified.")
@@ -175,6 +180,42 @@ class ParameterManagerRandomSparseFacto(ParameterManager):
         self["--nb-factor"] = int(self["--nb-factor"]) if (self["--nb-factor"] != "None" and self["--nb-factor"] is not None) else None
         self["--sparsity-factor"] = int(self["--sparsity-factor"]) if self["--sparsity-factor"] is not None else None
 
+        self.__init_output_file()
+
+    def __init_hash_expe(self):
+        lst_elem_to_remove_for_hash = [
+            'output_file_modelprinter',
+            'identifier',
+            'output_file_resprinter',
+            '-v',
+            '--help',
+            "--walltime"
+        ]
+        keys_expe = sorted(self.keys())
+        any(keys_expe.remove(item) for item in lst_elem_to_remove_for_hash)
+        val_expe = [self[k] for k in keys_expe]
+        str_expe = [str(val) for pair in zip(keys_expe, val_expe) for val in pair]
+        self["hash"] = hex(zlib.crc32(str.encode("".join(str_expe))))
+
+    def __init_output_file(self):
+        self["output_file_resprinter"] = Path(self["hash"] + "_results.csv")
+        self["output_file_modelprinter"] = Path(self["hash"] + "_model.h5")
+        self["output_file_notfinishedprinter"] = Path(self["hash"] + ".notfinished")
+        self["output_file_finishedprinter"] = Path(self["hash"] + ".finished")
+        self["output_file_tensorboardprinter"] = Path(self["hash"] + ".tb")
+        self["output_file_csvcbprinter"] = Path(self["hash"] + "_history.csv")
+
+class ParameterManagerEntropyRegularization(ParameterManager):
+    def __init__(self, dct_params, **kwargs):
+        super().__init__(dct_params, **kwargs)
+        self.__init_hash_expe()
+
+        self["--walltime"] = int(self["--walltime"])
+        self["--nb-factor"] = int(self["--nb-factor"]) if (self["--nb-factor"] != "None" and self["--nb-factor"] is not None) else None
+        self["--sparsity-factor"] = int(self["--sparsity-factor"]) if self["--sparsity-factor"] is not None else None
+        self["--param-reg-softmax-entropy"] = float(self["--param-reg-softmax-entropy"]) if self["--param-reg-softmax-entropy"] is not None else None
+        if self["--seed"] is not None:
+            np.random.seed(int(self["--seed"]))
         self.__init_output_file()
 
     def __init_hash_expe(self):
