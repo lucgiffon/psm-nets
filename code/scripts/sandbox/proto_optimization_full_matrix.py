@@ -1,9 +1,11 @@
 import keras
 import tensorflow as tf
 from keras.datasets import mnist
+from munkres import Munkres
 from scipy.linalg import hadamard
 from scipy.sparse import coo_matrix
 import numpy as np
+from sklearn.datasets import make_blobs
 from tensorflow.python.ops.nn_ops import softmax
 import matplotlib.pyplot as plt
 
@@ -22,15 +24,18 @@ class tfSparseFactorization:
     (only applicable if `use_bias` is `True`).
 
     """
-    def __init__(self, shape, nb_factor, sparsity_factor,
-                 entropy_regularization_parameter):
+    def __init__(self, shape, nb_factor, sparsity_factor, entropy_placeholder, l2_placeholder):
 
         assert nb_factor >=2, "Layer must have at least two sparse factors"
 
         self.nb_factor = nb_factor
-        self.sparsity_factor = sparsity_factor
+        if type(sparsity_factor) is int:
+            self.sparsity_factor_lst = [sparsity_factor] * nb_factor
+        else:
+            self.sparsity_factor_lst = sparsity_factor
 
-        self.entropy_regularization_parameter = entropy_regularization_parameter
+        self.entropy_regularization_parameter = entropy_placeholder
+        self.l2_regularization_parameter = l2_placeholder
         self.shape = shape
 
     @staticmethod
@@ -52,15 +57,17 @@ class tfSparseFactorization:
         regularization = self.entropy_regularization_parameter * entropy
         return regularization
 
-    def add_block_diag(self, shape, name="block_diag_B"):
-        block_diag = create_random_block_diag(*shape, self.sparsity_factor)
+    def add_block_diag(self, shape, sparsity_factor, name="block_diag_B"):
+        block_diag = create_random_block_diag(*shape, sparsity_factor)
         sparse_block_diag = coo_matrix(block_diag)
         kernel_block_diag = tf.Variable(tf.ones(shape=sparse_block_diag.data.shape), dtype=tf.float32)
         sparse_tensor_block_diag = tf.sparse.SparseTensor(list(zip(sparse_block_diag.row, sparse_block_diag.col)), kernel_block_diag, sparse_block_diag.shape)
         return kernel_block_diag, sparse_tensor_block_diag
 
     def add_permutation(self, d, name="permutation_P"):
-        return tf.Variable(create_permutation_matrix(d), dtype=tf.float32)
+        # return tf.Variable(create_permutation_matrix(d), dtype=tf.float32)
+        return tf.Variable(np.random.rand(d, d), dtype=tf.float32)
+        # return tf.Variable(np.eye(d), dtype=tf.float32)
 
     def build(self):
 
@@ -72,7 +79,7 @@ class tfSparseFactorization:
         self.permutations = [self.add_permutation(input_dim, name="permutation_P_input")]
 
         # create first B; sparse block diag
-        kernel_block_diag, sparse_tensor_block_diag = self.add_block_diag((input_dim, inner_dim), name="block_diag_B_input")
+        kernel_block_diag, sparse_tensor_block_diag = self.add_block_diag((input_dim, inner_dim), name="block_diag_B_input", sparsity_factor=self.sparsity_factor_lst[0])
         self.kernels = [kernel_block_diag]
         self.sparse_block_diag_ops = [sparse_tensor_block_diag]
 
@@ -83,12 +90,12 @@ class tfSparseFactorization:
 
             if i < (self.nb_factor-1)-1:
                 # create B: sparse block diagonal
-                kernel_block_diag, sparse_tensor_block_diag = self.add_block_diag((inner_dim, inner_dim), name="block_diag_B_{}".format(i))
+                kernel_block_diag, sparse_tensor_block_diag = self.add_block_diag((inner_dim, inner_dim), name="block_diag_B_{}".format(i), sparsity_factor=self.sparsity_factor_lst[i])
                 self.kernels.append(kernel_block_diag)
                 self.sparse_block_diag_ops.append(sparse_tensor_block_diag)
 
         # create last B: block diagonal sparse
-        kernel_block_diag, sparse_tensor_block_diag = self.add_block_diag((inner_dim, output_dim), name="block_diag_B_output")
+        kernel_block_diag, sparse_tensor_block_diag = self.add_block_diag((inner_dim, output_dim), name="block_diag_B_output", sparsity_factor=self.sparsity_factor_lst[-1])
         self.kernels.append(kernel_block_diag)
         self.sparse_block_diag_ops.append(sparse_tensor_block_diag)
 
@@ -106,37 +113,78 @@ class tfSparseFactorization:
         output = tf.transpose(output)
         return output
 
+    def get_softmax_entropy_regularization(self):
+        reg = self.regularization_softmax_entropy(self.permutations[0])
+        for perm_matrix in self.permutations[1:]:
+            reg = tf.add(reg, self.regularization_softmax_entropy(perm_matrix))
+        return self.entropy_regularization_parameter * reg
 
-if __name__ == "__main__":
+    def get_l2_regularization(self):
+        reg = tf.nn.l2_loss(self.kernels[0])
+        for kern in self.kernels[1:]:
+            reg = tf.add(reg, tf.nn.l2_loss(kern))
+        return self.l2_regularization_parameter * reg
 
+
+def sparse_facto_train(obj_mat, entropy_param, l2_param, lr, epochs, sparsity_factor, nb_factor, session):
+    entropy_placeholder = tf.placeholder("float", None)
+    l2_placeholder = tf.placeholder("float", None)
+
+    sparse_facto_obj = tfSparseFactorization(obj_mat.shape, nb_factor, sparsity_factor, entropy_placeholder, l2_placeholder).build()
+
+    objective = tf.divide(tf.square(tf.norm(obj_mat - sparse_facto_obj.call())), tf.norm(obj_mat)) + sparse_facto_obj.get_softmax_entropy_regularization() + sparse_facto_obj.get_l2_regularization()
+    optimizer = tf.train.AdamOptimizer(lr)
+    train = optimizer.minimize(objective)
+    init = tf.initialize_all_variables()
+
+    session.run(init)
+    for step in range(epochs):
+        # entropy_param = np.exp(entropy_param_reg * step) - 1
+        session.run(train, feed_dict={entropy_placeholder: entropy_param, l2_placeholder: l2_param})
+        print("entropy_param", entropy_param, "step", step, "objective:", session.run(objective, feed_dict={entropy_placeholder: 0, l2_placeholder: 0}))
+
+    return sparse_facto_obj
+
+def main():
 
     d = 16
     nb_factor = int(np.log(d))
-    sparsity_factor=2
+    sparsity_factor = 2
+    epochs = 10000000
 
-    X = np.random.rand(16, 1000)
+    X, y = make_blobs(n_samples=1000, n_features=d)
+    # X = np.random.rand(16, 1000)
+    X = X.T
     X /= np.linalg.norm(X)
     X = tf.constant(X, dtype=tf.float32)
 
-
-    sparse_facto_obj = tfSparseFactorization((d, d), nb_factor, sparsity_factor, 1.).build()
     had = np.array(hadamard(d))
     had = had / np.linalg.norm(had)
     had = tf.constant(had, dtype=tf.float32)
-    # objective = tf.divide(tf.square(tf.norm(tf.matmul(had, X) - tf.matmul(sparse_facto_obj.call(), X))), tf.norm(tf.matmul(had, X)))
-    objective = tf.divide(tf.square(tf.norm(had - sparse_facto_obj.call())), tf.norm(had))
-    optimizer = tf.train.AdamOptimizer(1e-4)
-    train = optimizer.minimize(objective)
+    # objective = tf.divide(tf.square(tf.norm(tf.matmul(had, X) - tf.matmul(sparse_facto_obj.call(), X))), tf.norm(tf.matmul(had, X))) + sparse_facto_obj.get_softmax_entropy_regularization()
 
-    init = tf.initialize_all_variables()
-    with tf.Session() as session:
-        session.run(init)
-        print("starting at", "objective:", session.run(objective))
+    y_max_entropy_reg = 1
+    x_max = epochs
+    entropy_param_reg = np.log(y_max_entropy_reg + 1) / x_max
+    raise NotImplementedError("Voir si on peut faire une optimisation façon 'hierarchique' comme pour PALM")
 
-        for step in range(100000):
-            session.run(train)
-            print("step", step, "objective:", session.run(objective))
+    # for j in range(nb_factor):
+    #     res =
 
-        final_mat = session.run(sparse_facto_obj.call())
-        plt.imshow(final_mat)
-        plt.show()
+
+    # final_mat = session.run(sparse_facto_obj.call())
+    # plt.imshow(final_mat)
+    # plt.show()
+    # for perm in sparse_facto_obj.permutations:
+    #     perm_ev = np.array(session.run(softmax(perm, axis=1)))
+    #     m = Munkres()
+    #     indexes = np.array(m.compute(-perm_ev))
+    #     rows = indexes[:, 0]
+    #     cols = indexes[:, 1]
+    #     vals = perm_ev[tuple(indexes.T)]
+    #     proj = coo_matrix((np.ones(rows.size), (rows, cols)))
+    #     plt.imshow(proj.toarray())
+    #     plt.show()
+
+if __name__ == "__main__":
+    main()

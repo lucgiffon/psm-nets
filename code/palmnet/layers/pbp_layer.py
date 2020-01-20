@@ -13,7 +13,7 @@ class PBPDense(Layer):
     `SparseFactorisationDense` implements the operation: activation(PBPBPBP + bias) with all B and P differents from each other.
 
     where:
-    B are block diagonal matrices with `sparsity_factor` value in each block. Blocks are learnable.
+    B are block diagonal matrices with `sparsity_factor_lst` value in each block. Blocks are learnable.
     P are permutation matrices learnable with the soft cross entropy criterion.
     `activation` is the element-wise activation function passed as the `activation` argument,
     (only applicable if `use_bias` is `True`).
@@ -81,7 +81,7 @@ class PBPDense(Layer):
             'kernel_constraint': constraints.serialize(self.kernel_constraint),
             'bias_constraint': constraints.serialize(self.bias_constraint),
             'nb_factor': self.nb_factor,
-            'sparsity_factor':self.sparsity_factor,
+            'sparsity_factor_lst':self.sparsity_factor,
             'entropy_regularization_parameter':self.entropy_regularization_parameter,
             'permutation_initializer': 'permutation' if self.permutation_initializer_name == 'permutation' else initializers.serialize(self.permutation_initializer)
         }

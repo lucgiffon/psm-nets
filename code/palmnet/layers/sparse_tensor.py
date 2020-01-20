@@ -393,7 +393,7 @@ class RandomSparseFactorisationDense(SparseFactorisationDense):
         base_config = super().get_config()
         config = {
             'nb_sparse_factors': self.nb_factor,
-            'sparsity_factor': self.sparsity_factor,
+            'sparsity_factor_lst': self.sparsity_factor,
         }
         config.update(base_config)
         return config
@@ -419,6 +419,150 @@ class RandomSparseFactorisationConv2D(SparseFactorisationConv2D):
 
     def get_config(self):
         config = super().get_config()
-        config['sparsity_factor'] = self.sparsity_factor
+        config['sparsity_factor_lst'] = self.sparsity_factor
+        config['nb_sparse_factors'] = self.nb_factor
+        return config
+
+
+class SparseFactorisationConv2DDensify(Conv2DCustom):
+    """
+    Implementation of Conv2DCustom that uses a sparse factorization of the convolutional filters.
+
+    The sparsity patterns are fixed on init.
+    """
+
+    def __init__(self, sparsity_patterns,
+                 scaler_initializer='glorot_uniform',
+                 scaler_regularizer=None,
+                 scaler_constraint=None,
+                 *args, **kwargs):
+        """
+        The filter matrix is in R^{CxF} with C the input dimension (chanelle x width x height) and F the number of filters
+
+        :param sparsity_patterns: Sparsity patterns for each sparse factor for the filter operation.
+        :param scaler_initializer: Sparse factors are scaled by a scalar value.
+        :param scaler_regularizer: Regularization for scaler value.
+        :param scaler_constraint: Constraint for scaler value.
+        :param args:
+        :param kwargs:
+        """
+
+        super(SparseFactorisationConv2DDensify, self).__init__(*args, **kwargs)
+
+
+        if sparsity_patterns is not None:
+            self.sparsity_patterns = [cast_sparsity_pattern(s) for s in sparsity_patterns]
+            self.nb_factor = len(sparsity_patterns)
+
+            assert [self.sparsity_patterns[i].shape[1] == self.sparsity_patterns[i + 1].shape[0] for i in range(len(self.sparsity_patterns) - 1)]
+            assert self.sparsity_patterns[-1].shape[1] == self.filters, "sparsity pattern last dim should be equal to the number of filters in {}".format(__class__.__name__)
+        else:
+            self.sparsity_patterns = None
+
+        self.scaler_initializer = initializers.get(scaler_initializer)
+        self.scaler_regularizer = regularizers.get(scaler_regularizer)
+        self.scaler_constraint = constraints.get(scaler_constraint)
+
+
+    def get_config(self):
+        config = super().get_config()
+        config['sparsity_patterns'] = self.sparsity_patterns
+        return config
+
+    def build(self, input_shape):
+        """
+        The filter matrix is in R^{CxF} with C the input dimension (chanelle x width x height) and F the number of filters
+
+        :param input_shape:
+        :return:
+        """
+        if input_shape[-1] is None:
+            raise ValueError('The channel dimension of the inputs '
+                             'should be defined. Found `None`.')
+
+        if self.sparsity_patterns is None:
+            raise ValueError("No sparsity pattern found.")
+
+
+        self.scaling = self.add_weight(shape=(1,),
+                                       initializer=self.scaler_initializer,
+                                       name='scaler',
+                                       regularizer=self.scaler_regularizer,
+                                       constraint=self.scaler_constraint)
+
+        input_dim = input_shape[-1]
+        self.kernel_shape = self.kernel_size + (input_dim, self.filters) # h x w x channels_in x channels_out
+
+        self.kernels = []
+        self.sparse_ops = []
+
+        for i in range(self.nb_factor):
+            sparse_weights = coo_matrix(self.sparsity_patterns[i])
+            kernel = self.add_weight(shape=sparse_weights.data.shape,
+                                     initializer=self.kernel_initializer,
+                                     name='kernel_{}'.format(i),
+                                     regularizer=self.kernel_regularizer,
+                                     constraint=self.kernel_constraint)
+            self.kernels.append(kernel)
+            self.sparse_ops.append(tf.sparse.SparseTensor(list(zip(sparse_weights.row, sparse_weights.col)), kernel, sparse_weights.shape))
+
+        if self.use_bias:
+            self.bias = self.add_weight(shape=(self.filters,),
+                                        initializer=self.bias_initializer,
+                                        name='bias',
+                                        regularizer=self.bias_regularizer,
+                                        constraint=self.bias_constraint)
+        else:
+            self.bias = None
+
+        super(Conv2DCustom, self).build(input_shape)  # Be sure to call this at the end
+
+    def convolution(self, X):
+        to_dense = lambda sp_tensor: tf.sparse_add(tf.zeros(sp_tensor.dense_shape), sp_tensor)
+        reconstructed_kernel = to_dense(self.sparse_ops[0])
+        for i in range(1, self.nb_factor):
+            reconstructed_kernel = tf.matmul(reconstructed_kernel, to_dense(self.sparse_ops[i]), b_is_sparse=True)
+            # output = tf.sparse.sparse_dense_matmul(tf.sparse.transpose(tf.sparse.reorder(self.sparse_ops[i])), output)
+
+        reconstructed_kernel = self.scaling * tf.reshape(reconstructed_kernel, (*self.kernel_size, X.get_shape()[-1].value, self.filters))
+
+        output = K.conv2d(
+            X,
+            reconstructed_kernel,
+            strides=self.strides,
+            padding=self.padding)
+
+        if self.use_bias:
+            output += self.bias
+
+        return output
+        # return K.reshape(output, (-1 if sample_size is None else sample_size, output_height, output_width, filter_nbr))
+
+    def compute_output_shape(self, input_shape):
+        return self._compute_output_shape(input_shape, self.kernel_shape, self.padding_height, self.padding_width, self.strides_height, self.strides_width)
+
+
+class RandomSparseFactorisationConv2DDensify(SparseFactorisationConv2DDensify):
+    def __init__(self, sparsity_factor, nb_sparse_factors=None, permutation=True, **kwargs):
+        self.nb_factor = nb_sparse_factors
+        self.sparsity_factor = sparsity_factor
+        self.permutation = permutation
+
+        if 'sparsity_patterns' not in kwargs:
+            super(RandomSparseFactorisationConv2DDensify, self).__init__(None, **kwargs)
+        else:
+            super(RandomSparseFactorisationConv2DDensify, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        dim1, dim2 = np.prod(self.kernel_size) * input_shape[-1], self.filters
+        if self.nb_factor is None:
+            self.nb_factor = int(np.log(max(dim1, dim2)))
+        self.sparsity_patterns = create_sparse_factorization_pattern((dim1, dim2), self.sparsity_factor, self.nb_factor, self.permutation)
+
+        super(RandomSparseFactorisationConv2DDensify, self).build(input_shape)
+
+    def get_config(self):
+        config = super().get_config()
+        config['sparsity_factor_lst'] = self.sparsity_factor
         config['nb_sparse_factors'] = self.nb_factor
         return config
