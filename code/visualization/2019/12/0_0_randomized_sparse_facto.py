@@ -4,6 +4,8 @@ from palmnet.visualization.utils import get_palminized_model_and_df, get_df
 import matplotlib.pyplot as plt
 import numpy as np
 import logging
+import plotly.graph_objects as go
+
 mpl_logger = logging.getLogger('matplotlib')
 mpl_logger.setLevel(logging.ERROR)
 
@@ -23,6 +25,11 @@ color_bars_sparsity = {
 hatch_bars_permutation = {
     0: "/",
     1: None
+}
+
+hatch_hierarchical = {
+    0: "X",
+    1: "O"
 }
 
 tasks = {
@@ -51,6 +58,8 @@ if __name__ == "__main__":
     expe_path_palminized_cifar10 = "2019/11/0_0_finetune_palminized/bis_cifar10/bis_bis"
     expe_path_palminized_svhn_cifar100 = "2019/11/0_0_finetune_palminized/bis_cifar100_svhn/bis_bis"
     expe_path_palminized_before_finetune = "2019/10/0_0_hierarchical_palminize"
+    expe_path_palminized_not_hierarchical_log = "2020/01/0_1_finetune_palminized_not_hierarchical_log_bis"
+    expe_path_palminized_not_hierarchical_log_before_finetune = "2020/01/0_1_palmnet_zero_not_hierarchical_log"
 
     src_results_dir_palminized_mnist = root_source_dir / expe_path_palminized_mnist
     src_results_dir_palminized_before_finetune = root_source_dir / expe_path_palminized_before_finetune
@@ -58,16 +67,22 @@ if __name__ == "__main__":
     src_results_dir_palminized_svhn_cifar100 = root_source_dir / expe_path_palminized_svhn_cifar100
     src_results_dir_mnist = root_source_dir / expe_path_mnist
     src_results_dir_others = root_source_dir / expe_path_others
+    src_results_dir_palminized_not_hierarchical_log = root_source_dir / expe_path_palminized_not_hierarchical_log
+    src_results_dir_palminized_not_hierarchical_log_before_finetune = root_source_dir / expe_path_palminized_not_hierarchical_log_before_finetune
 
     df_palminized_mnist = get_df(src_results_dir_palminized_mnist)
     df_palminized_cifar10 = get_df(src_results_dir_palminized_cifar10)
     df_palminized_cifar100_svhn = get_df(src_results_dir_palminized_svhn_cifar100)
-    df_palminized = pd.concat([df_palminized_mnist, df_palminized_cifar10, df_palminized_cifar100_svhn])
+    df_palmnized_not_hierarchical_log = get_df(src_results_dir_palminized_not_hierarchical_log)
+
+    df_palminized = pd.concat([df_palminized_mnist, df_palminized_cifar10, df_palminized_cifar100_svhn, df_palmnized_not_hierarchical_log])
     df_palminized = df_palminized.dropna(subset=["failure"])
     df_palminized = df_palminized[df_palminized["finetuned_score"] != "None"]
     df_palminized = df_palminized.drop(columns="oar_id").drop_duplicates()
 
     df_palminized_before_finetune = get_df(src_results_dir_palminized_before_finetune)
+    df_palminized_not_hierarchical_log_before_finetune = get_df(src_results_dir_palminized_not_hierarchical_log_before_finetune)
+    df_palminized_before_finetune = pd.concat([df_palminized_before_finetune, df_palminized_not_hierarchical_log_before_finetune])
 
     df_others = get_df(src_results_dir_others)
 
@@ -77,10 +92,31 @@ if __name__ == "__main__":
     df = pd.concat([df_mnist, df_others])
     df = df.drop(columns="oar_id").drop_duplicates()
 
+    root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
+    output_dir = root_output_dir / expe_path_mnist / "histogrammes"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     sparsity_factors = sorted(set(df["--sparsity-factor"]))
     nb_factors = set(df["--nb-factor"])
 
     sparsy_factors_palm = sorted(set(df_palminized["--sparsity-factor"].values))
+
+    hue_by_sparsity= {
+        2: 10,
+        3: 60,
+        4: 110,
+        5: 180
+    }
+
+    saturation_by_perm = {
+        1: 50,
+        0: 75
+    }
+
+    saturation_by_hier = {
+        1: 50,
+        0: 75
+    }
 
     df = df.apply(pd.to_numeric, errors='coerce')
     for dataname in dataset:
@@ -88,41 +124,12 @@ if __name__ == "__main__":
         df_data_palm = df_palminized[df_palminized[dataset[dataname]] == 1]
         df_data_palminized_before_finetune = df_palminized_before_finetune[df_palminized_before_finetune[dataset[dataname]] == 1]
         for task in tasks:
-            fig, ax = plt.subplots()
-            max_value_in_plot = -1
-            bar_width = 0.9 / (len(sparsity_factors)*2 + 1)
-            # random sparse factorization
-            #############################
-            for i, sp_fac in enumerate(sparsity_factors):
-                df_sparsity = df_data[df_data["--sparsity-factor"] == sp_fac]
-                for j, no_perm in enumerate([1, 0]):
-                    no_perm_str = "No P" if no_perm==1 else ""
-                    df_perm = df_sparsity[df_sparsity["--no-permutation"] == no_perm]
-                    finetune_score_values = df_perm.sort_values("--nb-factor", na_position="last")[task].values
-                    ax.bar(np.arange(len(nb_factors)) + bar_width*2*i + bar_width*j, finetune_score_values,
-                           width=bar_width, label='{} {}'.format(sp_fac, no_perm_str), zorder=10, color=color_bars_sparsity[sp_fac],
-                           hatch=hatch_bars_permutation[no_perm])
-                    max_value_in_plot = max(max_value_in_plot, max(finetune_score_values))
 
-            # palminized
-            ############
-            start_x_pos = len(nb_factors) +  bar_width * 2 * len(sparsity_factors) - 1
-            if task == "finetuned_score":
-                df_data_palminized = df_data_palm
-                task_palminized = "finetuned_score"
-            elif task == "nb_flop":
-                df_data_palminized = df_data_palminized_before_finetune
-                task_palminized = "nb_flops_compressed_layers_conv_dense"
-            elif task == "nb_param":
-                df_data_palminized = df_data_palminized_before_finetune
-                task_palminized = "nb_param_compressed_layers_conv_dense"
-            else:
-                raise ValueError("Unknown task {}".format(task))
+            xticks = ["2", "3", "log(min(A, B))"]
+            # xticks = ["A", "B", "log(min(A, B))"]
+            # xticks = [1, 2, 3]
 
-            for i, sp_fac_palm in enumerate(sparsy_factors_palm):
-                val = df_data_palminized[df_data_palminized["--sparsity-factor"] == sp_fac_palm][task_palminized].values.mean() if sp_fac_palm in df_data_palminized["--sparsity-factor"].values else 0
-                ax.bar(start_x_pos + i*bar_width, val, width=bar_width, label='Palm {}'.format(sp_fac_palm), zorder=10, color=color_bars_sparsity[sp_fac_palm], hatch="X")
-                max_value_in_plot = max(max_value_in_plot, val)
+            fig = go.Figure()
 
             # base model
             ############v
@@ -136,22 +143,60 @@ if __name__ == "__main__":
                 raise ValueError("Unknown task {}".format(task))
 
             val = df_data_palminized_before_finetune[task_base].values.mean()
-            max_value_in_plot = max(max_value_in_plot, val)
-            start_x_pos_base = 0
-            end_x_pos_base = start_x_pos + len(sparsy_factors_palm) * bar_width
-            ax.plot(np.linspace(start_x_pos_base, end_x_pos_base, num=2), np.ones(2)*val, color="k", label="base")
+            fig.add_trace(
+                go.Scatter(
+                    x=[-1, "2", "3", "log(min(A, B))", 1],
+                    y=[val, val, val, val, val],
+                    mode='lines',
+                    name="base model"
+                ))
+            # fig, ax = plt.subplots()
+            # max_value_in_plot = -1
+            # bar_width = 0.9 / (len(sparsity_factors)*2 + 1)
+            # random sparse factorization
+            #############################
+            for i, sp_fac in enumerate(sparsity_factors):
+                df_sparsity = df_data[df_data["--sparsity-factor"] == sp_fac]
+                for j, no_perm in enumerate([1, 0]):
+                    no_perm_str = "No Perm." if no_perm==1 else ""
+                    df_perm = df_sparsity[df_sparsity["--no-permutation"] == no_perm]
+                    finetune_score_values = df_perm.sort_values("--nb-factor", na_position="last")[task].values
+
+                    hls_str = "hsl({}, {}%, 40%)".format(hue_by_sparsity[sp_fac], saturation_by_perm[no_perm])
+                    fig.add_trace(go.Bar(name='{} {}'.format(sp_fac, no_perm_str), x=xticks, y=finetune_score_values, marker_color=hls_str))
 
 
-            plt.xlabel("# Factor")
-            plt.ylabel(ylabel_task[task])
-            plt.yscale(scale_tasks[task])
-            ax.set_xticks([0, 1, 2])
-            ax.set_xticklabels([2, 3, "log(min(A, B))"])
-            plt.legend(ncol=4)
-            ax.set_ylim(top=max_value_in_plot+0.2*max_value_in_plot)
-            plt.title(task + " " + dataname)
-            plt.show()
+            # palminized
+            ############
+            if task == "finetuned_score":
+                df_data_palminized = df_data_palm
+                task_palminized = "finetuned_score"
+            elif task == "nb_flop":
+                df_data_palminized = df_data_palminized_before_finetune
+                task_palminized = "nb_flops_compressed_layers_conv_dense"
+            elif task == "nb_param":
+                df_data_palminized = df_data_palminized_before_finetune
+                task_palminized = "nb_param_compressed_layers_conv_dense"
+            else:
+                raise ValueError("Unknown task {}".format(task))
 
-    root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
-    output_dir = root_output_dir / expe_path_mnist / "histogrammes"
-    output_dir.mkdir(parents=True, exist_ok=True)
+            for i, sp_fac_palm in enumerate(sparsy_factors_palm):
+                for hierarchical_value in [1, 0]:
+                    hierarchical_str = " H" if hierarchical_value == 1 else ""
+                    df_data_palminized_hierarchical = df_data_palminized[df_data_palminized["--hierarchical"] == hierarchical_value]
+                    val = df_data_palminized_hierarchical[df_data_palminized_hierarchical["--sparsity-factor"] == sp_fac_palm][task_palminized].values.mean() if sp_fac_palm in df_data_palminized_hierarchical["--sparsity-factor"].values else 0
+
+                    hls_str = "hsl({}, {}%, 60%)".format(hue_by_sparsity[sp_fac_palm], saturation_by_hier[hierarchical_value])
+                    fig.add_trace(go.Bar(name=('Palm {}' + hierarchical_str).format(sp_fac_palm), x=[xticks[-1]], y=[val], marker_color=hls_str))
+
+            title = task + " " + dataname
+
+            fig.update_layout(barmode='group',
+                              title=title,
+                              xaxis_title="# Factor",
+                              yaxis_title=ylabel_task[task],
+                              yaxis_type=scale_tasks[task],
+                              xaxis={'type': 'category'},
+                              )
+            fig.show()
+            fig.write_image(str((output_dir / title).absolute()) + ".png")

@@ -236,7 +236,6 @@ def main():
     csvcallback = keras.callbacks.callbacks.CSVLogger(str(paraman["output_file_csvcbprinter"]), separator=',', append=True)
     call_backs.append(csvcallback)
 
-
     signal.signal(signal.SIGALRM, timeout_signal_handler)
     signal.alarm(int(paraman["--walltime"] * 3600))  # start alarm
     try:
@@ -244,7 +243,7 @@ def main():
         history = fine_tuned_model.fit(param_train_dataset.image_data_generator.flow(x_train, y_train, batch_size=param_train_dataset.batch_size),
                                        epochs=param_train_dataset.epochs - init_nb_epoch,
                                        # epochs=2 - init_nb_epoch,
-                                       verbose=1,
+                                       verbose=2,
                                        validation_data=(x_test, y_test),
                                        callbacks=param_train_dataset.callbacks + call_backs)
         signal.alarm(0)  # stop alarm for next evaluation
