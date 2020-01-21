@@ -173,7 +173,7 @@ def main():
                 # epochs=5,
                 epochs=param_train_dataset.epochs - init_nb_epoch,
                 # epochs=2 - init_nb_epoch,
-                verbose=1,
+                verbose=2,
                 validation_data=(x_test, y_test),
                 callbacks=param_train_dataset.callbacks + call_backs)
         else:
@@ -183,7 +183,7 @@ def main():
                # epochs=5,
                epochs=param_train_dataset.epochs - init_nb_epoch,
                # epochs=2 - init_nb_epoch,
-               verbose=1,
+               verbose=2,
                validation_data=(x_test, y_test),
                callbacks=param_train_dataset.callbacks + call_backs)
         signal.alarm(0)  # stop alarm for next evaluation
