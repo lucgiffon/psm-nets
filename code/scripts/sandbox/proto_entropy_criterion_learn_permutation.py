@@ -16,7 +16,7 @@ from tensorflow.python.keras.engine.base_layer import InputSpec
 
 from palmnet.core.palminize import Palminizable
 # from palmnet.layers.sparse_masked import SparseFixed, SparseFactorisationConv2D#, SparseFactorisationDense
-from palmnet.layers.pbp_layer import PBPDense
+from palmnet.layers.pbp_layer import PBPDense, PBPDenseDensify
 from palmnet.utils import insert_layer_nonseq, get_sparsity_pattern, create_random_block_diag, create_permutation_matrix
 import pickle
 from keras.layers import Layer
@@ -79,7 +79,8 @@ def mainSparseFactorisation():
     model = Sequential()
     # model.add(SparseFactorisationConv2D(sparsity_patterns=sparsity_patterns_conv, input_shape=input_shape, filters=nb_filter, kernel_size=kernel_size, padding=padding))
     # model.add(Flatten())
-    model.add(PBPDense(input_shape=input_shape, units=hidden_layer_dim, nb_factor=sparse_factors, sparsity_factor=sparsity_factor, entropy_regularization_parameter=1))
+    model.add(PBPDenseDensify(input_shape=input_shape, units=hidden_layer_dim, nb_factor=sparse_factors, sparsity_factor=sparsity_factor, entropy_regularization_parameter=1))
+    model.add(PBPDenseDensify(units=hidden_layer_dim, nb_factor=sparse_factors, sparsity_factor=sparsity_factor, entropy_regularization_parameter=1))
     model.add(Dense(num_classes, activation='softmax'))
 
     tb = keras.callbacks.tensorboard_v1.TensorBoard(log_dir='./logs', histogram_freq=1, batch_size=32, write_graph=True, write_grads=1, write_images=True, embeddings_freq=0,
