@@ -101,10 +101,10 @@ def main():
     elif paraman["--test-model"]:
         raise NotImplementedError
         base_model = sparse_random_lenet_model(x_train[0].shape, y_test[0].shape[0], sparsity_factor=paraman["--sparsity-factor"], nb_sparse_factors=paraman["--nb-factor"])
-    elif paraman["--dense-layers"] is not None:
+    elif paraman["--dense-layers"]:
         lst_units = [int(elm) for elm in paraman["--nb-units-dense-layer"].split("-")]
         base_model = create_dense_model(x_train[0].shape, y_test[0].shape[0], units=lst_units)
-    elif paraman["--pbp-dense-layers"] is not None:
+    elif paraman["--pbp-dense-layers"]:
         lst_units = [int(elm) for elm in paraman["--nb-units-dense-layer"].split("-")]
         base_model = create_pbp_model(x_train[0].shape, y_test[0].shape[0], sparsity_factor=paraman["--sparsity-factor"], nb_sparse_factors=paraman["--nb-factor"], units=lst_units, soft_entropy_regularisation=paraman["--param-reg-softmax-entropy"])
 

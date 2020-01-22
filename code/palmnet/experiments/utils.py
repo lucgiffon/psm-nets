@@ -1,5 +1,6 @@
 import os
 import zlib
+import pandas as pd
 
 import pathlib
 import random
@@ -240,6 +241,62 @@ class ParameterManagerEntropyRegularization(ParameterManager):
         self["output_file_finishedprinter"] = Path(self["hash"] + ".finished")
         self["output_file_tensorboardprinter"] = Path(self["hash"] + ".tb")
         self["output_file_csvcbprinter"] = Path(self["hash"] + "_history.csv")
+
+class ParameterManagerEntropyRegularizationFinetune(ParameterManagerEntropyRegularization):
+    def __init__(self, dct_params, **kwargs):
+        super().__init__(dct_params, **kwargs)
+        self["--input-dir"] = pathlib.Path(self["--input-dir"])
+        self.__init_model_path()
+
+    def __init_model_path(self):
+        FORCE = False
+        path_prepared_df = Path(self["--input-dir"]) / "prepared_df.csv"
+        if not FORCE and path_prepared_df.exists():
+            df = pd.read_csv(path_prepared_df, sep=";")
+        else:
+            df = get_df(self["--input-dir"])
+            df.to_csv(str(path_prepared_df.absolute()), sep=";")
+
+        keys_of_interest = ['--cifar10',
+                            '--cifar10-vgg19',
+                            '--cifar100',
+                            '--cifar100-vgg19',
+                            '--mnist',
+                            '--mnist-lenet',
+                            '--sparsity-factor',
+                            '--svhn',
+                            '--svhn-vgg19',
+                            '--test-data',
+                            '--test-model',
+                            "--nb-factor",
+                            "--nb-units-dense-layer",
+                            "--param-reg-softmax-entropy",
+                            "--pbp-dense-layers",
+                            "--dense-layers",
+                            "--seed"
+                            ]
+        queries = []
+        for k in keys_of_interest:
+            logger.debug("{}, {}, {}".format(self[k], type(self[k]), k))
+            if self[k] is None:
+                str_k = "'None'"
+            elif k in ["--nb-units-dense-layer", "--param-reg-softmax-entropy", "--nb-factor", "--sparsity-factor"]:
+                str_k = "'{}'".format(self[k])
+            else:
+                str_k = self[k]
+
+            query = "(df['{}']=={})".format(k, str_k)
+            queries.append(query)
+
+        s_query = " & ".join(queries)
+        s_eval = "df[({})]".format(s_query)
+        line_of_interest = eval(s_eval)
+        logger.debug(line_of_interest)
+        logger.debug(s_eval)
+
+        assert len(line_of_interest) == 1, "The parameters doesn't allow to discriminate only one pre-trained model in directory"
+
+        self["input_model_path"] = self["--input-dir"] / line_of_interest["output_file_modelprinter"].iloc[0]
 
 class ResultPrinter:
     """
