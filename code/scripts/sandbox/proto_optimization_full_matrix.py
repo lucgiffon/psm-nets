@@ -51,9 +51,10 @@ class tfSparseFactorization:
 
     def regularization_softmax_entropy(self, weight_matrix):
         # sum to one
-        weight_matrix_proba = softmax(weight_matrix)
+        weight_matrix_proba_1 = softmax(weight_matrix, axis=1)
+        weight_matrix_proba_0 = softmax(weight_matrix, axis=0)
         # high entropy
-        entropy = self.entropy(weight_matrix_proba)
+        entropy = tf.add(self.entropy(weight_matrix_proba_1), self.entropy(weight_matrix_proba_0))
         regularization = self.entropy_regularization_parameter * entropy
         return regularization
 
@@ -105,10 +106,10 @@ class tfSparseFactorization:
 
     def call(self):
 
-        output = softmax(self.permutations[0], axis=1)
+        output = tf.multiply(softmax(self.permutations[0], axis=1), softmax(self.permutations[0], axis=0))
         for i in range(self.nb_factor):
             output = tf.sparse.sparse_dense_matmul(tf.sparse.transpose(tf.sparse.reorder(self.sparse_block_diag_ops[i])), output)
-            output = tf.matmul(softmax(self.permutations[i+1], axis=1), output)
+            output = tf.matmul(tf.multiply(softmax(self.permutations[i+1], axis=1), softmax(self.permutations[i+1], axis=0)), output)
 
         output = tf.transpose(output)
         return output
@@ -132,7 +133,7 @@ def sparse_facto_train(obj_mat, entropy_param, l2_param, lr, epochs, sparsity_fa
 
     sparse_facto_obj = tfSparseFactorization(obj_mat.shape, nb_factor, sparsity_factor, entropy_placeholder, l2_placeholder).build()
 
-    objective = tf.divide(tf.square(tf.norm(obj_mat - sparse_facto_obj.call())), tf.norm(obj_mat)) + sparse_facto_obj.get_softmax_entropy_regularization() + sparse_facto_obj.get_l2_regularization()
+    objective = tf.divide(tf.square(tf.norm(obj_mat - sparse_facto_obj.call())), tf.norm(obj_mat)) + sparse_facto_obj.get_softmax_entropy_regularization()
     optimizer = tf.train.AdamOptimizer(lr)
     train = optimizer.minimize(objective)
     init = tf.initialize_all_variables()
@@ -165,26 +166,24 @@ def main():
 
     y_max_entropy_reg = 1
     x_max = epochs
-    entropy_param_reg = np.log(y_max_entropy_reg + 1) / x_max
-    raise NotImplementedError("Voir si on peut faire une optimisation façon 'hierarchique' comme pour PALM")
+    # entropy_param_reg = np.log(y_max_entropy_reg + 1) / x_max
+    entropy_param_reg = 0.1
+    with tf.Session() as session:
+        obj = sparse_facto_train(obj_mat=had, entropy_param=entropy_param_reg, l2_param=0, lr=1e-4, epochs=epochs, sparsity_factor=sparsity_factor, nb_factor=nb_factor, session=session)
 
-    # for j in range(nb_factor):
-    #     res =
-
-
-    # final_mat = session.run(sparse_facto_obj.call())
-    # plt.imshow(final_mat)
-    # plt.show()
-    # for perm in sparse_facto_obj.permutations:
-    #     perm_ev = np.array(session.run(softmax(perm, axis=1)))
-    #     m = Munkres()
-    #     indexes = np.array(m.compute(-perm_ev))
-    #     rows = indexes[:, 0]
-    #     cols = indexes[:, 1]
-    #     vals = perm_ev[tuple(indexes.T)]
-    #     proj = coo_matrix((np.ones(rows.size), (rows, cols)))
-    #     plt.imshow(proj.toarray())
-    #     plt.show()
+        final_mat = session.run(obj.call())
+        plt.imshow(final_mat)
+        plt.show()
+        # for perm in sparse_facto_obj.permutations:
+        #     perm_ev = np.array(session.run(softmax(perm, axis=1)))
+        #     m = Munkres()
+        #     indexes = np.array(m.compute(-perm_ev))
+        #     rows = indexes[:, 0]
+        #     cols = indexes[:, 1]
+        #     vals = perm_ev[tuple(indexes.T)]
+        #     proj = coo_matrix((np.ones(rows.size), (rows, cols)))
+        #     plt.imshow(proj.toarray())
+        #     plt.show()
 
 if __name__ == "__main__":
     main()

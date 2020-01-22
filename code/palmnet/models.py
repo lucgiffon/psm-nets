@@ -3,7 +3,7 @@ from keras import Sequential
 from keras.initializers import he_normal
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchNormalization, Activation, Dropout
 
-from palmnet.layers.pbp_layer import PBPDense
+from palmnet.layers.pbp_layer import PBPDenseDensify
 from palmnet.layers.sparse_tensor import RandomSparseFactorisationConv2D, RandomSparseFactorisationDense
 
 
@@ -20,11 +20,12 @@ def random_small_model(input_shape, num_classes):
     model.add(Activation('softmax'))
     return model
 
-def create_pbp_model(input_shape, num_classes, sparsity_factor, nb_sparse_factors, units, soft_entropy_regularisation):
+def create_pbp_model(input_shape, num_classes, sparsity_factor, nb_sparse_factors, units, soft_entropy_regularisation, add_entropies):
     model = Sequential()
-    model.add(PBPDense(input_shape=input_shape, units=units[0], activation='relu', nb_factor=nb_sparse_factors, sparsity_factor=sparsity_factor, entropy_regularization_parameter=soft_entropy_regularisation))
+
+    model.add(PBPDenseDensify(input_shape=input_shape, units=units[0], activation='relu', add_entropies=add_entropies, nb_factor=nb_sparse_factors, sparsity_factor=sparsity_factor, entropy_regularization_parameter=soft_entropy_regularisation))
     for nb_unit_layer in units[1:]:
-        model.add(PBPDense(units=nb_unit_layer, nb_factor=nb_sparse_factors, activation='relu', sparsity_factor=sparsity_factor, entropy_regularization_parameter=soft_entropy_regularisation))
+        model.add(PBPDenseDensify(units=nb_unit_layer, nb_factor=nb_sparse_factors, activation='relu', add_entropies=add_entropies, sparsity_factor=sparsity_factor, entropy_regularization_parameter=soft_entropy_regularisation))
     model.add(Dense(num_classes, activation='softmax'))
     return model
 

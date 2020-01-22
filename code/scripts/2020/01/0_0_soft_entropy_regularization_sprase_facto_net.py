@@ -2,7 +2,7 @@
 This script finds a palminized model with given arguments then finetune it.
 
 Usage:
-    script.py [-h] [-v|-vv] --walltime int [--seed int]  [--sparsity-factor=int] [--nb-factor=intorstr] [--tb] [--param-reg-softmax-entropy=float] (--mnist|--svhn|--cifar10|--cifar100|--test-data) (--pbp-dense-layers --nb-units-dense-layer=str |--dense-layers --nb-units-dense-layer=str|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19)
+    script.py [-h] [-v|-vv] --walltime int [--seed int]  [--sparsity-factor=int] [--nb-factor=intorstr] [--tb] [--add-entropies] [--param-reg-softmax-entropy=float] (--mnist|--svhn|--cifar10|--cifar100|--test-data) (--pbp-dense-layers --nb-units-dense-layer=str |--dense-layers --nb-units-dense-layer=str|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19)
 
 Options:
   -h --help                             Show this screen.
@@ -33,6 +33,7 @@ Sparsity options:
   --sparsity-factor=int                 Integer coefficient from which is computed the number of value in each factor.
   --nb-factor=intorstr                  Integer telling how many factors should be used or list of int telling for each layer the number of factor ("int,int,int").
   --param-reg-softmax-entropy=float     Float for the parameter of the softmax entropy
+  --add-entropies                       Use addition instead of multiplication for regularization of permutations
 """
 import logging
 import os
@@ -45,7 +46,7 @@ import docopt
 
 from palmnet.core.palminize import Palminizable
 from palmnet.data import Mnist, Test, Svhn, Cifar100, Cifar10
-from palmnet.layers.pbp_layer import PBPDense
+from palmnet.layers.pbp_layer import PBPDenseDensify
 from palmnet.models import sparse_random_vgg19_model, sparse_random_lenet_model, pbp_lenet_model, create_pbp_model, create_dense_model
 from palmnet.utils import timeout_signal_handler
 from palmnet.experiments.utils import ResultPrinter, ParameterManagerRandomSparseFacto, ParameterManagerEntropyRegularization
@@ -106,11 +107,17 @@ def main():
         base_model = create_dense_model(x_train[0].shape, y_test[0].shape[0], units=lst_units)
     elif paraman["--pbp-dense-layers"]:
         lst_units = [int(elm) for elm in paraman["--nb-units-dense-layer"].split("-")]
-        base_model = create_pbp_model(x_train[0].shape, y_test[0].shape[0], sparsity_factor=paraman["--sparsity-factor"], nb_sparse_factors=paraman["--nb-factor"], units=lst_units, soft_entropy_regularisation=paraman["--param-reg-softmax-entropy"])
+        base_model = create_pbp_model(x_train[0].shape, y_test[0].shape[0],
+                                      sparsity_factor=paraman["--sparsity-factor"], nb_sparse_factors=paraman["--nb-factor"],
+                                      units=lst_units, soft_entropy_regularisation=paraman["--param-reg-softmax-entropy"], add_entropies=paraman["--add-entropies"])
 
     else:
         raise NotImplementedError("No dataset specified.")
 
+    if paraman["--pbp-dense-layers"]:
+        optimizer = keras.optimizers.Adam(lr=0.01)
+    else:
+        optimizer = param_train_dataset.optimizer
 
     if os.path.exists(paraman["output_file_notfinishedprinter"]) and os.path.exists(paraman["output_file_modelprinter"]):
         df = pd.read_csv(paraman["output_file_resprinter"])
@@ -120,7 +127,7 @@ def main():
             logger.error("Caught exception while reading csv history: {}".format(str(e)))
             init_nb_epoch = 0
         base_score = float(df["base_score"])
-        base_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={"PBPDense": PBPDense})
+        base_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={"PBPDenseDensify": PBPDenseDensify})
         # nb_flop_model = int(df["nb_flop"])
         traintime = int(df["traintime"])
 
@@ -128,7 +135,7 @@ def main():
         init_nb_epoch = 0
         traintime = 0
         base_model.compile(loss=param_train_dataset.loss,
-                                 optimizer=param_train_dataset.optimizer,
+                                 optimizer=optimizer,
                                  metrics=['categorical_accuracy'])
         base_score = base_model.evaluate(x_test, y_test, verbose=1)[1]
         print(base_score)
@@ -173,7 +180,7 @@ def main():
                 # epochs=5,
                 epochs=param_train_dataset.epochs - init_nb_epoch,
                 # epochs=2 - init_nb_epoch,
-                verbose=2,
+                verbose=1,
                 validation_data=(x_test, y_test),
                 callbacks=param_train_dataset.callbacks + call_backs)
         else:
