@@ -139,8 +139,6 @@ def main():
                                  metrics=['categorical_accuracy'])
         base_score = base_model.evaluate(x_test, y_test, verbose=1)[1]
         print(base_score)
-        # nb_param_model, _, nb_flop_model, _, param_by_layer, flop_by_layer = Palminizable.count_model_param_and_flops_(base_model)
-        # print(nb_param_model, nb_flop_model)
 
         # results must be already printed once in case process is killed afterward
     dct_results = {
@@ -180,7 +178,7 @@ def main():
                 # epochs=5,
                 epochs=param_train_dataset.epochs - init_nb_epoch,
                 # epochs=2 - init_nb_epoch,
-                verbose=1,
+                verbose=2,
                 validation_data=(x_test, y_test),
                 callbacks=param_train_dataset.callbacks + call_backs)
         else:

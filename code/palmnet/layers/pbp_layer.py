@@ -260,6 +260,7 @@ class PBPDenseDensify(Layer):
             self.permutation_initializer = lambda shape, dtype: np.eye(shape[0], dtype=dtype)
         else:
             self.permutation_initializer = initializers.get(permutation_initializer)
+
         self.permutation_initializer_name = permutation_initializer
 
 
@@ -276,6 +277,12 @@ class PBPDenseDensify(Layer):
 
     def get_config(self):
         base_config = super().get_config()
+        if self.permutation_initializer_name == 'permutation':
+            permutation_init = "permutation"
+        elif self.permutation_initializer_name == 'identity':
+            permutation_init = "identity"
+        else:
+            permutation_init = initializers.serialize(self.permutation_initializer)
         config = {
             'units': self.units,
             'activation': activations.serialize(self.activation),
@@ -290,7 +297,7 @@ class PBPDenseDensify(Layer):
             'sparsity_factor':self.sparsity_factor,
             'add_entropies': self.add_entropies,
             'entropy_regularization_parameter':self.entropy_regularization_parameter,
-            'permutation_initializer': 'permutation' if self.permutation_initializer_name == 'permutation' else initializers.serialize(self.permutation_initializer)
+            'permutation_initializer': permutation_init
         }
         config.update(base_config)
         return config
@@ -318,8 +325,8 @@ class PBPDenseDensify(Layer):
 
     def regularization_softmax_entropy(self, weight_matrix):
         """
-        Compute softmax entropy regularisation: softmax is applied to the columns of the weight matrix and then the entropy is computed
-        on the resulting matrix.
+        Compute softmax entropy regularisation: softmax is applied to the columns and the rows of the weight matrix and then the entropy is computed
+        on the resulting matrices. The two values of entropy are then multiplied or added to each other.
         """
         # sum to one
         weight_matrix_proba_1 = K.softmax(weight_matrix, axis=1)

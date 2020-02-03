@@ -72,6 +72,7 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
         sparse_factorization = dct_name_facto[layer_name]
         logger.debug('Prepare layer {}'.format(layer.name))
         if sparse_factorization != (None, None):
+            # scaling = 1.
             scaling = sparse_factorization[0]
             # factors_sparse = [coo_matrix(fac.toarray()) for fac in sparse_factorization[1].get_list_of_factors()]
             factors = [fac.toarray() for fac in sparse_factorization[1].get_list_of_factors()]
@@ -218,8 +219,8 @@ def main():
     resprinter.print()
 
     # if paraman["--hierarchical"]:
-    assert before_finetuned_score == palminized_score, \
-        "the reconstructed model with sparse facto should equal in perf to the reconstructed model with dense product. {} != {}".format(before_finetuned_score, palminized_score)
+    #     assert before_finetuned_score == palminized_score, \
+    #         "the reconstructed model with sparse facto should equal in perf to the reconstructed model with dense product. {} != {}".format(before_finetuned_score, palminized_score)
     # else: # small fix for a bug where when I wasn't using hierarchical palm returned a matrix that wasn't multiplied by lambda
     #     # this should pass until results are generated without bug..
     #     assert before_finetuned_score != palminized_score, \
@@ -238,6 +239,7 @@ def main():
 
     signal.signal(signal.SIGALRM, timeout_signal_handler)
     signal.alarm(int(paraman["--walltime"] * 3600))  # start alarm
+    finetuned_score = None
     try:
         open(paraman["output_file_notfinishedprinter"], 'w').close()
         history = fine_tuned_model.fit(param_train_dataset.image_data_generator.flow(x_train, y_train, batch_size=param_train_dataset.batch_size),
@@ -255,7 +257,6 @@ def main():
     # except TimeoutError as te:
     except Exception as e:
         logging.error("Caught exception: {}".format(e))
-        finetuned_score = None
     finally:
         dct_results = {
             "finetuned_score": finetuned_score,

@@ -2,11 +2,11 @@
 all:
   palmnet_mnist_dense:
 #  palmnet_svhn_dense:
-  palmnet_cifar10_dense:
+#  palmnet_cifar10_dense:
 #  palmnet_cifar100_dense:
   palmnet_mnist_pbp:
 #  palmnet_svhn_pbp:
-  palmnet_cifar10_pbp:
+#  palmnet_cifar10_pbp:
 #  palmnet_cifar100_pbp:
 
 base:

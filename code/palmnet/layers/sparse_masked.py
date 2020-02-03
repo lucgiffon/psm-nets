@@ -147,9 +147,6 @@ class SparseFactorisationDense(Layer):
         if 'input_shape' not in kwargs and 'input_dim' in kwargs:
             kwargs['input_shape'] = (kwargs.pop('input_dim'),)
 
-        assert [sparsity_patterns[i].shape[1] == sparsity_patterns[i+1].shape[0] for i in range(len(sparsity_patterns)-1)]
-        assert sparsity_patterns[-1].shape[1] == units, "sparsity pattern last dim should be equal to output dim in {}".format(__class__.__name__)
-
         super(SparseFactorisationDense, self).__init__(**kwargs)
 
         if sparsity_patterns is not None:
@@ -176,6 +173,22 @@ class SparseFactorisationDense(Layer):
         self.scaler_regularizer = regularizers.get(scaler_regularizer)
         self.scaler_constraint = constraints.get(scaler_constraint)
 
+    def get_config(self):
+        base_config = super().get_config()
+        config = {
+            'units': self.units,
+            'activation': activations.serialize(self.activation),
+            'use_bias': self.use_bias,
+            'kernel_initializer': initializers.serialize(self.kernel_initializer),
+            'bias_initializer': initializers.serialize(self.bias_initializer),
+            'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
+            'bias_regularizer': regularizers.serialize(self.bias_regularizer),
+            'kernel_constraint': constraints.serialize(self.kernel_constraint),
+            'bias_constraint': constraints.serialize(self.bias_constraint),
+            'sparsity_patterns': self.sparsity_patterns
+        }
+        config.update(base_config)
+        return config
 
     def build(self, input_shape):
         assert len(input_shape) >= 2
