@@ -228,7 +228,7 @@ class PBPDenseDensify(Layer):
                  use_bias=True,
                  scaler_initializer='glorot_uniform',
                  kernel_initializer='glorot_uniform',
-                 permutation_initializer='identity',
+                 permutation_initializer='glorot_uniform',
                  bias_initializer='zeros',
                  scaler_regularizer=None,
                  kernel_regularizer=None,
@@ -243,7 +243,7 @@ class PBPDenseDensify(Layer):
 
         super(PBPDenseDensify, self).__init__(**kwargs)
 
-        assert nb_factor is None or nb_factor >=2, "Layer must have at least two sparse factors"
+        # assert nb_factor is None or nb_factor >=2, "Layer must have at least two sparse factors"
         self.nb_factor = nb_factor
         self.sparsity_factor = sparsity_factor
         self.add_entropies = add_entropies
@@ -340,10 +340,11 @@ class PBPDenseDensify(Layer):
         return regularization
 
     def add_block_diag(self, shape, name="block_diag_B"):
-        block_diag_mask = K.constant(create_random_block_diag(*shape, self.sparsity_factor, mask=True), dtype="float32", name="{}_mask".format(name))
+        block_diag_array = create_random_block_diag(*shape, self.sparsity_factor, mask=True)
+        block_diag_mask = K.constant(block_diag_array, dtype="float32", name="{}_mask".format(name))
 
         kernel_block_diag = self.add_weight(shape=shape,
-                                     initializer=self.kernel_initializer,
+                                     initializer=lambda shape, dtype: self.kernel_initializer(shape, dtype) * block_diag_array,
                                      name=name,
                                      regularizer=self.kernel_regularizer,
                                      constraint=self.kernel_constraint)
@@ -386,10 +387,11 @@ class PBPDenseDensify(Layer):
                 self.kernels.append(kernel_block_diag)
                 self.block_diag_masks.append(block_diag_mask)
 
-        # create last B: block diagonal sparse
-        kernel_block_diag, block_diag_mask = self.add_block_diag((inner_dim, self.units), name="block_diag_B_output")
-        self.kernels.append(kernel_block_diag)
-        self.block_diag_masks.append(block_diag_mask)
+        if self.nb_factor > 1:
+            # create last B: block diagonal sparse
+            kernel_block_diag, block_diag_mask = self.add_block_diag((inner_dim, self.units), name="block_diag_B_output")
+            self.kernels.append(kernel_block_diag)
+            self.block_diag_masks.append(block_diag_mask)
 
         # create last P: dense with regularization
         self.permutations.append(self.add_permutation(self.units, name="permutation_P_output"))

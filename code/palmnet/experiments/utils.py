@@ -86,6 +86,8 @@ class ParameterManager(dict):
             return Svhn.load_model()
         elif self["--test-model"]:
             return Test.load_model()
+        elif self["--mnist-500"]:
+            return Mnist.load_model("mnist-500")
         else:
             raise NotImplementedError("No dataset specified.")
 

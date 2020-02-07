@@ -19,6 +19,7 @@ MAP_DATA_MODEL_URL = {
     "cifar10_vgg19_2048x2048": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/cifar10_vgg19_2048x2048_1572303047.h5",
     "cifar100_vgg19_2048x2048": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/cifar100_vgg19_2048x2048_1572278802.h5",
     "svhn_vgg19_2048x2048": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/svhn_vgg19_2048x2048_1572278831.h5",
+    "mnist_500": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/mnist_500.h5",
 }
 
 MAP_DATA_MODEL_MD5SUM = {
@@ -28,7 +29,8 @@ MAP_DATA_MODEL_MD5SUM = {
     "svhn_vgg19_4096x4096": "204e41afbc84d1806822a60a9558ea52",
     "cifar10_vgg19_2048x2048": "98cece5432051adc2330699a40940dfd",
     "cifar100_vgg19_2048x2048": "57d6bf6434428a81e702271367eac4d1",
-    "svhn_vgg19_2048x2048": "d5697042804bcc646bf9882a45dedd9e"
+    "svhn_vgg19_2048x2048": "d5697042804bcc646bf9882a45dedd9e",
+    "mnist_500": "1b023b05a01f24a99ac9a460488068f8",
 }
 
 def _download_single_model(output_dirpath, model):

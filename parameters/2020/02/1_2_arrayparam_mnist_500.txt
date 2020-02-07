@@ -1,0 +1,16 @@
+--sparsity-factor 2 -v --mnist --mnist-500 --nb-factor 2
+--sparsity-factor 2 -v --mnist --mnist-500 --nb-factor 3
+--sparsity-factor 3 -v --mnist --mnist-500 --nb-factor 2
+--sparsity-factor 3 -v --mnist --mnist-500 --nb-factor 3
+--sparsity-factor 4 -v --mnist --mnist-500 --nb-factor 2
+--sparsity-factor 4 -v --mnist --mnist-500 --nb-factor 3
+--sparsity-factor 5 -v --mnist --mnist-500 --nb-factor 2
+--sparsity-factor 5 -v --mnist --mnist-500 --nb-factor 3
+--sparsity-factor 2 -v --mnist --mnist-500 --hierarchical
+--sparsity-factor 2 -v --mnist --mnist-500
+--sparsity-factor 3 -v --mnist --mnist-500 --hierarchical
+--sparsity-factor 3 -v --mnist --mnist-500
+--sparsity-factor 4 -v --mnist --mnist-500 --hierarchical
+--sparsity-factor 4 -v --mnist --mnist-500
+--sparsity-factor 5 -v --mnist --mnist-500 --hierarchical
+--sparsity-factor 5 -v --mnist --mnist-500

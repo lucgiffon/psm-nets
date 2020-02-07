@@ -15,6 +15,7 @@ MAP_EXTERNAL_MODEL_FILENAME = {
     "cifar10_vgg19_2048x2048": "cifar10_vgg19_2048x2048_1572303047.h5",
     "cifar100_vgg19_2048x2048": "cifar100_vgg19_2048x2048_1572278802.h5",
     "svhn_vgg19_2048x2048": "svhn_vgg19_2048x2048_1572278831.h5",
+    "mnist-500": "mnist_500.h5"
 }
 
 param_training = namedtuple("ParamTraining", ["batch_size", "epochs", "optimizer", "loss", "image_data_generator", "callbacks"])
