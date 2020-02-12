@@ -27,6 +27,29 @@ def scheduler(epoch):
         return 0.01
     return 0.001
 
+
+class DataGenerator(keras.utils.Sequence):
+
+    def __init__(self, x_set, y_set, batch_size):
+        self.x, self.y = x_set, y_set
+        self.batch_size = batch_size
+
+    def __len__(self):
+        return int(np.ceil(len(self.x) / self.batch_size))
+
+    def __getitem__(self, idx):
+        batch_x = self.x[idx * self.batch_size:(idx + 1) *
+        self.batch_size]
+        batch_y = self.y[idx * self.batch_size:(idx + 1) *
+        self.batch_size]
+
+        return np.array(batch_x), np.array(batch_y)
+
+    @staticmethod
+    def flow(*args, **kwargs):
+        return DataGenerator(*args, **kwargs)
+
+
 image_data_generator_mnist = ImageDataGenerator(
     featurewise_center=False,  # set input mean to 0 over the dataset
     samplewise_center=False,  # set each sample mean to 0
@@ -65,6 +88,15 @@ mnist_param_training = param_training(
     callbacks=[]
 )
 
+mnist_500_param_training = param_training(
+    batch_size=32,
+    epochs=100,
+    optimizer=keras.optimizers.RMSprop(lr=0.0001, decay=1e-6),
+    loss="categorical_crossentropy",
+    image_data_generator=DataGenerator,
+    callbacks=[]
+)
+
 image_data_generator_cifar_svhn = ImageDataGenerator(horizontal_flip=True,
                              width_shift_range=0.125,
                              height_shift_range=0.125,
@@ -85,6 +117,7 @@ cifar100_param_training = cifar10_param_training
 svhn_param_training = cifar10_param_training
 
 MAP_EXTERNAL_MODEL_PARAM_TRAINING = {
+    "mnist_500": mnist_500_param_training,
     "mnist_lenet": mnist_param_training,
     "cifar10_vgg19_4096x4096": cifar10_param_training,
     "cifar100_vgg19_4096x4096": cifar100_param_training,

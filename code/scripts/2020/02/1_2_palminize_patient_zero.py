@@ -36,6 +36,7 @@ import logging
 import pickle
 import sys
 import time
+import numpy as np
 
 import docopt
 
@@ -69,6 +70,8 @@ def main():
 
     nb_param_base_model, nb_param_compressed_model, nb_flop_base_model, nb_flop_compressed_model = palminizable.count_model_param_and_flops()
 
+    if paraman["--mnist-500"]:
+        x_test = np.reshape(x_test, (-1, 784))
 
     score_base, acc_base, score_compressed, acc_compressed = palminizable.evaluate(x_test, y_test)
 
