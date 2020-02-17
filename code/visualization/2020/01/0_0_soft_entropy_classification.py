@@ -294,8 +294,8 @@ def figure_permutations():
                     df_add_entro = df_sparsity[df_sparsity["--add-entropies"] == add_entro]
                     df_add_entro_glorot = df_sparsity_glorot[df_sparsity_glorot["--add-entropies"] == add_entro]
                     str_add_entro = "+" if add_entro else "*"
-                    # for param_reg in ["0.0001"]:
-                    for param_reg in sorted(param_reg_softentropy):
+                    for param_reg in ["0.0001"]:
+                    # for param_reg in sorted(param_reg_softentropy):
                         df_reg = df_add_entro[df_add_entro["--param-reg-softmax-entropy"] == param_reg]
                         df_reg_glorot = df_add_entro_glorot[df_add_entro_glorot["--param-reg-softmax-entropy"] == float(param_reg)]
                         for nb_fac in ["2"]:
@@ -323,7 +323,7 @@ def figure_permutations():
                                         plt.show()
                                 break
                             for of in df_nb_fac_glorot[col_model_file]:
-                                if df_nb_fac_glorot[df_nb_fac_glorot[col_model_file] == of] ["finetuned_score"].iloc[0] < 0.5:
+                                if df_nb_fac_glorot[df_nb_fac_glorot[col_model_file] == of] ["finetuned_score"].iloc[0] > 0.5:
                                     pbp_model = keras.models.load_model(str((src_results_dir_glorot / of).absolute()),custom_objects={"PBPDenseDensify": PBPDenseDensify})
                                     names = [weight.name for layer in pbp_model.layers for weight in layer.weights]
                                     weights = pbp_model.get_weights()
@@ -332,9 +332,10 @@ def figure_permutations():
                                             continue
                                         if "permutation" in name:
                                             weight = np.multiply(scipy.special.softmax(weight, axis=1), scipy.special.softmax(weight, axis=0))
-                                            weight[weight < 0.5] = 0
-                                            weight[weight >= 0.5] = 1
-                                            sum_one = np.sum(weight)
+                                            # weight[weight < 0.5] = 0
+                                            # weight[weight >= 0.5] = 1
+                                            # sum_one = np.sum(weight)
+                                            sum_one=0
                                             plt.imshow(weight)
                                             plt.title('{}Glo-{}-spar.{}-{}-{}-{}'.format(sum_one, name, sp_fac, param_reg, str_add_entro, nb_fac))
                                             plt.show()

@@ -244,10 +244,18 @@ class ParameterManagerEntropyRegularization(ParameterManager):
         self["output_file_tensorboardprinter"] = Path(self["hash"] + ".tb")
         self["output_file_csvcbprinter"] = Path(self["hash"] + "_history.csv")
 
+dict_cast_dtypes = {
+    "object": str,
+    "float64": float,
+    "int64": int,
+    "bool": bool
+}
+
 class ParameterManagerEntropyRegularizationFinetune(ParameterManagerEntropyRegularization):
     def __init__(self, dct_params, **kwargs):
         super().__init__(dct_params, **kwargs)
         self["--input-dir"] = pathlib.Path(self["--input-dir"])
+        self["--permutation-threshold"] = float(self["--permutation-threshold"])
         self.__init_model_path()
 
     def __init_model_path(self):
@@ -278,14 +286,20 @@ class ParameterManagerEntropyRegularizationFinetune(ParameterManagerEntropyRegul
                             "--seed"
                             ]
         queries = []
+
         for k in keys_of_interest:
             logger.debug("{}, {}, {}".format(self[k], type(self[k]), k))
-            if self[k] is None:
-                str_k = "'None'"
-            elif k in ["--nb-units-dense-layer", "--param-reg-softmax-entropy", "--nb-factor", "--sparsity-factor"]:
+            key_type = df.dtypes[k].name
+            if key_type == "object":
                 str_k = "'{}'".format(self[k])
             else:
-                str_k = self[k]
+                str_k = "{}".format(self[k])
+            # if self[k] is None:
+            #     str_k = "'None'"
+            # elif k in ["--nb-units-dense-layer", "--param-reg-softmax-entropy", "--nb-factor", "--sparsity-factor"]:
+            #     str_k = "'{}'".format(self[k])
+            # else:
+            #     str_k = self[k]
 
             query = "(df['{}']=={})".format(k, str_k)
             queries.append(query)
@@ -293,6 +307,7 @@ class ParameterManagerEntropyRegularizationFinetune(ParameterManagerEntropyRegul
         s_query = " & ".join(queries)
         s_eval = "df[({})]".format(s_query)
         line_of_interest = eval(s_eval)
+        line_of_interest.drop_duplicates(keys_of_interest, inplace=True)
         logger.debug(line_of_interest)
         logger.debug(s_eval)
 

@@ -131,8 +131,10 @@ class SparseFactorisationDense(Layer):
         return lambda shape, dtype: self.sparsity_patterns[idx_fac]
 
     def __init__(self, units, sparsity_patterns,
+                 factors_trainable=None,
                  activation=None,
                  use_bias=True,
+                 use_scaling=True,
                  scaler_initializer='glorot_uniform',
                  kernel_initializer='glorot_uniform',
                  bias_initializer='zeros',
@@ -155,12 +157,18 @@ class SparseFactorisationDense(Layer):
 
             assert [self.sparsity_patterns[i].shape[1] == self.sparsity_patterns[i + 1].shape[0] for i in range(len(self.sparsity_patterns) - 1)]
             assert self.sparsity_patterns[-1].shape[1] == units, "sparsity pattern last dim should be equal to output dim in {}".format(__class__.__name__)
+
         else:
             self.sparsity_patterns = None
+
+        assert factors_trainable is None or all(type(elm) == bool for elm in factors_trainable)
+        self.factors_trainable = factors_trainable
+
 
         self.units = units
         self.activation = activations.get(activation)
         self.use_bias = use_bias
+        self.use_scaling = use_scaling
         # todo faire un initialiseur particulier (type glorot) qui prend en compte la sparsité
         self.kernel_initializer = initializers.get(kernel_initializer)
         self.bias_initializer = initializers.get(bias_initializer)
@@ -179,13 +187,15 @@ class SparseFactorisationDense(Layer):
             'units': self.units,
             'activation': activations.serialize(self.activation),
             'use_bias': self.use_bias,
+            'use_scaling': self.use_scaling,
             'kernel_initializer': initializers.serialize(self.kernel_initializer),
             'bias_initializer': initializers.serialize(self.bias_initializer),
             'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
             'bias_regularizer': regularizers.serialize(self.bias_regularizer),
             'kernel_constraint': constraints.serialize(self.kernel_constraint),
             'bias_constraint': constraints.serialize(self.bias_constraint),
-            'sparsity_patterns': self.sparsity_patterns
+            'sparsity_patterns': self.sparsity_patterns,
+            'factors_trainable': self.factors_trainable
         }
         config.update(base_config)
         return config
@@ -197,22 +207,27 @@ class SparseFactorisationDense(Layer):
         else:
             raise ValueError("No sparsity pattern found.")
 
-        self.scaling = self.add_weight(shape=(1,),
-                                      initializer=self.scaler_initializer,
-                                      name='scaler',
-                                      regularizer=self.scaler_regularizer,
-                                      constraint=self.scaler_constraint)
+        if self.use_scaling:
+            self.scaling = self.add_weight(shape=(1,),
+                                          initializer=self.scaler_initializer,
+                                          name='scaler',
+                                          regularizer=self.scaler_regularizer,
+                                          constraint=self.scaler_constraint)
+        else:
+            self.scaling = None
 
         self.kernels = []
         self.sparsity_masks = []
         for i in range(self.nb_factor):
             input_dim, output_dim = self.sparsity_patterns[i].shape
+            trainable = self.factors_trainable[i] if self.factors_trainable is not None else True
 
             self.kernels.append(self.add_weight(shape=(input_dim, output_dim),
                                                 initializer=self.kernel_initializer,
                                                 name='kernel_{}'.format(i),
                                                 regularizer=self.kernel_regularizer,
-                                                constraint=self.kernel_constraint))
+                                                constraint=self.kernel_constraint,
+                                                trainable=trainable))
 
             self.sparsity_masks.append(K.constant(self.sparsity_patterns[i], dtype="float32", name="sparsity_mask_{}".format(i)))
 
@@ -236,7 +251,7 @@ class SparseFactorisationDense(Layer):
             # multiply by the constant mask tensor so that gradient is 0 for zero entries.
             output = K.dot(output, self.kernels[i] * self.sparsity_masks[i])
 
-        output = self.scaling * output
+        output = self.scaling * output if self.use_scaling else output
 
         if self.use_bias:
             output = K.bias_add(output, self.bias, data_format='channels_last')

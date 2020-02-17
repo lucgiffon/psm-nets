@@ -9,8 +9,17 @@ from palmnet.core.palminize import Palminizable
 
 from skluc.utils import logger
 import scipy
+import scipy.special
 
 root_dir = Path(__file__).parent.parent.parent
+
+def np_create_permutation_from_weight_matrix(weight_matrix, threshold):
+    softmax_1 = scipy.special.softmax(weight_matrix, axis=1)
+    softmax_0 = scipy.special.softmax(weight_matrix, axis=0)
+    soft_permutation_mat = np.multiply(softmax_1, softmax_0)
+    soft_permutation_mat[soft_permutation_mat < threshold] = 0
+    soft_permutation_mat[soft_permutation_mat >= threshold] = 1
+    return soft_permutation_mat
 
 def replace_intermediate_layer_in_keras(model, layer_name, new_layer):
     raise NotImplementedError("Doesn't work for bizarre layers")
