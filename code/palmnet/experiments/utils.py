@@ -177,6 +177,9 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
 class ParameterManagerRandomSparseFacto(ParameterManager):
     def __init__(self, dct_params, **kwargs):
         super().__init__(dct_params, **kwargs)
+        if self["--seed"] is not None:
+            np.random.seed(int(self["--seed"]))
+
         self.__init_hash_expe()
 
         self["--walltime"] = int(self["--walltime"])
@@ -192,7 +195,7 @@ class ParameterManagerRandomSparseFacto(ParameterManager):
             'output_file_resprinter',
             '-v',
             '--help',
-            "--walltime"
+            "--walltime",
         ]
         keys_expe = sorted(self.keys())
         any(keys_expe.remove(item) for item in lst_elem_to_remove_for_hash)

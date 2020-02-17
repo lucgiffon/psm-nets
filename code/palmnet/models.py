@@ -29,6 +29,15 @@ def create_pbp_model(input_shape, num_classes, sparsity_factor, nb_sparse_factor
     model.add(Dense(num_classes, activation='softmax'))
     return model
 
+def create_random_sparse_model(input_shape, num_classes, sparsity_factor, nb_sparse_factors, units):
+    model = Sequential()
+
+    model.add(RandomSparseFactorisationDense(input_shape=input_shape, permutation=True, units=units[0], activation='relu', nb_sparse_factors=nb_sparse_factors, sparsity_factor=sparsity_factor))
+    for nb_unit_layer in units[1:]:
+        model.add(RandomSparseFactorisationDense(units=nb_unit_layer, permutation=True, nb_sparse_factors=nb_sparse_factors, activation='relu', sparsity_factor=sparsity_factor))
+    model.add(Dense(num_classes, activation='softmax'))
+    return model
+
 def create_dense_model(input_shape, num_classes,  units):
     model = Sequential()
     model.add(Dense(input_shape=input_shape, units=units[0]))

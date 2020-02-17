@@ -1,0 +1,6 @@
+-v --walltime 9 --seed 1 --nb-units-dense-layer 500 --mnist --nb-factor 2 --sparsity-factor 5 --dense-layers
+-v --walltime 9 --seed 1 --nb-units-dense-layer 500 --mnist --nb-factor 1 --sparsity-factor 5 --dense-layers
+-v --walltime 9 --seed 2 --nb-units-dense-layer 500 --mnist --nb-factor 2 --sparsity-factor 5 --dense-layers
+-v --walltime 9 --seed 2 --nb-units-dense-layer 500 --mnist --nb-factor 1 --sparsity-factor 5 --dense-layers
+-v --walltime 9 --seed 3 --nb-units-dense-layer 500 --mnist --nb-factor 2 --sparsity-factor 5 --dense-layers
+-v --walltime 9 --seed 3 --nb-units-dense-layer 500 --mnist --nb-factor 1 --sparsity-factor 5 --dense-layers
