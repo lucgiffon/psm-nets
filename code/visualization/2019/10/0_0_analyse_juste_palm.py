@@ -5,7 +5,10 @@ import numpy as np
 import pandas as pd
 import pathlib
 from palmnet.visualization.utils import get_dct_result_files_by_root, build_df
+import logging
 
+mpl_logger = logging.getLogger('matplotlib')
+mpl_logger.setLevel(logging.ERROR)
 
 def get_palminized_model_and_df(path):
     src_result_dir = pathlib.Path(path)

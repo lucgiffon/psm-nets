@@ -48,9 +48,14 @@ def figure_perf():
         df_data = df[df[dataset[dataname]] == 1]
         df_data_palminized = df_palminized[df_palminized[dataset[dataname]] == 1]
         df_data_glorot = df_glorot[df_glorot[dataset[dataname]] == 1]
+        df_data_finetune_glorot = df_finetune_glorot[df_finetune_glorot[dataset[dataname]] == 1]
+        df_data_random = df_random[df_random[dataset[dataname]] == 1]
+
         for nb_units in  nb_units_dense_layer:
             df_units = df_data[df_data["--nb-units-dense-layer"] == nb_units]
             df_units_glorot = df_data_glorot[df_data_glorot["--nb-units-dense-layer"] == nb_units]
+            df_units_finetune_glorot = df_data_finetune_glorot[df_data_finetune_glorot["--nb-units-dense-layer"] == nb_units]
+            df_units_random = df_data_random[df_data_random["--nb-units-dense-layer"] == nb_units]
 
             for task in tasks:
                 # xticks = ["2", "3"]
@@ -79,29 +84,40 @@ def figure_perf():
                             visible=True)
                 ))
 
-
                 # pbp
                 #####
                 for i, sp_fac in enumerate(sorted(sparsity_factors)):
                     df_sparsity = df_units[df_units["--sparsity-factor"] == sp_fac]
                     df_sparsity_glorot = df_units_glorot[df_units_glorot["--sparsity-factor"] == int(sp_fac)]
+                    df_sparsity_finetune_glorot = df_units_finetune_glorot[df_units_finetune_glorot["--sparsity-factor"] == int(sp_fac)]
+                    df_sparsity_random = df_units_random[df_units_random["--sparsity-factor"] == int(sp_fac)]
+
+                    # not random
+                    ############
                     for add_entro in [0]:
                     # for add_entro in [1, 0]:
                         df_add_entro = df_sparsity[df_sparsity["--add-entropies"] == add_entro]
                         df_add_entro_glorot = df_sparsity_glorot[df_sparsity_glorot["--add-entropies"] == add_entro]
+                        df_add_entro_finetune_glorot = df_sparsity_finetune_glorot[df_sparsity_finetune_glorot["--add-entropies"] == add_entro]
                         str_add_entro = "+" if add_entro else "*"
                         for param_reg in sorted(param_reg_softentropy):
                             df_reg = df_add_entro[df_add_entro["--param-reg-softmax-entropy"] == param_reg]
                             df_reg_glorot = df_add_entro_glorot[df_add_entro_glorot["--param-reg-softmax-entropy"] == float(param_reg)]
+                            df_reg_finetune_glorot = df_add_entro_finetune_glorot[df_add_entro_finetune_glorot["--param-reg-softmax-entropy"] == float(param_reg)]
+
                             for nb_fac in nb_factors:
                                 df_nb_fac = df_reg[df_reg["--nb-factor"] == nb_fac]
                                 df_nb_fac_glorot = df_reg_glorot[df_reg_glorot["--nb-factor"] == int(nb_fac)]
+                                df_nb_fac_finetune_glorot = df_reg_finetune_glorot[df_reg_finetune_glorot["--nb-factor"] == int(nb_fac)]
+
                                 finetune_score_values = df_nb_fac["finetuned_score"].mean()
                                 finetune_score_values_std = df_nb_fac["finetuned_score"].std()
                                 finetune_score_values_glorot = df_nb_fac_glorot["finetuned_score"].mean()
                                 finetune_score_values_std_glorot = df_nb_fac_glorot["finetuned_score"].std()
+                                finetune_score_values_finetune_glorot = df_nb_fac_finetune_glorot["finetuned_score"].mean()
+                                finetune_score_values_std_finetune_glorot = df_nb_fac_finetune_glorot["finetuned_score"].std()
 
-                                hls_str = "hsl(60, {}%, 40%)".format(saturation_by_param_softentropy[param_reg])
+                                hls_str = "hsl({}, {}%, 40%)".format(hue_by_pbp_kind["init_id"], saturation_by_param_softentropy[param_reg])
                                 str_legend = 'sparsity {} - reg {} - {}'.format(sp_fac, param_reg, str_add_entro)
                                 fig.add_trace(go.Bar(name=str_legend, x=[str(nb_fac)], y=[finetune_score_values], marker_color=hls_str
                                                      ,error_y = dict(
@@ -112,7 +128,7 @@ def figure_perf():
                                 ))
                                 set_legend.add(str_legend)
 
-                                hls_str = "hsl(180, {}%, 40%)".format(saturation_by_param_softentropy[param_reg])
+                                hls_str = "hsl({}, {}%, 40%)".format(hue_by_pbp_kind["init_glorot"], saturation_by_param_softentropy[param_reg])
                                 str_legend_2 = 'G - sparsity {} - reg {} - {}'.format(sp_fac, param_reg, str_add_entro)
                                 fig.add_trace(go.Bar(name=str_legend_2, x=[str(nb_fac)], y=[finetune_score_values_glorot], marker_color=hls_str
                                                      ,error_y = dict(
@@ -123,8 +139,39 @@ def figure_perf():
                                 ))
                                 set_legend.add(str_legend_2)
 
+                                if float(param_reg) != 0:
+                                    hls_str = "hsl({}, {}%, 40%)".format(hue_by_pbp_kind["finetune_glorot"], saturation_by_param_softentropy[param_reg])
+                                    str_legend_3 = 'FG - sparsity {} - reg {} - {}'.format(sp_fac, param_reg, str_add_entro)
+                                    fig.add_trace(go.Bar(name=str_legend_3, x=[str(nb_fac)], y=[finetune_score_values_finetune_glorot], marker_color=hls_str
+                                                         ,error_y = dict(
+                                                            type='data',  # value of error bar given in data coordinates
+                                                            array=[finetune_score_values_std_finetune_glorot],
+                                                            visible=True),
+                                                         showlegend=False if str_legend_3 in set_legend else True
+                                    ))
+                                    set_legend.add(str_legend_3)
+
+                    # random
+                    ########
+                    for nb_fac in nb_factors:
+                        df_nb_fac = df_sparsity_random[df_sparsity_random["--nb-factor"] == int(nb_fac)]
+
+                        finetune_score_values = df_nb_fac["finetuned_score"].mean()
+                        finetune_score_values_std = df_nb_fac["finetuned_score"].std()
+
+                        hls_str = "hsl({}, 50%, 40%)".format(hue_by_pbp_kind["random"])
+                        str_legend = 'R - sparsity {}'.format(sp_fac)
+                        fig.add_trace(go.Bar(name=str_legend, x=[str(nb_fac)], y=[finetune_score_values], marker_color=hls_str
+                                             , error_y=dict(
+                                type='data',  # value of error bar given in data coordinates
+                                array=[finetune_score_values_std],
+                                visible=True),
+                                             showlegend=False if str_legend in set_legend else True
+                                             ))
+                        set_legend.add(str_legend)
 
                 # palminized
+                ###########
                 for hierarchical_value in [1, 0]:
                     df_hier = df_data_palminized[df_data_palminized["--hierarchical"] == hierarchical_value]
                     str_hier = "- H" if hierarchical_value == 1 else ""
@@ -137,9 +184,9 @@ def figure_perf():
                             else:
                                 nb_fac_str = str(nb_fac)
                             finetune_score_values = df_nb_fac["finetuned_score"].mean()
-                            finetune_score_values_std = df_nb_fac["finetuned_score"].std()
+                            # finetune_score_values_std = df_nb_fac["finetuned_score"].std()
 
-                            hls_str = "hsl({}, 50%, 40%)".format(hue_by_hierarchical[hierarchical_value])
+                            hls_str = "hsl({}, 50%, 40%)".format(hue_by_pbp_kind["h_palm" if hierarchical_value == 1 else "palm"])
                             fig.add_trace(go.Bar(name='PALM - sparsity {} {}'.format(sp_fac, str_hier), x=[str(nb_fac_str)], y=[finetune_score_values], marker_color=hls_str
                                                  ,
                                                  # error_y=dict(
@@ -350,22 +397,37 @@ if __name__ == "__main__":
     expe_path = "2020/01/0_0_soft_entropy_classification"
     expe_path_palminized = "2020/02/3_4_finetune_palminized_mnist_500"
     expe_path_glorot = "2020/02/0_0_soft_entropy_classification_glorot_uniform_init_permutation"
+    expe_path_finetune_glorot = "2020/02/0_0_finetune_soft_entropy_regularization_sparse_facto_net_constant_perm"
+    expe_path_random = "2020/02/0_1_random_sparse_facto_mnist_500"
+
     src_results_dir = root_source_dir / expe_path
     src_results_dir_palminized = root_source_dir / expe_path_palminized
     src_results_dir_glorot = root_source_dir /  expe_path_glorot
+    src_results_dir_finetune_glorot = root_source_dir /  expe_path_finetune_glorot
+    src_results_dir_random = root_source_dir /  expe_path_random
 
     df_path = src_results_dir / "prepared_df.csv"
     df_path_palminized = src_results_dir_palminized / "prepared_df.csv"
     df_path_glorot = src_results_dir_glorot / "prepared_df.csv"
+    df_path_finetune_glorot = src_results_dir_finetune_glorot / "prepared_df.csv"
+    df_path_random = src_results_dir_random / "prepared_df.csv"
 
-    if df_path.exists() and df_path_palminized.exists() and df_path_glorot.exists() and not FORCE:
+    if df_path.exists() and df_path_palminized.exists() and df_path_glorot.exists() and df_path_finetune_glorot.exists() and df_path_random.exists() and not FORCE:
         df = pd.read_csv(df_path, sep=";")
         df_palminized = pd.read_csv(df_path_palminized, sep=";")
         df_glorot = pd.read_csv(df_path_glorot, sep=";")
+        df_finetune_glorot = pd.read_csv(df_path_finetune_glorot, sep=";")
+        df_random = pd.read_csv(df_path_random, sep=";")
     else:
         df = get_df(src_results_dir)
         df_palminized = get_df(src_results_dir_palminized)
         df_glorot = get_df(src_results_dir_glorot)
+        df_finetune_glorot = get_df(src_results_dir_finetune_glorot)
+        df_random = get_df(src_results_dir_random)
+
+        df_random[["--sparsity-factor", "failure", "finetuned_score"]] = df_random[["--sparsity-factor", "failure", "finetuned_score"]].apply(pd.to_numeric, errors='coerce')
+
+        df_finetune_glorot[["--sparsity-factor", "failure", "finetuned_score"]] = df_finetune_glorot[["--sparsity-factor", "failure", "finetuned_score"]].apply(pd.to_numeric, errors='coerce')
 
         df_glorot[["--sparsity-factor", "failure", "finetuned_score"]] = df_glorot[["--sparsity-factor", "failure", "finetuned_score"]].apply(pd.to_numeric, errors='coerce')
 
@@ -378,7 +440,8 @@ if __name__ == "__main__":
         df.to_csv(df_path, sep=";")
         df_palminized.to_csv(df_path_palminized, sep=";")
         df_glorot.to_csv(df_path_glorot, sep=";")
-
+        df_finetune_glorot.to_csv(df_path_finetune_glorot, sep=";")
+        df_random.to_csv(df_path_random, sep=";")
 
     root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
     output_dir = root_output_dir / expe_path / "histogrammes"
@@ -395,21 +458,28 @@ if __name__ == "__main__":
     nb_factors = set(df["--nb-factor"]).union([str(elm) for elm in set(df_glorot["--nb-factor"])])
     nb_factors.remove("None")
 
-
-    hue_by_add_entropy= {
-
-        1: 60,
-        0: 180
+    hue_by_pbp_kind= {
+        "h_palm": 20,
+        "palm": 140,
+        "init_id": 60,
+        "random": 80,
+        "init_glorot": 180,
+        "finetune_glorot": 200
     }
-    hue_by_hierarchical= {
-
-        1: 20,
-        0: 140
-    }
+    # hue_by_add_entropy= {
+    #
+    #     1: 60,
+    #     0: 180
+    # }
+    # hue_by_hierarchical= {
+    #
+    #     1: 20,
+    #     0: 140
+    # }
 
     saturation_by_param_softentropy = dict(zip(sorted(param_reg_softentropy), np.linspace(15, 100, len(param_reg_softentropy), dtype=int)))
 
-    # figure_perf()
+    figure_perf()
     # figure_convergence()
-    figure_permutations()
+    # figure_permutations()
 
