@@ -225,8 +225,8 @@ def main():
     resprinter.print()
 
     # if paraman["--hierarchical"]:
-    #     assert before_finetuned_score == palminized_score, \
-    #         "the reconstructed model with sparse facto should equal in perf to the reconstructed model with dense product. {} != {}".format(before_finetuned_score, palminized_score)
+    assert before_finetuned_score == palminized_score, \
+        "the reconstructed model with sparse facto should equal in perf to the reconstructed model with dense product. {} != {}".format(before_finetuned_score, palminized_score)
     # else: # small fix for a bug where when I wasn't using hierarchical palm returned a matrix that wasn't multiplied by lambda
     #     # this should pass until results are generated without bug..
     #     assert before_finetuned_score != palminized_score, \
