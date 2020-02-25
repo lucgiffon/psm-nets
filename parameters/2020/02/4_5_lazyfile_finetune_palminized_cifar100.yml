@@ -1,0 +1,30 @@
+#  script.py [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data)
+# [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+# --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float]
+
+all:
+  hierarchical_cifar100:
+  not_hierarchical_cifar100:
+
+base:
+  sparsity_fac: {"--sparsity-factor": [3, 5]}
+  verbosity: ["-v"]
+  walltime: {"--walltime": [90]}
+#  mask: ["--only-mask"]
+
+## CIFAR100
+
+palmnet_cifar100:
+  base:
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_cifar_100"]}
+  cifar100: ["--cifar100"]
+  cifar100_vgg19: ["--cifar100-vgg19"]
+
+hierarchical_cifar100:
+  palmnet_cifar100:
+#  hierarchical: ["--hierarchical", ""]
+  hierarchical: [""]
+
+not_hierarchical_cifar100:
+  palmnet_cifar100:
+  nb_fac: {"--nb-factor": [2, 3]}
