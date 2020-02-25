@@ -35,18 +35,21 @@ hatch_hierarchical = {
 tasks = {
     "nb_flop",
     "nb_param",
-    "finetuned_score"
+    "finetuned_score",
+    "compression_rate"
 }
 ylabel_task = {
     "nb_flop": "log(# Flop)",
     "nb_param": "log(# non-zero value)",
-    "finetuned_score": "Accuracy"
+    "finetuned_score": "Accuracy",
+    "compression_rate": "Compression Rate"
 }
 
 scale_tasks = {
     "nb_flop": "log",
     "nb_param": "log",
-    "finetuned_score": "linear"
+    "finetuned_score": "linear",
+    "compression_rate": "linear"
 }
 
 if __name__ == "__main__":
@@ -148,10 +151,16 @@ if __name__ == "__main__":
                 task_base = "nb_flops_base_layers_conv_dense"
             elif task == "nb_param":
                 task_base = "nb_param_base_layers_conv_dense"
+            elif task == "compression_rate":
+                pass
             else:
                 raise ValueError("Unknown task {}".format(task))
 
-            val = df_data_palminized_before_finetune[task_base].values.mean()
+            if task == "compression_rate":
+                nb_param_base = df_data_palminized_before_finetune["nb_param_base_layers_conv_dense"].values.mean()
+                val = 1.
+            else:
+                val = df_data_palminized_before_finetune[task_base].values.mean()
             fig.add_trace(
                 go.Scatter(
                     x=[-1, "2", "3", "log(min(A, B))", 1],
@@ -169,8 +178,11 @@ if __name__ == "__main__":
                 for j, no_perm in enumerate([1, 0]):
                     no_perm_str = "No Perm." if no_perm==1 else ""
                     df_perm = df_sparsity[df_sparsity["--no-permutation"] == no_perm]
-                    finetune_score_values = df_perm.sort_values("--nb-factor", na_position="last")[task].values
-
+                    if task == "compression_rate":
+                        finetune_score_values = df_perm.sort_values("--nb-factor", na_position="last")["nb_param"].values
+                        finetune_score_values =  nb_param_base / finetune_score_values
+                    else:
+                        finetune_score_values = df_perm.sort_values("--nb-factor", na_position="last")[task].values
                     hls_str = "hsl({}, {}%, 40%)".format(hue_by_sparsity[sp_fac], saturation_by_perm[no_perm])
                     fig.add_trace(go.Bar(name='rando {} {}'.format(sp_fac, no_perm_str), x=xticks, y=finetune_score_values, marker_color=hls_str))
 
@@ -183,7 +195,7 @@ if __name__ == "__main__":
             elif task == "nb_flop":
                 df_data_palminized = df_data_palminized_before_finetune
                 task_palminized = "nb_flops_compressed_layers_conv_dense"
-            elif task == "nb_param":
+            elif task == "nb_param" or task == "compression_rate":
                 df_data_palminized = df_data_palminized_before_finetune
                 task_palminized = "nb_param_compressed_layers_conv_dense"
             else:
@@ -194,7 +206,11 @@ if __name__ == "__main__":
                 for hierarchical_value in [1, 0]:
                     hierarchical_str = " H" if hierarchical_value == 1 else ""
                     df_data_palminized_hierarchical = df_sparsity_palm[df_sparsity_palm["--hierarchical"] == hierarchical_value]
-                    val = df_data_palminized_hierarchical.sort_values("--nb-factor", na_position="last")[task_palminized].values
+                    if task == "compression_rate":
+                        val = df_data_palminized_hierarchical.sort_values("--nb-factor", na_position="last")[task_palminized].values
+                        val = nb_param_base / val
+                    else:
+                        val = df_data_palminized_hierarchical.sort_values("--nb-factor", na_position="last")[task_palminized].values
 
                     hls_str = "hsl({}, {}%, 60%)".format(hue_by_sparsity[sp_fac_palm], saturation_by_hier[hierarchical_value])
                     fig.add_trace(go.Bar(name=('Palm {}' + hierarchical_str).format(sp_fac_palm), x=[xticks[-1]] if hierarchical_value == 1 else xticks, y=val, marker_color=hls_str))

@@ -2,7 +2,7 @@
 This script finds a palminized model with given arguments then finetune it.
 
 Usage:
-    script.py --input-dir path [-h] [-v|-vv] --walltime int [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
+    script.py --input-dir path [-h] [-v|-vv] --walltime int [--only-mask] [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
 
 Options:
   -h --help                             Show this screen.
@@ -33,6 +33,7 @@ Palm-Specifc options:
   --delta-threshold=float               Threshold value before stopping palm iterations. [default: 1e-6]
   --hierarchical                        Tells if palm should use the hierarchical euristic or not. Muhc longer but better approximation results.
   --nb-factor=int                       Tells the number of sparse factor for palm
+  --only-mask                           Use only sparsity mask given by palm but re-initialize weights.
 """
 import logging
 import os
@@ -106,6 +107,7 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
                 raise ValueError("unknown layer class")
 
             dct_new_layer_attr[layer_name]["layer_weights"] = replacing_weights
+            dct_new_layer_attr[layer_name]["sparsity_pattern"] = sparsity_patterns
             dct_new_layer_attr[layer_name]["layer_obj"] = replacing_layer
             dct_new_layer_attr[layer_name]["modified"] = True
 
@@ -144,11 +146,24 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
         if proxy_new_layer_attr["modified"]:
             x = layer_input
 
-            new_layer = proxy_new_layer_attr["layer_obj"]
+            new_layer = proxy_new_layer_attr["layer_obj"] # type: keras.layers.Layer
             new_layer.name = '{}_{}'.format(layer.name,
                                             new_layer.name)
             x = new_layer(x)
-            new_layer.set_weights(proxy_new_layer_attr["layer_weights"])
+            if not paraman["--only-mask"]:
+                new_layer.set_weights(proxy_new_layer_attr["layer_weights"])
+            else:
+                masked_weights = []
+                i = 0
+                for w in new_layer.get_weights():
+                    if len(w.shape) > 1:
+                        new_weight = w * proxy_new_layer_attr["sparsity_pattern"][i]
+                        i += 1
+                    else:
+                        new_weight = w
+                    masked_weights.append(new_weight)
+                new_layer.set_weights(masked_weights)
+
             logger.info('Layer {} modified into {}'.format(layer.name, new_layer.name))
         else:
             x = layer(layer_input)
@@ -225,7 +240,8 @@ def main():
     resprinter.print()
 
     # if paraman["--hierarchical"]:
-    assert before_finetuned_score == palminized_score, \
+    if not paraman["--only-mask"]:
+        assert before_finetuned_score == palminized_score, \
         "the reconstructed model with sparse facto should equal in perf to the reconstructed model with dense product. {} != {}".format(before_finetuned_score, palminized_score)
     # else: # small fix for a bug where when I wasn't using hierarchical palm returned a matrix that wasn't multiplied by lambda
     #     # this should pass until results are generated without bug..

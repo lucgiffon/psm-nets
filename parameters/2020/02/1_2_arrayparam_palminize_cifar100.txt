@@ -1,0 +1,12 @@
+--sparsity-factor 2 -v --cifar100 --cifar100-vgg19
+--sparsity-factor 3 -v --cifar100 --cifar100-vgg19
+--sparsity-factor 4 -v --cifar100 --cifar100-vgg19
+--sparsity-factor 5 -v --cifar100 --cifar100-vgg19
+--sparsity-factor 2 -v --cifar100 --cifar100-vgg19 --nb-factor 2
+--sparsity-factor 2 -v --cifar100 --cifar100-vgg19 --nb-factor 3
+--sparsity-factor 3 -v --cifar100 --cifar100-vgg19 --nb-factor 2
+--sparsity-factor 3 -v --cifar100 --cifar100-vgg19 --nb-factor 3
+--sparsity-factor 4 -v --cifar100 --cifar100-vgg19 --nb-factor 2
+--sparsity-factor 4 -v --cifar100 --cifar100-vgg19 --nb-factor 3
+--sparsity-factor 5 -v --cifar100 --cifar100-vgg19 --nb-factor 2
+--sparsity-factor 5 -v --cifar100 --cifar100-vgg19 --nb-factor 3

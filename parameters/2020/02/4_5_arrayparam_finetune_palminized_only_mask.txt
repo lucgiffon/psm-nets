@@ -1,0 +1,28 @@
+--sparsity-factor 3 -v --walltime 90 --only-mask --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500 --mnist --mnist-500 --hierarchical
+--sparsity-factor 3 -v --walltime 90 --only-mask --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500 --mnist --mnist-500
+--sparsity-factor 5 -v --walltime 90 --only-mask --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500 --mnist --mnist-500 --hierarchical
+--sparsity-factor 5 -v --walltime 90 --only-mask --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500 --mnist --mnist-500
+--sparsity-factor 3 -v --walltime 90 --only-mask --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500 --mnist --mnist-500 --nb-factor 2
+--sparsity-factor 3 -v --walltime 90 --only-mask --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500 --mnist --mnist-500 --nb-factor 3
+--sparsity-factor 5 -v --walltime 90 --only-mask --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500 --mnist --mnist-500 --nb-factor 2
+--sparsity-factor 5 -v --walltime 90 --only-mask --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500 --mnist --mnist-500 --nb-factor 3
+--sparsity-factor 3 -v --walltime 90 --only-mask --mnist --mnist-lenet --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --hierarchical
+--sparsity-factor 5 -v --walltime 90 --only-mask --mnist --mnist-lenet --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --hierarchical
+--sparsity-factor 3 -v --walltime 90 --only-mask --mnist --mnist-lenet --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero --nb-factor 2
+--sparsity-factor 3 -v --walltime 90 --only-mask --mnist --mnist-lenet --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero --nb-factor 3
+--sparsity-factor 5 -v --walltime 90 --only-mask --mnist --mnist-lenet --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero --nb-factor 2
+--sparsity-factor 5 -v --walltime 90 --only-mask --mnist --mnist-lenet --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero --nb-factor 3
+--sparsity-factor 3 -v --walltime 90 --only-mask --mnist --mnist-lenet --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01/0_1_palmnet_zero_not_hierarchical_log
+--sparsity-factor 5 -v --walltime 90 --only-mask --mnist --mnist-lenet --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01/0_1_palmnet_zero_not_hierarchical_log
+--sparsity-factor 3 -v --walltime 90 --only-mask --svhn --svhn-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --hierarchical
+--sparsity-factor 5 -v --walltime 90 --only-mask --svhn --svhn-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --hierarchical
+--sparsity-factor 3 -v --walltime 90 --only-mask --svhn --svhn-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero --nb-factor 2
+--sparsity-factor 3 -v --walltime 90 --only-mask --svhn --svhn-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero --nb-factor 3
+--sparsity-factor 5 -v --walltime 90 --only-mask --svhn --svhn-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero --nb-factor 2
+--sparsity-factor 5 -v --walltime 90 --only-mask --svhn --svhn-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero --nb-factor 3
+--sparsity-factor 3 -v --walltime 90 --only-mask --svhn --svhn-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01/0_1_palmnet_zero_not_hierarchical_log
+--sparsity-factor 5 -v --walltime 90 --only-mask --svhn --svhn-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01/0_1_palmnet_zero_not_hierarchical_log
+--sparsity-factor 3 -v --walltime 90 --only-mask --cifar10 --cifar10-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --hierarchical
+--sparsity-factor 5 -v --walltime 90 --only-mask --cifar10 --cifar10-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/10/0_0_hierarchical_palminize --hierarchical
+--sparsity-factor 3 -v --walltime 90 --only-mask --cifar10 --cifar10-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01/0_1_palmnet_zero_not_hierarchical_log
+--sparsity-factor 5 -v --walltime 90 --only-mask --cifar10 --cifar10-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/01/0_1_palmnet_zero_not_hierarchical_log

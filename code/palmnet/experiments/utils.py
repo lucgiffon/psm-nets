@@ -152,25 +152,25 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
                             '--test-model',
                             "--nb-factor"
                             ]
-        queries = []
-        for k in keys_of_interest:
-            logger.debug("{}, {}, {}".format(self[k], type(self[k]), k))
-            if self[k] is None:
-                str_k = "'None'"
-            else:
-                str_k = self[k]
-
-            query = "(df['{}']=={})".format(k, str_k)
-            queries.append(query)
-
-        s_query = " & ".join(queries)
-        s_eval = "df[({})]".format(s_query)
-        line_of_interest = eval(s_eval)
-        logger.debug(line_of_interest)
-        logger.debug(s_eval)
-
-        assert len(line_of_interest) == 1, "The parameters doesn't allow to discriminate only one pre-trained model in directory"
-
+        # queries = []
+        # for k in keys_of_interest:
+        #     logger.debug("{}, {}, {}".format(self[k], type(self[k]), k))
+        #     if self[k] is None:
+        #         str_k = "'None'"
+        #     else:
+        #         str_k = self[k]
+        #
+        #     query = "(df['{}']=={})".format(k, str_k)
+        #     queries.append(query)
+        #
+        # s_query = " & ".join(queries)
+        # s_eval = "df[({})]".format(s_query)
+        # line_of_interest = eval(s_eval)
+        # logger.debug(line_of_interest)
+        # logger.debug(s_eval)
+        #
+        # assert len(line_of_interest) == 1, "The parameters doesn't allow to discriminate only one pre-trained model in directory"
+        line_of_interest = get_line_of_interest(df, keys_of_interest, self)
         self["input_model_path"] = self["--input-dir"] / line_of_interest["output_file_modelprinter"][0]
 
 
@@ -288,35 +288,74 @@ class ParameterManagerEntropyRegularizationFinetune(ParameterManagerEntropyRegul
                             "--dense-layers",
                             "--seed"
                             ]
-        queries = []
+        # queries = []
+        #
+        # for k in keys_of_interest:
+        #     logger.debug("{}, {}, {}".format(self[k], type(self[k]), k))
+        #     key_type = df.dtypes[k].name
+        #     if key_type == "object":
+        #         str_k = "'{}'".format(self[k])
+        #     else:
+        #         str_k = "{}".format(self[k])
+        #     # if self[k] is None:
+        #     #     str_k = "'None'"
+        #     # elif k in ["--nb-units-dense-layer", "--param-reg-softmax-entropy", "--nb-factor", "--sparsity-factor"]:
+        #     #     str_k = "'{}'".format(self[k])
+        #     # else:
+        #     #     str_k = self[k]
+        #
+        #     query = "(df['{}']=={})".format(k, str_k)
+        #     queries.append(query)
+        #
+        # s_query = " & ".join(queries)
+        # s_eval = "df[({})]".format(s_query)
+        # line_of_interest = eval(s_eval)
+        # line_of_interest.drop_duplicates(keys_of_interest, inplace=True)
+        # logger.debug(line_of_interest)
+        # logger.debug(s_eval)
+        #
+        # assert len(line_of_interest) == 1, "The parameters doesn't allow to discriminate only one pre-trained model in directory"
 
-        for k in keys_of_interest:
-            logger.debug("{}, {}, {}".format(self[k], type(self[k]), k))
-            key_type = df.dtypes[k].name
-            if key_type == "object":
-                str_k = "'{}'".format(self[k])
-            else:
-                str_k = "{}".format(self[k])
-            # if self[k] is None:
-            #     str_k = "'None'"
-            # elif k in ["--nb-units-dense-layer", "--param-reg-softmax-entropy", "--nb-factor", "--sparsity-factor"]:
-            #     str_k = "'{}'".format(self[k])
-            # else:
-            #     str_k = self[k]
-
-            query = "(df['{}']=={})".format(k, str_k)
-            queries.append(query)
-
-        s_query = " & ".join(queries)
-        s_eval = "df[({})]".format(s_query)
-        line_of_interest = eval(s_eval)
-        line_of_interest.drop_duplicates(keys_of_interest, inplace=True)
-        logger.debug(line_of_interest)
-        logger.debug(s_eval)
-
-        assert len(line_of_interest) == 1, "The parameters doesn't allow to discriminate only one pre-trained model in directory"
+        line_of_interest = get_line_of_interest(df, keys_of_interest, self)
 
         self["input_model_path"] = self["--input-dir"] / line_of_interest["output_file_modelprinter"].iloc[0]
+
+def get_line_of_interest(df, keys_of_interest, dct_values):
+    queries = []
+
+    for k in keys_of_interest:
+        logger.debug("{}, {}, {}".format(dct_values[k], type(dct_values[k]), k))
+        try:
+            key_type = df.dtypes[k].name
+
+            if key_type == "object" or dct_values[k] is None:
+                df[k] = df[k].astype(str)
+                str_k = "'{}'".format(dct_values[k])
+            else:
+                str_k = "{}".format(dct_values[k])
+        except KeyError:
+            logger.warning("key {} not present in input palminized results".format(k) )
+            keys_of_interest.remove(k)
+            continue
+        # if self[k] is None:
+        #     str_k = "'None'"
+        # elif k in ["--nb-units-dense-layer", "--param-reg-softmax-entropy", "--nb-factor", "--sparsity-factor"]:
+        #     str_k = "'{}'".format(self[k])
+        # else:
+        #     str_k = self[k]
+
+        query = "(df['{}']=={})".format(k, str_k)
+        queries.append(query)
+
+    s_query = " & ".join(queries)
+    s_eval = "df[({})]".format(s_query)
+    line_of_interest = eval(s_eval)
+    line_of_interest.drop_duplicates(keys_of_interest, inplace=True)
+    logger.debug(line_of_interest)
+    logger.debug(s_eval)
+
+    assert len(line_of_interest) == 1, "The parameters doesn't allow to discriminate only one pre-trained model in directory"
+    return line_of_interest
 
 class ResultPrinter:
     """

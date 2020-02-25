@@ -10,9 +10,8 @@ mpl_logger = logging.getLogger('matplotlib')
 mpl_logger.setLevel(logging.ERROR)
 
 dataset = {
-    "Cifar10": "--cifar10",
-    "SVHN": "--svhn",
-    "MNIST": "--mnist"
+    # "MNIST": "--mnist-lenet",
+    "MNIST500": "--mnist-500"
 }
 
 color_bars_sparsity = {
@@ -54,60 +53,57 @@ scale_tasks = {
 
 if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/")
-    expe_path_mnist = "2019/12/0_0_random_sparse_facto"
-    expe_path_others = "2019/12/0_0_random_sparse_facto/bis_no_mnist"
+    expe_path_palminized_great_fac_number = "2020/02/3_4_finetune_palminized_greater_fac_number_mnist_only"
+    expe_path_palminized_great_fac_number_before_finetune = "2020/02/1_2_palmnet_zero_greater_fac_number"
 
     expe_path_palminized_mnist = "2019/11/0_0_finetune_palminized"
-    expe_path_palminized_cifar10 = "2019/11/0_0_finetune_palminized/bis_cifar10/bis_bis"
-    expe_path_palminized_svhn_cifar100 = "2019/11/0_0_finetune_palminized/bis_cifar100_svhn/bis_bis"
+    expe_path_palminized_mnist_500 = "2020/02/3_4_finetune_palminized_mnist_500"
+    expe_path_palminized_mnist_500_before_finetune = "2020/02/1_2_palminize_mnist500"
     expe_path_palminized_before_finetune = "2019/10/0_0_hierarchical_palminize"
     expe_path_palminized_not_hierarchical_log = "2020/01/0_1_finetune_palminized_not_hierarchical_log_bis"
     expe_path_palminized_not_hierarchical_log_before_finetune = "2020/01/0_1_palmnet_zero_not_hierarchical_log"
     expe_path_palminized_not_hierarchical_2_3_factors = "2020/01/2_3_finetune_palminized_with_2_3_factors_nobug"
     expe_path_palminized_not_hierarchical_2_3_factors_before_finetune = "2019/12/0_1_palmnet_patient_zero"
 
+    src_results_dir_palminized_great_fac_number = root_source_dir / expe_path_palminized_great_fac_number
+    src_results_dir_palminized_mnist_500 = root_source_dir / expe_path_palminized_mnist_500
+    src_results_dir_palminized_mnist_500_before_finetune = root_source_dir / expe_path_palminized_mnist_500_before_finetune
+    src_results_dir_palminized_great_fac_number_before_finetune = root_source_dir / expe_path_palminized_great_fac_number_before_finetune
     src_results_dir_palminized_mnist = root_source_dir / expe_path_palminized_mnist
     src_results_dir_palminized_before_finetune = root_source_dir / expe_path_palminized_before_finetune
-    src_results_dir_palminized_cifar10 = root_source_dir / expe_path_palminized_cifar10
-    src_results_dir_palminized_svhn_cifar100 = root_source_dir / expe_path_palminized_svhn_cifar100
-    src_results_dir_mnist = root_source_dir / expe_path_mnist
-    src_results_dir_others = root_source_dir / expe_path_others
     src_results_dir_palminized_not_hierarchical_log = root_source_dir / expe_path_palminized_not_hierarchical_log
     src_results_dir_palminized_not_hierarchical_log_before_finetune = root_source_dir / expe_path_palminized_not_hierarchical_log_before_finetune
     src_results_dir_palminized_not_hierarchical_2_3_factors = root_source_dir / expe_path_palminized_not_hierarchical_2_3_factors
     src_results_dir_palminized_not_hierarchical_2_3_factors_before_finetune = root_source_dir / expe_path_palminized_not_hierarchical_2_3_factors_before_finetune
 
 
+    df_palminized_great_fac_number = get_df(src_results_dir_palminized_great_fac_number)
     df_palminized_mnist = get_df(src_results_dir_palminized_mnist)
-    df_palminized_cifar10 = get_df(src_results_dir_palminized_cifar10)
-    df_palminized_cifar100_svhn = get_df(src_results_dir_palminized_svhn_cifar100)
+    df_palminized_mnist_500 = get_df(src_results_dir_palminized_mnist_500)
     df_palmnized_not_hierarchical_log = get_df(src_results_dir_palminized_not_hierarchical_log)
     df_palminized_not_hierarchical_2_3_factors = get_df(src_results_dir_palminized_not_hierarchical_2_3_factors)
 
-    df_palminized = pd.concat([df_palminized_mnist, df_palminized_cifar10, df_palminized_cifar100_svhn, df_palmnized_not_hierarchical_log, df_palminized_not_hierarchical_2_3_factors])
+    df_palminized = pd.concat([df_palminized_mnist_500, df_palminized_mnist, df_palmnized_not_hierarchical_log, df_palminized_not_hierarchical_2_3_factors, df_palminized_great_fac_number])
     df_palminized = df_palminized.dropna(subset=["failure"])
     df_palminized = df_palminized[df_palminized["finetuned_score"] != "None"]
     df_palminized = df_palminized.drop(columns="oar_id").drop_duplicates()
 
+
+    df_palminized_great_fac_number_before_finetune = get_df(src_results_dir_palminized_great_fac_number_before_finetune)
+    df_palminized_mnist_500_before_finetune = get_df(src_results_dir_palminized_mnist_500_before_finetune)
     df_palminized_before_finetune = get_df(src_results_dir_palminized_before_finetune)
     df_palminized_not_hierarchical_log_before_finetune = get_df(src_results_dir_palminized_not_hierarchical_log_before_finetune)
     df_palminized_not_hierarchical_2_3_factors_before_finetune = get_df(src_results_dir_palminized_not_hierarchical_2_3_factors_before_finetune)
-    df_palminized_before_finetune = pd.concat([df_palminized_before_finetune, df_palminized_not_hierarchical_log_before_finetune, df_palminized_not_hierarchical_2_3_factors_before_finetune])
 
-    df_others = get_df(src_results_dir_others)
+    df_palminized_before_finetune = pd.concat([df_palminized_mnist_500_before_finetune, df_palminized_before_finetune, df_palminized_great_fac_number_before_finetune, df_palminized_not_hierarchical_log_before_finetune, df_palminized_not_hierarchical_2_3_factors_before_finetune])
 
-    df_mnist = get_df(src_results_dir_mnist)
-    df_mnist = df_mnist[df_mnist["--mnist"] == 1]
-
-    df_random_sparse_facto = pd.concat([df_mnist, df_others])
-    df_random_sparse_facto = df_random_sparse_facto.drop(columns="oar_id").drop_duplicates()
 
     root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
-    output_dir = root_output_dir / expe_path_mnist / "histogrammes"
+    output_dir = root_output_dir / expe_path_palminized_great_fac_number / "histogrammes"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    sparsity_factors = sorted(set(df_random_sparse_facto["--sparsity-factor"]))
-    nb_factors = set(df_random_sparse_facto["--nb-factor"])
+    sparsity_factors = sorted(set(df_palminized_before_finetune["--sparsity-factor"]))
+    nb_factors = set(df_palminized_before_finetune["--nb-factor"])
 
     sparsy_factors_palm = sorted(set(df_palminized["--sparsity-factor"].values))
 
@@ -128,16 +124,14 @@ if __name__ == "__main__":
         0: 75
     }
 
-    df_random_sparse_facto = df_random_sparse_facto.apply(pd.to_numeric, errors='coerce')
     df_palminized = df_palminized.apply(pd.to_numeric, errors='coerce')
     df_palminized_before_finetune = df_palminized_before_finetune.apply(pd.to_numeric, errors='coerce')
     for dataname in dataset:
-        df_data_rando = df_random_sparse_facto[df_random_sparse_facto[dataset[dataname]] == 1]
         df_data_palm = df_palminized[df_palminized[dataset[dataname]] == 1]
         df_data_palminized_before_finetune = df_palminized_before_finetune[df_palminized_before_finetune[dataset[dataname]] == 1]
         for task in tasks:
 
-            xticks = ["2", "3", "log(min(A, B))"]
+            xticks = ["2", "3", "4", "5", "6", "log(min(A, B))"]
             # xticks = ["A", "B", "log(min(A, B))"]
             # xticks = [1, 2, 3]
 
@@ -163,29 +157,14 @@ if __name__ == "__main__":
                 val = df_data_palminized_before_finetune[task_base].values.mean()
             fig.add_trace(
                 go.Scatter(
-                    x=[-1, "2", "3", "log(min(A, B))", 1],
-                    y=[val, val, val, val, val],
+                    x=[-1, "2", "3", "4", "5", "6", "log(min(A, B))", 1],
+                    y=[val, val, val, val, val, val, val, val],
                     mode='lines',
                     name="base model"
                 ))
             # fig, ax = plt.subplots()
             # max_value_in_plot = -1
             # bar_width = 0.9 / (len(sparsity_factors)*2 + 1)
-            # random sparse factorization
-            #############################
-            for i, sp_fac in enumerate(sparsity_factors):
-                df_sparsity = df_data_rando[df_data_rando["--sparsity-factor"] == sp_fac]
-                for j, no_perm in enumerate([1, 0]):
-                    no_perm_str = "No Perm." if no_perm==1 else ""
-                    df_perm = df_sparsity[df_sparsity["--no-permutation"] == no_perm]
-                    if task == "compression_rate":
-                        finetune_score_values = df_perm.sort_values("--nb-factor", na_position="last")["nb_param"].values
-                        finetune_score_values =  nb_param_base / finetune_score_values
-                    else:
-                        finetune_score_values = df_perm.sort_values("--nb-factor", na_position="last")[task].values
-                    hls_str = "hsl({}, {}%, 40%)".format(hue_by_sparsity[sp_fac], saturation_by_perm[no_perm])
-                    fig.add_trace(go.Bar(name='rando {} {}'.format(sp_fac, no_perm_str), x=xticks, y=finetune_score_values, marker_color=hls_str))
-
 
             # palminized
             ############

@@ -2,7 +2,7 @@
 This script is the experiment script for palminizing models.
 
 Usage:
-    script.py [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--nb-factor=int] [--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical]
+    script.py [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--nb-factor=int] [--resnet50|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical]
 
 Options:
   -h --help                             Show this screen.
@@ -23,6 +23,7 @@ Model:
   --cifar100-vgg19                      Use model vgg19 pretrained on cifar100.
   --svhn-vgg19                          Use model vgg19 pretrained on svhn.
   --mnist-500                           Use model fc 500 hidden units pretrained on mnist.
+  --resnet50                            use model resnet50 provided by keras and pretrained on imagenet
 
 
 Palm-Specifc options:
