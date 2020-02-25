@@ -1,0 +1,8 @@
+--sparsity-factor 2 -v --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac --walltime 90 --mnist --mnist-500
+--sparsity-factor 3 -v --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac --walltime 90 --mnist --mnist-500
+--sparsity-factor 4 -v --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac --walltime 90 --mnist --mnist-500
+--sparsity-factor 5 -v --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac --walltime 90 --mnist --mnist-500
+--sparsity-factor 2 -v --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac --walltime 90 --mnist --mnist-lenet
+--sparsity-factor 3 -v --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac --walltime 90 --mnist --mnist-lenet
+--sparsity-factor 4 -v --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac --walltime 90 --mnist --mnist-lenet
+--sparsity-factor 5 -v --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac --walltime 90 --mnist --mnist-lenet
