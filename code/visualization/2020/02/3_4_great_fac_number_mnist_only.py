@@ -54,7 +54,9 @@ scale_tasks = {
 if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/")
     expe_path_palminized_great_fac_number = "2020/02/3_4_finetune_palminized_greater_fac_number_mnist_only"
+    expe_path_palminized_7_fac = "2020/02/3_4_finetune_palminized_7_fac_mnist_only"
     expe_path_palminized_great_fac_number_before_finetune = "2020/02/1_2_palmnet_zero_greater_fac_number"
+    expe_path_palminized_great_7_fac_finetune = "2020/02/1_2_palmnet_zero_7_fac"
 
     expe_path_palminized_mnist = "2019/11/0_0_finetune_palminized"
     expe_path_palminized_mnist_500 = "2020/02/3_4_finetune_palminized_mnist_500"
@@ -66,6 +68,8 @@ if __name__ == "__main__":
     expe_path_palminized_not_hierarchical_2_3_factors_before_finetune = "2019/12/0_1_palmnet_patient_zero"
 
     src_results_dir_palminized_great_fac_number = root_source_dir / expe_path_palminized_great_fac_number
+    src_results_dir_palminized_7_fac = root_source_dir / expe_path_palminized_7_fac
+    src_results_dir_palminized_7_fac_before_finetune = root_source_dir / expe_path_palminized_great_7_fac_finetune
     src_results_dir_palminized_mnist_500 = root_source_dir / expe_path_palminized_mnist_500
     src_results_dir_palminized_mnist_500_before_finetune = root_source_dir / expe_path_palminized_mnist_500_before_finetune
     src_results_dir_palminized_great_fac_number_before_finetune = root_source_dir / expe_path_palminized_great_fac_number_before_finetune
@@ -78,24 +82,26 @@ if __name__ == "__main__":
 
 
     df_palminized_great_fac_number = get_df(src_results_dir_palminized_great_fac_number)
+    df_palminized_7_fac_number = get_df(src_results_dir_palminized_7_fac)
     df_palminized_mnist = get_df(src_results_dir_palminized_mnist)
     df_palminized_mnist_500 = get_df(src_results_dir_palminized_mnist_500)
     df_palmnized_not_hierarchical_log = get_df(src_results_dir_palminized_not_hierarchical_log)
     df_palminized_not_hierarchical_2_3_factors = get_df(src_results_dir_palminized_not_hierarchical_2_3_factors)
 
-    df_palminized = pd.concat([df_palminized_mnist_500, df_palminized_mnist, df_palmnized_not_hierarchical_log, df_palminized_not_hierarchical_2_3_factors, df_palminized_great_fac_number])
+    df_palminized = pd.concat([df_palminized_7_fac_number, df_palminized_mnist_500, df_palminized_mnist, df_palmnized_not_hierarchical_log, df_palminized_not_hierarchical_2_3_factors, df_palminized_great_fac_number])
     df_palminized = df_palminized.dropna(subset=["failure"])
     df_palminized = df_palminized[df_palminized["finetuned_score"] != "None"]
     df_palminized = df_palminized.drop(columns="oar_id").drop_duplicates()
 
 
     df_palminized_great_fac_number_before_finetune = get_df(src_results_dir_palminized_great_fac_number_before_finetune)
+    df_palminized_7_fac_number_before_finetune = get_df(src_results_dir_palminized_7_fac_before_finetune)
     df_palminized_mnist_500_before_finetune = get_df(src_results_dir_palminized_mnist_500_before_finetune)
     df_palminized_before_finetune = get_df(src_results_dir_palminized_before_finetune)
     df_palminized_not_hierarchical_log_before_finetune = get_df(src_results_dir_palminized_not_hierarchical_log_before_finetune)
     df_palminized_not_hierarchical_2_3_factors_before_finetune = get_df(src_results_dir_palminized_not_hierarchical_2_3_factors_before_finetune)
 
-    df_palminized_before_finetune = pd.concat([df_palminized_mnist_500_before_finetune, df_palminized_before_finetune, df_palminized_great_fac_number_before_finetune, df_palminized_not_hierarchical_log_before_finetune, df_palminized_not_hierarchical_2_3_factors_before_finetune])
+    df_palminized_before_finetune = pd.concat([df_palminized_7_fac_number_before_finetune, df_palminized_mnist_500_before_finetune, df_palminized_before_finetune, df_palminized_great_fac_number_before_finetune, df_palminized_not_hierarchical_log_before_finetune, df_palminized_not_hierarchical_2_3_factors_before_finetune])
 
 
     root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
@@ -131,7 +137,7 @@ if __name__ == "__main__":
         df_data_palminized_before_finetune = df_palminized_before_finetune[df_palminized_before_finetune[dataset[dataname]] == 1]
         for task in tasks:
 
-            xticks = ["2", "3", "4", "5", "6", "log(min(A, B))"]
+            xticks = ["2", "3", "4", "5", "6", "7",  "log(min(A, B))"]
             # xticks = ["A", "B", "log(min(A, B))"]
             # xticks = [1, 2, 3]
 
@@ -157,8 +163,8 @@ if __name__ == "__main__":
                 val = df_data_palminized_before_finetune[task_base].values.mean()
             fig.add_trace(
                 go.Scatter(
-                    x=[-1, "2", "3", "4", "5", "6", "log(min(A, B))", 1],
-                    y=[val, val, val, val, val, val, val, val],
+                    x=[-1, "2", "3", "4", "5", "6","7",  "log(min(A, B))", 1],
+                    y=[val, val, val, val, val, val, val, val, val],
                     mode='lines',
                     name="base model"
                 ))
