@@ -4,7 +4,7 @@ from keras.initializers import he_normal
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchNormalization, Activation, Dropout
 
 from palmnet.layers.pbp_layer import PBPDenseDensify
-from palmnet.layers.sparse_tensor import RandomSparseFactorisationConv2D, RandomSparseFactorisationDense
+from palmnet.layers.random_sparse_facto import RandomSparseFactorisationConv2D, RandomSparseFactorisationDense
 
 
 def random_small_model(input_shape, num_classes):

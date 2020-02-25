@@ -1,20 +1,10 @@
-from abc import abstractmethod
-
 from keras import backend as K, activations, initializers, regularizers, constraints
-from keras.layers import Layer, Dense, Conv2D
-from keras.utils import conv_utils
+from keras.layers import Layer
 import tensorflow as tf
 from scipy.sparse import coo_matrix
 import numpy as np
 from palmnet.layers import Conv2DCustom
-from palmnet.utils import create_sparse_factorization_pattern
-
-
-def cast_sparsity_pattern(sparsity_pattern):
-    try:
-        return np.array(sparsity_pattern)
-    except:
-        raise ValueError("Sparsity pattern isn't well formed")
+from palmnet.utils import create_sparse_factorization_pattern, cast_sparsity_pattern
 
 
 class SparseFixed(Layer):
@@ -367,61 +357,6 @@ class SparseFactorisationConv2D(Conv2DCustom):
 
     def compute_output_shape(self, input_shape):
         return self._compute_output_shape(input_shape, self.kernel_shape, self.padding_height, self.padding_width, self.strides_height, self.strides_width)
-
-
-class RandomSparseFactorisationDense(SparseFactorisationDense):
-    def __init__(self, units, sparsity_factor, nb_sparse_factors=None, permutation=True, **kwargs):
-
-        self.nb_factor = nb_sparse_factors
-        self.sparsity_factor = sparsity_factor
-        self.permutation = permutation
-
-        if 'sparsity_patterns' not in kwargs:
-            super(RandomSparseFactorisationDense, self).__init__(units, None, **kwargs)
-        else:
-            super(RandomSparseFactorisationDense, self).__init__(units, **kwargs)
-
-    def build(self, input_shape):
-
-        if self.nb_factor is None:
-            self.nb_factor = int(np.log(max(input_shape[-1], self.units)))
-        self.sparsity_patterns = create_sparse_factorization_pattern((input_shape[-1], self.units), self.sparsity_factor, self.nb_factor, self.permutation)
-
-        super(RandomSparseFactorisationDense, self).build(input_shape)
-
-    def get_config(self):
-        base_config = super().get_config()
-        config = {
-            'nb_sparse_factors': self.nb_factor,
-            'sparsity_factor_lst': self.sparsity_factor,
-        }
-        config.update(base_config)
-        return config
-
-class RandomSparseFactorisationConv2D(SparseFactorisationConv2D):
-    def __init__(self, sparsity_factor, nb_sparse_factors=None, permutation=True, **kwargs):
-        self.nb_factor = nb_sparse_factors
-        self.sparsity_factor = sparsity_factor
-        self.permutation = permutation
-
-        if 'sparsity_patterns' not in kwargs:
-            super(RandomSparseFactorisationConv2D, self).__init__(None, **kwargs)
-        else:
-            super(RandomSparseFactorisationConv2D, self).__init__(**kwargs)
-
-    def build(self, input_shape):
-        dim1, dim2 = np.prod(self.kernel_size) * input_shape[-1], self.filters
-        if self.nb_factor is None:
-            self.nb_factor = int(np.log(max(dim1, dim2)))
-        self.sparsity_patterns = create_sparse_factorization_pattern((dim1, dim2), self.sparsity_factor, self.nb_factor, self.permutation)
-
-        super(RandomSparseFactorisationConv2D, self).build(input_shape)
-
-    def get_config(self):
-        config = super().get_config()
-        config['sparsity_factor_lst'] = self.sparsity_factor
-        config['nb_sparse_factors'] = self.nb_factor
-        return config
 
 
 class SparseFactorisationConv2DDensify(Conv2DCustom):

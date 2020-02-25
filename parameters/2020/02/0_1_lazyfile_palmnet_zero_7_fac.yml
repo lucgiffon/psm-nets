@@ -3,18 +3,16 @@
 # --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float]
 
 all:
-  palmnet_mnist_500:
   palmnet_mnist:
   palmnet_svhn:
   palmnet_cifar10:
   palmnet_cifar100:
+  palmnet_mnist_500:
 
 base:
   sparsity_fac: {"--sparsity-factor": [2, 3, 4, 5]}
   verbosity: ["-v"]
   nb_fac: {"--nb-factor": [4, 5, 6]}
-  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number"]}
-  walltime: {"--walltime": [90]}
 
 palmnet_mnist_500:
   base:

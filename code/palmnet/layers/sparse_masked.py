@@ -2,7 +2,7 @@ from keras import backend as K, activations, initializers, regularizers, constra
 from keras.layers import Layer
 
 from palmnet.layers import Conv2DCustom
-from palmnet.layers.sparse_tensor import cast_sparsity_pattern
+from palmnet.utils import cast_sparsity_pattern
 import tensorflow as tf
 
 class SparseFixed(Layer):

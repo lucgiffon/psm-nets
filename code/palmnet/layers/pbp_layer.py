@@ -1,8 +1,7 @@
 from keras import initializers, regularizers, activations, constraints
 from scipy.sparse import coo_matrix
 
-from palmnet.layers.sparse_tensor import cast_sparsity_pattern
-from palmnet.utils import create_random_block_diag, create_permutation_matrix
+from palmnet.utils import create_random_block_diag, create_permutation_matrix, cast_sparsity_pattern
 from keras.layers import Layer
 import keras.backend as K
 import tensorflow as tf

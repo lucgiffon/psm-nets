@@ -273,3 +273,10 @@ def create_sparse_factorization_pattern(shape, block_size, nb_factors, permutati
         sparse_factors.append(create_sparse_matrix_pattern((min_dim, min_dim), block_size, permutation))
     sparse_factors.append(create_sparse_matrix_pattern((min_dim, shape[1]), block_size, permutation))
     return sparse_factors
+
+
+def cast_sparsity_pattern(sparsity_pattern):
+    try:
+        return np.array(sparsity_pattern)
+    except:
+        raise ValueError("Sparsity pattern isn't well formed")
