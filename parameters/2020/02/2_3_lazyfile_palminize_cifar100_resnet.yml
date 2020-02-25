@@ -1,0 +1,21 @@
+#  script.py [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data)
+# [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+# --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float]
+
+all:
+  no_log_fac_palmnet_cifar100:
+  hierarchical_palmnet_cifar100:
+
+base:
+  sparsity_fac: {"--sparsity-factor": [2, 3, 4, 5]}
+  verbosity: ["-v"]
+  cifar100: ["--cifar100"]
+  cifar100_vgg19: ["--cifar100-resnet20", "--cifar100-resnet50"]
+
+no_log_fac_palmnet_cifar100:
+  base:
+  nb_fac: {"--nb-factor": [2, 3]}
+
+hierarchical_palmnet_cifar100:
+  base:
+  hierarchical: ["--hierarchical", ""]

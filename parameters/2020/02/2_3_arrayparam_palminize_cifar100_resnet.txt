@@ -1,0 +1,32 @@
+--sparsity-factor 2 -v --cifar100 --cifar100-resnet20 --nb-factor 2
+--sparsity-factor 2 -v --cifar100 --cifar100-resnet20 --nb-factor 3
+--sparsity-factor 2 -v --cifar100 --cifar100-resnet50 --nb-factor 2
+--sparsity-factor 2 -v --cifar100 --cifar100-resnet50 --nb-factor 3
+--sparsity-factor 3 -v --cifar100 --cifar100-resnet20 --nb-factor 2
+--sparsity-factor 3 -v --cifar100 --cifar100-resnet20 --nb-factor 3
+--sparsity-factor 3 -v --cifar100 --cifar100-resnet50 --nb-factor 2
+--sparsity-factor 3 -v --cifar100 --cifar100-resnet50 --nb-factor 3
+--sparsity-factor 4 -v --cifar100 --cifar100-resnet20 --nb-factor 2
+--sparsity-factor 4 -v --cifar100 --cifar100-resnet20 --nb-factor 3
+--sparsity-factor 4 -v --cifar100 --cifar100-resnet50 --nb-factor 2
+--sparsity-factor 4 -v --cifar100 --cifar100-resnet50 --nb-factor 3
+--sparsity-factor 5 -v --cifar100 --cifar100-resnet20 --nb-factor 2
+--sparsity-factor 5 -v --cifar100 --cifar100-resnet20 --nb-factor 3
+--sparsity-factor 5 -v --cifar100 --cifar100-resnet50 --nb-factor 2
+--sparsity-factor 5 -v --cifar100 --cifar100-resnet50 --nb-factor 3
+--sparsity-factor 2 -v --cifar100 --cifar100-resnet20 --hierarchical
+--sparsity-factor 2 -v --cifar100 --cifar100-resnet20
+--sparsity-factor 2 -v --cifar100 --cifar100-resnet50 --hierarchical
+--sparsity-factor 2 -v --cifar100 --cifar100-resnet50
+--sparsity-factor 3 -v --cifar100 --cifar100-resnet20 --hierarchical
+--sparsity-factor 3 -v --cifar100 --cifar100-resnet20
+--sparsity-factor 3 -v --cifar100 --cifar100-resnet50 --hierarchical
+--sparsity-factor 3 -v --cifar100 --cifar100-resnet50
+--sparsity-factor 4 -v --cifar100 --cifar100-resnet20 --hierarchical
+--sparsity-factor 4 -v --cifar100 --cifar100-resnet20
+--sparsity-factor 4 -v --cifar100 --cifar100-resnet50 --hierarchical
+--sparsity-factor 4 -v --cifar100 --cifar100-resnet50
+--sparsity-factor 5 -v --cifar100 --cifar100-resnet20 --hierarchical
+--sparsity-factor 5 -v --cifar100 --cifar100-resnet20
+--sparsity-factor 5 -v --cifar100 --cifar100-resnet50 --hierarchical
+--sparsity-factor 5 -v --cifar100 --cifar100-resnet50

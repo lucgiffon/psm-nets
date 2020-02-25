@@ -88,9 +88,9 @@ class ParameterManager(dict):
             return Test.load_model()
         elif self["--mnist-500"]:
             return Mnist.load_model("mnist-500")
-        elif self["--resnet50"]:
+        elif self["--cifar100-resnet50"]:
             return Cifar100.load_model("cifar100-resnet50")
-        elif self["--resnet20"]:
+        elif self["--cifar100-resnet20"]:
             return Cifar100.load_model("cifar100-resnet20")
         else:
             raise NotImplementedError("No dataset specified.")
