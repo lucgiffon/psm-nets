@@ -23,8 +23,8 @@ Model:
   --cifar100-vgg19                      Use model vgg19 pretrained on cifar100.
   --svhn-vgg19                          Use model vgg19 pretrained on svhn.
   --mnist-500                           Use model fc 500 hidden units pretrained on mnist.
-  --cifar100-resnet50                            use model resnet50 pretrained on cifar100.
-  --cifar100-resnet20                            use model resnet20 pretrained on cifar100.
+  --cifar100-resnet50                   Use model resnet50 pretrained on cifar100.
+  --cifar100-resnet20                   Use model resnet20 pretrained on cifar100.
 
 
 Palm-Specifc options:
