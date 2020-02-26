@@ -1,6 +1,6 @@
 import numpy as np
 
-from palmnet.layers.sparse_masked import SparseFactorisationConv2D, SparseFactorisationDense
+from palmnet.layers.sparse_masked import SparseFactorisationConv2DDensify, SparseFactorisationDense
 from palmnet.utils import create_sparse_factorization_pattern
 
 
@@ -33,16 +33,16 @@ class RandomSparseFactorisationDense(SparseFactorisationDense):
         config.update(base_config)
         return config
 
-class RandomSparseFactorisationConv2D(SparseFactorisationConv2D):
+class RandomSparseFactorisationConv2D(SparseFactorisationConv2DDensify):
     def __init__(self, sparsity_factor, nb_sparse_factors=None, permutation=True, **kwargs):
         self.nb_factor = nb_sparse_factors
         self.sparsity_factor = sparsity_factor
         self.permutation = permutation
 
         if 'sparsity_patterns' not in kwargs:
-            super(RandomSparseFactorisationConv2D, self).__init__(None, **kwargs)
+            super(SparseFactorisationConv2DDensify, self).__init__(None, **kwargs)
         else:
-            super(RandomSparseFactorisationConv2D, self).__init__(**kwargs)
+            super(SparseFactorisationConv2DDensify, self).__init__(**kwargs)
 
     def build(self, input_shape):
         dim1, dim2 = np.prod(self.kernel_size) * input_shape[-1], self.filters
@@ -50,7 +50,7 @@ class RandomSparseFactorisationConv2D(SparseFactorisationConv2D):
             self.nb_factor = int(np.log(max(dim1, dim2)))
         self.sparsity_patterns = create_sparse_factorization_pattern((dim1, dim2), self.sparsity_factor, self.nb_factor, self.permutation)
 
-        super(RandomSparseFactorisationConv2D, self).build(input_shape)
+        super(SparseFactorisationConv2DDensify, self).build(input_shape)
 
     def get_config(self):
         config = super().get_config()

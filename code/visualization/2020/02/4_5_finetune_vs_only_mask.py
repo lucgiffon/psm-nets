@@ -64,9 +64,11 @@ if __name__ == "__main__":
     expe_path_palminized_not_hierarchical_2_3_factors = "2020/01/2_3_finetune_palminized_with_2_3_factors_nobug"
     expe_path_palminized_not_hierarchical_2_3_factors_before_finetune = "2019/12/0_1_palmnet_patient_zero"
     expe_path_palminized_only_mask = "2020/02/4_5_finetune_palminized_only_mask"
+    expe_path_palminized_only_mask_cifar_not_log = "2020/02/4_5_finetune_palminized_only_mask_only_cifar10_not_log"
 
     src_results_dir_palminized_mnist = root_source_dir / expe_path_palminized_mnist
     src_results_dir_only_mask = root_source_dir / expe_path_palminized_only_mask
+    src_results_dir_only_mask_cifar_not_log = root_source_dir / expe_path_palminized_only_mask_cifar_not_log
     src_results_dir_palminized_before_finetune = root_source_dir / expe_path_palminized_before_finetune
     src_results_dir_palminized_cifar10 = root_source_dir / expe_path_palminized_cifar10
     src_results_dir_palminized_svhn_cifar100 = root_source_dir / expe_path_palminized_svhn_cifar100
@@ -93,6 +95,9 @@ if __name__ == "__main__":
     df_palminized_before_finetune = pd.concat([df_palminized_before_finetune, df_palminized_not_hierarchical_log_before_finetune, df_palminized_not_hierarchical_2_3_factors_before_finetune])
 
     df_palminized_only_mask = get_df(src_results_dir_only_mask)
+    df_palminized_only_mask_cifar_not_log = get_df(src_results_dir_only_mask_cifar_not_log)
+
+    df_palminized_only_mask = pd.concat([df_palminized_only_mask, df_palminized_only_mask_cifar_not_log])
 
     root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
     output_dir = root_output_dir / expe_path_palminized_only_mask / "histogrammes"
