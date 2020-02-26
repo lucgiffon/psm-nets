@@ -371,6 +371,7 @@ class SparseFactorisationConv2DDensify(Conv2DCustom):
     """
 
     def __init__(self, sparsity_patterns,
+                 use_scaling=True,
                  scaler_initializer='glorot_uniform',
                  scaler_regularizer=None,
                  scaler_constraint=None,
@@ -398,6 +399,7 @@ class SparseFactorisationConv2DDensify(Conv2DCustom):
         else:
             self.sparsity_patterns = None
 
+        self.use_scaling = use_scaling
         self.scaler_initializer = initializers.get(scaler_initializer)
         self.scaler_regularizer = regularizers.get(scaler_regularizer)
         self.scaler_constraint = constraints.get(scaler_constraint)
@@ -406,6 +408,7 @@ class SparseFactorisationConv2DDensify(Conv2DCustom):
     def get_config(self):
         config = super().get_config()
         config['sparsity_patterns'] = self.sparsity_patterns
+        config['use_scaling'] = self.use_scaling
         return config
 
     def build(self, input_shape):
@@ -422,12 +425,14 @@ class SparseFactorisationConv2DDensify(Conv2DCustom):
         if self.sparsity_patterns is None:
             raise ValueError("No sparsity pattern found.")
 
-
-        self.scaling = self.add_weight(shape=(1,),
-                                       initializer=self.scaler_initializer,
-                                       name='scaler',
-                                       regularizer=self.scaler_regularizer,
-                                       constraint=self.scaler_constraint)
+        if self.use_scaling:
+            self.scaling = self.add_weight(shape=(1,),
+                                           initializer=self.scaler_initializer,
+                                           name='scaler',
+                                           regularizer=self.scaler_regularizer,
+                                           constraint=self.scaler_constraint)
+        else:
+            self.scaling = None
 
         input_dim = input_shape[-1]
         self.kernel_shape = self.kernel_size + (input_dim, self.filters) # h x w x channels_in x channels_out
@@ -464,7 +469,10 @@ class SparseFactorisationConv2DDensify(Conv2DCustom):
             reconstructed_kernel = K.dot(reconstructed_kernel, self.kernels[i] * self.sparsity_masks[i])
             # output = tf.sparse.sparse_dense_matmul(tf.sparse.transpose(tf.sparse.reorder(self.sparse_ops[i])), output)
 
-        reconstructed_kernel = self.scaling * tf.reshape(reconstructed_kernel, (*self.kernel_size, X.get_shape()[-1].value, self.filters))
+        if self.use_scaling:
+            reconstructed_kernel = self.scaling * tf.reshape(reconstructed_kernel, (*self.kernel_size, X.get_shape()[-1].value, self.filters))
+        else:
+            reconstructed_kernel = tf.reshape(reconstructed_kernel, (*self.kernel_size, X.get_shape()[-1].value, self.filters))
 
         output = K.conv2d(
             X,

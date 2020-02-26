@@ -1,0 +1,4 @@
+--sparsity-factor 3 -v --walltime 90 --only-mask --cifar10 --cifar10-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero --nb-factor 2
+--sparsity-factor 3 -v --walltime 90 --only-mask --cifar10 --cifar10-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero --nb-factor 3
+--sparsity-factor 5 -v --walltime 90 --only-mask --cifar10 --cifar10-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero --nb-factor 2
+--sparsity-factor 5 -v --walltime 90 --only-mask --cifar10 --cifar10-vgg19 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2019/12/0_1_palmnet_patient_zero --nb-factor 3
