@@ -251,7 +251,8 @@ class SparseFactorisationDense(Layer):
             # multiply by the constant mask tensor so that gradient is 0 for zero entries.
             output = K.dot(output, self.kernels[i] * self.sparsity_masks[i])
 
-        output = self.scaling * output if self.use_scaling else output
+        if self.use_scaling:
+            output = self.scaling* output
 
         if self.use_bias:
             output = K.bias_add(output, self.bias, data_format='channels_last')

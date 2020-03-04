@@ -110,6 +110,10 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
 
         self["--input-dir"] = pathlib.Path(self["--input-dir"])
         self["--walltime"] = int(self["--walltime"])
+        self["--min-lr"] = float(self["--min-lr"]) if self["--min-lr"] is not None else None
+        self["--max-lr"] = float(self["--max-lr"]) if self["--max-lr"] is not None else None
+        self["--nb-epoch"] = int(self["--nb-epoch"]) if self["--nb-epoch"] is not None else None
+        self["--epoch-step-size"] = int(self["--epoch-step-size"]) if self["--epoch-step-size"] is not None else None
 
         self.__init_model_path()
         self.__init_output_file()
@@ -144,6 +148,8 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
                             '--cifar10-vgg19',
                             '--cifar100',
                             '--cifar100-vgg19',
+                            # '--cifar100-resnet50',
+                            # '--cifar100-resnet20',
                             '--delta-threshold',
                             '--hierarchical',
                             '--mnist',

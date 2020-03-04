@@ -2,6 +2,8 @@ from collections import namedtuple
 
 import keras
 import numpy as np
+from keras import optimizers
+from keras.callbacks import LearningRateScheduler
 from keras.datasets import mnist, cifar10, cifar100
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -26,6 +28,13 @@ def scheduler(epoch):
     if epoch < 80:
         return 0.1
     if epoch < 160:
+        return 0.01
+    return 0.001
+
+def scheduler_cifar100_resnet(epoch):
+    if epoch < 81:
+        return 0.01
+    if epoch < 122:
         return 0.01
     return 0.001
 
@@ -118,6 +127,17 @@ cifar10_param_training = param_training(
 cifar100_param_training = cifar10_param_training
 svhn_param_training = cifar10_param_training
 
+cifar100_resnet_param_training = param_training(
+    batch_size=128,
+    epochs=300,
+    # optimizer=optimizers.SGD(lr=.1, momentum=0.9, nesterov=True),
+    optimizer=optimizers.Adam(lr=1e-4),
+    loss="categorical_crossentropy",
+    image_data_generator=image_data_generator_cifar_svhn,
+    # callbacks=[LearningRateScheduler(scheduler_cifar100_resnet)],
+    callbacks=[]
+)
+
 MAP_EXTERNAL_MODEL_PARAM_TRAINING = {
     "mnist_500": mnist_500_param_training,
     "mnist_lenet": mnist_param_training,
@@ -126,6 +146,7 @@ MAP_EXTERNAL_MODEL_PARAM_TRAINING = {
     "svhn_vgg19_4096x4096": svhn_param_training,
     "cifar10_vgg19_2048x2048": cifar10_param_training,
     "cifar100_vgg19_2048x2048": cifar100_param_training,
+    "cifar100_resnet": cifar100_resnet_param_training,
     "svhn_vgg19_2048x2048": svhn_param_training,
 }
 

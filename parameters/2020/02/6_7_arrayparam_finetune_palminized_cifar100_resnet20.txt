@@ -1,0 +1,6 @@
+--sparsity-factor 3 -v --cifar100 --cifar100-resnet20 --walltime 90 --tb --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/2_3_palminize_cifar_100_resnet --nb-factor 2
+--sparsity-factor 3 -v --cifar100 --cifar100-resnet20 --walltime 90 --tb --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/2_3_palminize_cifar_100_resnet --nb-factor 3
+--sparsity-factor 5 -v --cifar100 --cifar100-resnet20 --walltime 90 --tb --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/2_3_palminize_cifar_100_resnet --nb-factor 2
+--sparsity-factor 5 -v --cifar100 --cifar100-resnet20 --walltime 90 --tb --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/2_3_palminize_cifar_100_resnet --nb-factor 3
+--sparsity-factor 3 -v --cifar100 --cifar100-resnet20 --walltime 90 --tb --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/2_3_palminize_cifar_100_resnet --hierarchical
+--sparsity-factor 5 -v --cifar100 --cifar100-resnet20 --walltime 90 --tb --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/2_3_palminize_cifar_100_resnet --hierarchical
