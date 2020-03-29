@@ -68,7 +68,11 @@ if __name__ == "__main__":
     expe_path_palminized_not_hierarchical_log_before_finetune = "2020/01/0_1_palmnet_zero_not_hierarchical_log"
     expe_path_palminized_not_hierarchical_2_3_factors = "2020/01/2_3_finetune_palminized_with_2_3_factors_nobug"
     expe_path_palminized_not_hierarchical_2_3_factors_before_finetune = "2019/12/0_1_palmnet_patient_zero"
+    expe_path_palminized_cifar100_resnet = "2020/02/8_9_finetune_palminized_resnet_new_lr"
+    expe_path_palminized_cifar100_resnet_before_finetune = "2020/02/2_3_palminize_cifar_100_resnet"
 
+    src_results_dir_palminized_cifar100_resnet = root_source_dir / expe_path_palminized_cifar100_resnet
+    src_results_dir_palminized_cifar100_resnet_before_finetune = root_source_dir / expe_path_palminized_cifar100_resnet
     src_results_dir_palminized_mnist = root_source_dir / expe_path_palminized_mnist
     src_results_dir_palminized_before_finetune = root_source_dir / expe_path_palminized_before_finetune
     src_results_dir_palminized_cifar10 = root_source_dir / expe_path_palminized_cifar10
@@ -84,23 +88,25 @@ if __name__ == "__main__":
 
 
     df_palminized_mnist = get_df(src_results_dir_palminized_mnist)
+    df_palminized_cifar100_resnet = get_df(src_results_dir_palminized_cifar100_resnet)
     df_palminized_cifar10 = get_df(src_results_dir_palminized_cifar10)
     df_palminized_cifar100_palm = get_df(src_results_dir_palminized_cifar100_palm)
     df_palminized_cifar100_svhn = get_df(src_results_dir_palminized_svhn_cifar100)
     df_palmnized_not_hierarchical_log = get_df(src_results_dir_palminized_not_hierarchical_log)
     df_palminized_not_hierarchical_2_3_factors = get_df(src_results_dir_palminized_not_hierarchical_2_3_factors)
 
-    df_palminized = pd.concat([df_palminized_cifar100_palm, df_palminized_mnist, df_palminized_cifar10, df_palminized_cifar100_svhn, df_palmnized_not_hierarchical_log, df_palminized_not_hierarchical_2_3_factors])
+    df_palminized = pd.concat([df_palminized_cifar100_resnet, df_palminized_cifar100_palm, df_palminized_mnist, df_palminized_cifar10, df_palminized_cifar100_svhn, df_palmnized_not_hierarchical_log, df_palminized_not_hierarchical_2_3_factors])
     df_palminized = df_palminized.dropna(subset=["failure"])
     df_palminized = df_palminized[df_palminized["finetuned_score"] != "None"]
     df_palminized = df_palminized.drop(columns="oar_id").drop_duplicates()
 
     df_palminized_before_finetune = get_df(src_results_dir_palminized_before_finetune)
+    df_palminized_cifar100_resnet_before_finetune = get_df(src_results_dir_palminized_cifar100_resnet_before_finetune)
     df_palminized_before_finetune_cifar100_palm_before_finetune = get_df(src_results_dir_palminized_cifar100_palm_before_finetune)
     df_palminized_not_hierarchical_log_before_finetune = get_df(src_results_dir_palminized_not_hierarchical_log_before_finetune)
     df_palminized_not_hierarchical_2_3_factors_before_finetune = get_df(src_results_dir_palminized_not_hierarchical_2_3_factors_before_finetune)
 
-    df_palminized_before_finetune = pd.concat([df_palminized_before_finetune_cifar100_palm_before_finetune, df_palminized_before_finetune, df_palminized_not_hierarchical_log_before_finetune, df_palminized_not_hierarchical_2_3_factors_before_finetune])
+    df_palminized_before_finetune = pd.concat([df_palminized_cifar100_resnet_before_finetune, df_palminized_before_finetune_cifar100_palm_before_finetune, df_palminized_before_finetune, df_palminized_not_hierarchical_log_before_finetune, df_palminized_not_hierarchical_2_3_factors_before_finetune])
 
     # df_others = get_df(src_results_dir_others)
     #
