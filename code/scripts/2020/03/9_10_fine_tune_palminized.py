@@ -2,14 +2,13 @@
 This script finds a palminized model with given arguments then finetune it.
 
 Usage:
-    script.py --input-dir path [-h] [-v|-vv] --walltime int [--lr float] [--use-clr [--min-lr float --max-lr float] [--epoch-step-size int]] [--nb-epoch int] [--only-mask] [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
+    script.py --input-dir path [-h] [-v|-vv] [--keep-last-layer] [--lr float] [--use-clr [--min-lr float --max-lr float] [--epoch-step-size int]] [--nb-epoch int] [--only-mask] [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
 
 Options:
   -h --help                             Show this screen.
   -vv                                   Set verbosity to debug.
   -v                                    Set verbosity to info.
   --input-dir path                      Path to input directory where to find previously generated results.
-  --walltime int                        The number of hour before training is stopped.
   --tb                                  Tell if tensorboard should be printed.
   --lr float                            Flat lr to be used (Overidable)
   --min-lr float                        Tells the min reasonable lr (Overide everything else).
@@ -17,6 +16,7 @@ Options:
   --nb-epoch int                        Number of epochs of training (Overide everything else).
   --epoch-step-size int                 Number of epochs for an half cycle of CLR.
   --use-clr                             Tell to use clr.
+  --keep-last-layer                     Do not compress classification layer.
 
 Dataset:
   --mnist                               Use Mnist dataset.
@@ -74,15 +74,28 @@ lst_results_header = [
     "test_accuracy_finetuned_model"
 ]
 
+def get_idx_last_dense_layer(model):
+    idx_last_dense_layer = -1
+    for i, layer in enumerate(model.layers):
+        if isinstance(layer, Dense):
+            idx_last_dense_layer = i
+    if idx_last_dense_layer == -1:
+        logger.warning("No dense layer found")
+    return idx_last_dense_layer
+
 def replace_layers_with_sparse_facto(model, dct_name_facto):
     new_model = deepcopy(model)
+    log_memory_usage("After copy model")
     lst_tpl_str_bool_new_model_layers = []
     dct_new_layer_attr = defaultdict(lambda: {})
+
+    idx_last_dense_layer = get_idx_last_dense_layer(new_model) if paraman["--keep-last-layer"] else -1
+
     for i, layer in enumerate(new_model.layers):
         layer_name = layer.name
         sparse_factorization = dct_name_facto[layer_name]
-        logger.debug('Prepare layer {}'.format(layer.name))
-        if sparse_factorization != (None, None):
+        logger.info('Prepare layer {}'.format(layer.name))
+        if sparse_factorization != (None, None) and (i != idx_last_dense_layer and paraman["--keep-last-layer"]):
             # scaling = 1.
             if paraman["--only-mask"]:
                 scaling = []
@@ -92,9 +105,19 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
             factors = [fac.toarray() for fac in sparse_factorization[1].get_list_of_factors()]
             # sparsity_patterns = [get_sparsity_pattern(w.toarray()) for w in factors]
             sparsity_patterns = [get_sparsity_pattern(w) for w in factors]
+            nb_val_sparse_factors = np.sum([np.sum(fac) for fac in sparsity_patterns])
             # factor_data_sparse = [f.data for f in factors_sparse]
             factor_data = factors
             reconstructed_matrix = np.linalg.multi_dot(factors) * scaling[0]
+            nb_val_full_matrix = np.prod(reconstructed_matrix.shape)
+
+            if nb_val_full_matrix <= nb_val_sparse_factors:
+                logger.info("Less values in full matrix than factorization. Keep full matrix. {} <= {}".format(nb_val_full_matrix, nb_val_sparse_factors))
+                dct_new_layer_attr[layer_name]["modified"] = False
+                lst_tpl_str_bool_new_model_layers.append((layer_name, False))
+                dct_new_layer_attr[layer_name]["layer_obj"] = layer
+                continue
+
             base_palminized_matrix = np.reshape(layer.get_weights()[0], reconstructed_matrix.shape)
             diff = np.linalg.norm(base_palminized_matrix - reconstructed_matrix) / np.linalg.norm(base_palminized_matrix)
             # assert np.allclose(diff, 0, atol=1e-5), "Reconstructed  is different than base"
@@ -137,6 +160,8 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
             lst_tpl_str_bool_new_model_layers.append((layer_name, False))
             dct_new_layer_attr[layer_name]["layer_obj"] = layer
 
+    log_memory_usage("After prepare all sparse layers ")
+
     network_dict = {'input_layers_of': defaultdict(lambda: []), 'new_output_tensor_of': defaultdict(lambda: [])}
 
     if not isinstance(new_model.layers[0], InputLayer):
@@ -156,6 +181,7 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
         {new_model.layers[0].name: new_model.input})
 
     for layer in new_model.layers[1:]:
+        log_memory_usage("Before layer {}".format(layer.name))
         layer_name = layer.name
 
         layer_input = [network_dict['new_output_tensor_of'][layer_aux] for layer_aux in network_dict['input_layers_of'][layer.name]]
@@ -172,6 +198,7 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
             new_layer.name = '{}_{}'.format(layer.name,
                                             new_layer.name)
             x = new_layer(x)
+
             if not paraman["--only-mask"]:
                 if layer.use_bias:
                     reconstructed_matrix = np.linalg.multi_dot(proxy_new_layer_attr["layer_weights"][1:-1]) * proxy_new_layer_attr["layer_weights"][0]
@@ -181,6 +208,7 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
                 base_palminized_matrix = np.reshape(layer.get_weights()[0], reconstructed_matrix.shape)
                 diff = np.linalg.norm(base_palminized_matrix - reconstructed_matrix) / np.linalg.norm(base_palminized_matrix)
                 # assert np.allclose(diff, 0, atol=1e-5), "Reconstructed  is different than base"
+                del base_palminized_matrix
 
                 new_layer.set_weights(proxy_new_layer_attr["layer_weights"])
 
@@ -202,6 +230,8 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
             logger.info('Layer {} unmodified'.format(layer.name))
 
         network_dict['new_output_tensor_of'].update({layer.name: x})
+
+        del dct_new_layer_attr[layer_name]
 
     new_model = Model(inputs=new_model.inputs, outputs=x)
 
@@ -240,12 +270,11 @@ def main():
         palminized_score = float(df["palminized_score"])
         fine_tuned_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={'SparseFactorisationConv2DDensify':SparseFactorisationConv2DDensify,
                                                                             "SparseFactorisationDense": SparseFactorisationDense})
-
     else:
         init_nb_epoch = 0
 
         mypalminizedmodel = pickle.load(open(paraman["input_model_path"], "rb"))  # type: Palminizable
-
+        log_memory_usage("After load mypalminized model")
         base_model = mypalminizedmodel.base_model
         dct_name_facto = mypalminizedmodel.sparsely_factorized_layers
         base_score = base_model.evaluate(x_test, y_test, verbose=0)[1]
@@ -254,6 +283,7 @@ def main():
         palminized_score = palminized_model.evaluate(x_test, y_test, verbose=1)[1]
         print(palminized_score)
         fine_tuned_model = replace_layers_with_sparse_facto(palminized_model, dct_name_facto)
+        log_memory_usage("After get_finetuned_model")
         # fine_tuned_model = palminized_model
 
         input_by_shape = {(32,32,3): x_test[:3]}
@@ -332,35 +362,32 @@ def main():
     csvcallback = CSVLoggerByBatch(str(paraman["output_file_csvcbprinter"]), n_batch_between_display=100, separator=',', append=True)
     call_backs.append(csvcallback)
 
-    signal.signal(signal.SIGALRM, timeout_signal_handler)
-    signal.alarm(int(paraman["--walltime"] * 3600))  # start alarm
     finetuned_score = None
-    try:
-        open(paraman["output_file_notfinishedprinter"], 'w').close()
-        history = fine_tuned_model.fit(param_train_dataset.image_data_generator.flow(x_train, y_train, batch_size=param_train_dataset.batch_size),
-                                       epochs=(param_train_dataset.epochs if paraman["--nb-epoch"] is None else paraman["--nb-epoch"]) - init_nb_epoch,
-                                       # epochs=2 - init_nb_epoch,
-                                       verbose=2,
-                                       # validation_data=(x_test, y_test),
-                                       callbacks=param_train_dataset.callbacks + call_backs)
-        signal.alarm(0)  # stop alarm for next evaluation
-        finetuned_score = fine_tuned_model.evaluate(x_test, y_test, verbose=1)[1]
-        print(finetuned_score)
 
-        if os.path.exists(paraman["output_file_notfinishedprinter"]):
-            os.remove(paraman["output_file_notfinishedprinter"])
-    # except TimeoutError as te:
-    except Exception as e:
-        logging.error("Caught exception: {}".format(e))
-    finally:
-        dct_results = {
-            "finetuned_score": finetuned_score,
-            "before_finetuned_score": before_finetuned_score,
-            "base_score": base_score,
-            "palminized_score": palminized_score,
-        }
-        fine_tuned_model.save(str(paraman["output_file_modelprinter"]))
-        resprinter.add(dct_results)
+    open(paraman["output_file_notfinishedprinter"], 'w').close()
+
+    history = fine_tuned_model.fit(param_train_dataset.image_data_generator.flow(x_train, y_train, batch_size=param_train_dataset.batch_size),
+                                   epochs=(param_train_dataset.epochs if paraman["--nb-epoch"] is None else paraman["--nb-epoch"]) - init_nb_epoch,
+                                   # epochs=2 - init_nb_epoch,
+                                   verbose=2,
+                                   # validation_data=(x_test, y_test),
+                                   callbacks=param_train_dataset.callbacks + call_backs)
+
+    finetuned_score = fine_tuned_model.evaluate(x_test, y_test, verbose=1)[1]
+    print(finetuned_score)
+
+    if os.path.exists(paraman["output_file_notfinishedprinter"]):
+        os.remove(paraman["output_file_notfinishedprinter"])
+
+
+    dct_results = {
+        "finetuned_score": finetuned_score,
+        "before_finetuned_score": before_finetuned_score,
+        "base_score": base_score,
+        "palminized_score": palminized_score,
+    }
+    fine_tuned_model.save(str(paraman["output_file_modelprinter"]))
+    resprinter.add(dct_results)
 
 
 if __name__ == "__main__":

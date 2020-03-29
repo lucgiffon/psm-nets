@@ -282,8 +282,12 @@ def main():
         #     #     print("error")
         #     input_by_shape[dense_layer_output.shape[1:]] = dense_layer_output
 
+        params_optimizer = param_train_dataset.params_optimizer
+
+        params_optimizer["lr"] = paraman["--lr"] if paraman["--lr"] is not None else params_optimizer["lr"]
+
         fine_tuned_model.compile(loss=param_train_dataset.loss,
-                                 optimizer=param_train_dataset.optimizer,
+                                 optimizer=param_train_dataset.optimizer(**params_optimizer),
                                  metrics=['categorical_accuracy'])
                                  # metrics=['categorical_accuracy', get_lr_metric(param_train_dataset.optimizer)])
 
@@ -319,7 +323,8 @@ def main():
         call_backs.append(tbCallBack)
 
     if paraman["--use-clr"]:
-        clr_cb = CyclicLR(base_lr=paraman["--min-lr"], max_lr=paraman["--max-lr"],
+        clr_cb = CyclicLR(base_lr=param_train_dataset.min_lr if paraman["--min-lr"] is None else paraman["--min-lr"],
+                          max_lr=param_train_dataset.max_lr if paraman["--max-lr"] is None else paraman["--max-lr"],
                           step_size=(paraman["--epoch-step-size"]*(x_train.shape[0] // param_train_dataset.batch_size)),
                           logrange=True)
         call_backs.append(clr_cb)
