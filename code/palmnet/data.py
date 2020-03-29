@@ -22,7 +22,7 @@ MAP_EXTERNAL_MODEL_FILENAME = {
     "cifar100-resnet20": "resnet_20_cifar100.h5"
 }
 
-param_training = namedtuple("ParamTraining", ["batch_size", "epochs", "optimizer", "loss", "image_data_generator", "callbacks"])
+param_training = namedtuple("ParamTraining", ["batch_size", "epochs", "optimizer", "params_optimizer", "min_lr", "max_lr", "loss", "image_data_generator", "callbacks"])
 
 def scheduler(epoch):
     if epoch < 80:
@@ -93,19 +93,25 @@ image_data_generator_mnist = ImageDataGenerator(
 mnist_param_training = param_training(
     batch_size=32,
     epochs=100,
-    optimizer=keras.optimizers.RMSprop(lr=0.0001, decay=1e-6),
+    optimizer=keras.optimizers.RMSprop,
+    params_optimizer={"lr":0.0001, "decay":1e-6},
     loss="categorical_crossentropy",
     image_data_generator=image_data_generator_mnist,
-    callbacks=[]
+    callbacks=[],
+    min_lr=0.0001,
+    max_lr=0.0001,
 )
 
 mnist_500_param_training = param_training(
     batch_size=32,
     epochs=100,
-    optimizer=keras.optimizers.RMSprop(lr=0.0001, decay=1e-6),
+    optimizer=keras.optimizers.RMSprop,
+    params_optimizer={"lr":0.0001, "decay":1e-6},
     loss="categorical_crossentropy",
     image_data_generator=DataGenerator,
-    callbacks=[]
+    callbacks=[],
+    min_lr=0.0001,
+    max_lr=0.0001,
 )
 
 image_data_generator_cifar_svhn = ImageDataGenerator(horizontal_flip=True,
@@ -117,21 +123,39 @@ image_data_generator_cifar_svhn = ImageDataGenerator(horizontal_flip=True,
 cifar10_param_training = param_training(
     batch_size=64,
     epochs=300,
-    optimizer=keras.optimizers.Adam(lr=1e-4),
+    optimizer=keras.optimizers.Adam,
+    params_optimizer={"lr":0.0001},
+    min_lr=0.000005,
+    max_lr=0.0001,
+
     loss="categorical_crossentropy",
     image_data_generator=image_data_generator_cifar_svhn,
     # callbacks=[LearningRateScheduler(scheduler)]
     callbacks=[]
 )
 
-cifar100_param_training = cifar10_param_training
+cifar100_param_training = param_training(
+    batch_size=64,
+    epochs=300,
+    optimizer=keras.optimizers.Adam,
+    params_optimizer={"lr":0.0001},
+    min_lr=0.000005,
+    max_lr=0.001,
+    loss="categorical_crossentropy",
+    image_data_generator=image_data_generator_cifar_svhn,
+    # callbacks=[LearningRateScheduler(scheduler)]
+    callbacks=[]
+)
 svhn_param_training = cifar10_param_training
 
 cifar100_resnet_param_training = param_training(
     batch_size=128,
     epochs=300,
     # optimizer=optimizers.SGD(lr=.1, momentum=0.9, nesterov=True),
-    optimizer=optimizers.Adam(lr=1e-4),
+    optimizer=keras.optimizers.Adam,
+    params_optimizer={"lr": 0.00005},
+    min_lr=0.000005,
+    max_lr=0.001,
     loss="categorical_crossentropy",
     image_data_generator=image_data_generator_cifar_svhn,
     # callbacks=[LearningRateScheduler(scheduler_cifar100_resnet)],
