@@ -109,9 +109,9 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
         self.__init_hash_expe()
 
         self["--input-dir"] = pathlib.Path(self["--input-dir"])
-        self["--walltime"] = int(self["--walltime"])
         self["--min-lr"] = float(self["--min-lr"]) if self["--min-lr"] is not None else None
         self["--max-lr"] = float(self["--max-lr"]) if self["--max-lr"] is not None else None
+        self["--lr"] = float(self["--lr"]) if self["--lr"] is not None else None
         self["--nb-epoch"] = int(self["--nb-epoch"]) if self["--nb-epoch"] is not None else None
         self["--epoch-step-size"] = int(self["--epoch-step-size"]) if self["--epoch-step-size"] is not None else None
 
@@ -126,7 +126,6 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
             '-v',
             '--help',
             '--input-dir',
-            "--walltime"
         ]
         keys_expe = sorted(self.keys())
         any(keys_expe.remove(item) for item in lst_elem_to_remove_for_hash)
@@ -148,8 +147,6 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
                             '--cifar10-vgg19',
                             '--cifar100',
                             '--cifar100-vgg19',
-                            # '--cifar100-resnet50',
-                            # '--cifar100-resnet20',
                             '--delta-threshold',
                             '--hierarchical',
                             '--mnist',
@@ -162,6 +159,11 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
                             '--test-model',
                             "--nb-factor"
                             ]
+        if self["--cifar100-resnet50"] or self["--cifar100-resnet20"]:
+            keys_of_interest.extend([
+                '--cifar100-resnet50',
+                '--cifar100-resnet20',
+            ])
         # queries = []
         # for k in keys_of_interest:
         #     logger.debug("{}, {}, {}".format(self[k], type(self[k]), k))
@@ -338,7 +340,7 @@ def get_line_of_interest(df, keys_of_interest, dct_values):
         try:
             key_type = df.dtypes[k].name
 
-            if key_type == "object" or dct_values[k] is None:
+            if key_type == "object" or dct_values[k] is None or np.isnan(dct_values[k]):
                 df[k] = df[k].astype(str)
                 str_k = "'{}'".format(dct_values[k])
             else:
@@ -354,17 +356,27 @@ def get_line_of_interest(df, keys_of_interest, dct_values):
         # else:
         #     str_k = self[k]
 
-        query = "(df['{}']=={})".format(k, str_k)
+        query = "df_of_interest['{}']=={}".format(k, str_k)
         queries.append(query)
 
-    s_query = " & ".join(queries)
-    s_eval = "df[({})]".format(s_query)
-    line_of_interest = eval(s_eval)
+    # s_query = " & ".join(queries)
+    df_of_interest = df
+    for query in queries:
+        s_eval = "df_of_interest[{}]".format(query)
+        logger.debug(s_eval)
+        df_of_interest = eval(s_eval)
+        # try:
+        assert not len(df_of_interest) < 1, "No corresponding pretrained model found in directory. Query {} discarded all".format(query)
+        # except:
+        #     pass
+
+    line_of_interest = df_of_interest
     line_of_interest.drop_duplicates(keys_of_interest, inplace=True)
     logger.debug(line_of_interest)
-    logger.debug(s_eval)
 
-    assert len(line_of_interest) == 1, "The parameters doesn't allow to discriminate only one pre-trained model in directory"
+    assert not len(line_of_interest) > 1, "The parameters doesn't allow to discriminate only one pre-trained model in directory. There are multiple"
+    assert not len(line_of_interest) < 1, "No corresponding pretrained model found in directory"
+
     return line_of_interest
 
 class ResultPrinter:
