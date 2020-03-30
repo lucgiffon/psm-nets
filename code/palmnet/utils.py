@@ -9,6 +9,7 @@ import six
 import os
 from keras.callbacks import Callback
 from keras.engine import InputLayer
+from keras.layers import Dense
 from keras.models import Model
 from pathlib import Path
 import numpy as np
@@ -184,10 +185,7 @@ def count_model_param_and_flops(model, dct_layer_sparse_facto_op=None):
 
 
 def get_sparsity_pattern(arr):
-    non_zero = arr != 0
-    sparsity_pattern = np.zeros_like(arr)
-    sparsity_pattern[non_zero] = 1
-    return sparsity_pattern
+    return arr.astype(bool).astype(float)
 
 
 def create_random_block_diag(dim1, dim2, block_size, mask=False, greedy=True):
@@ -579,3 +577,13 @@ class CyclicLR(Callback):
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
         logs['lr'] = K.get_value(self.model.optimizer.lr)
+
+
+def get_idx_last_dense_layer(model):
+    idx_last_dense_layer = -1
+    for i, layer in enumerate(model.layers):
+        if isinstance(layer, Dense):
+            idx_last_dense_layer = i
+    if idx_last_dense_layer == -1:
+        logger.warning("No dense layer found")
+    return idx_last_dense_layer
