@@ -81,3 +81,15 @@ class TTLayerConv(Layer):
 
     def compute_output_shape(self, input_shape):
         return (input_shape[0], input_shape[1], input_shape[2], np.prod(self.out_modes))
+
+    def get_config(self):
+        super_config = super().get_config()
+        super_config.update({
+            "window": self.window,
+            "stride": self.stride,
+            "padding": self.padding,
+            "inp_modes": self.inp_modes,
+            "out_modes": self.out_modes,
+            "mat_ranks": self.mat_ranks
+        })
+        return super_config

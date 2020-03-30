@@ -14,9 +14,9 @@ class TTLayerDense(Layer):
     """ Given x\in\mathbb{R}^{N}, b\in\mathbb{R}^{M}, W\in\mathbb{R}^{M\times N}, y\in\mathbb{R}^{M}, compute y = Wx + b in the TT-format.
 
     Parameters:
-        inp_modes(list): [n_1, n_2, ..., n_k] such that n_1*n_2*...*n_k=N
-        out_modes(list): [m_1, m_2, ..., m_k] such that m_1*m_2*...m_k = M
-        mat_ranks(list): [1, r_1, r_2, ..., r_k]
+        inp_modes: [n_1, n_2, ..., n_k] such that n_1*n_2*...*n_k=N
+        out_modes: [m_1, m_2, ..., m_k] such that m_1*m_2*...m_k = M
+        mat_ranks: [1, r_1, r_2, ..., r_k]
 
     """
 
@@ -58,4 +58,12 @@ class TTLayerDense(Layer):
     def compute_output_shape(self, input_shape):
         return (input_shape[0], np.prod(self.out_modes))
 
+    def get_config(self):
+        super_config = super().get_config()
+        super_config.update({
+            "inp_modes": self.inp_modes,
+            "out_modes": self.out_modes,
+            "mat_ranks": self.mat_ranks
+        })
+        return super_config
 
