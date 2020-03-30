@@ -1,7 +1,8 @@
-from keras import backend as K
+from keras import backend as K, activations, initializers
 from keras.engine.topology import Layer
 import numpy as np
 import tensorflow as tf
+from keras.utils import conv_utils
 
 '''
 Implementation of the paper 'Ultimate tensorization: compressing convolutional and FC layers alike', Timur Garipov, Dmitry Podoprikhin, Alexander Novikov, Dmitry P. Vetrov, 2016
@@ -20,10 +21,20 @@ class TTLayerConv(Layer):
 
     '''
 
-    def __init__(self, window, inp_modes, out_modes, mat_ranks, stride=[1, 1], padding='SAME', **kwargs):
-        self.window = window
-        self.stride = stride
-        self.padding = padding
+    def __init__(self, window, inp_modes, out_modes, mat_ranks, bias_initializer='zeros', kernel_initializer='glorot_normal', use_bias=True, activation='relu', stride=(1, 1), padding='SAME', **kwargs):
+        self.window = conv_utils.normalize_tuple(window, 2, 'kernel_size')
+        self.stride = conv_utils.normalize_tuple(stride, 2, 'strides')
+        self.padding = conv_utils.normalize_padding(padding)
+
+        self.activation = activations.get(activation)
+        self.use_bias = use_bias
+        self.kernel_initializer = initializers.get(kernel_initializer)
+        self.bias_initializer = initializers.get(bias_initializer)
+        # self.kernel_regularizer = regularizers.get(kernel_regularizer)
+        # self.bias_regularizer = regularizers.get(bias_regularizer)
+        # self.kernel_constraint = constraints.get(kernel_constraint)
+        # self.bias_constraint = constraints.get(bias_constraint)
+
         self.inp_modes = np.array(inp_modes).astype(int)
         self.out_modes = np.array(out_modes).astype(int)
         self.mat_ranks = np.array(mat_ranks).astype(int)
@@ -41,15 +52,21 @@ class TTLayerConv(Layer):
         inp_shape = input_shape[1:]
         inp_h, inp_w, inp_ch = inp_shape[0:3]
         filters_shape = [self.window[0], self.window[1], 1, self.mat_ranks[0]]
-        self.filters = self.add_weight(name='filters', shape=filters_shape, initializer='glorot_normal', trainable=True)
+        self.filters = self.add_weight(name='filters', shape=filters_shape, initializer=self.kernel_initializer, trainable=True)
 
         out_ch = np.prod(self.out_modes)
         dim = self.num_dim
         self.mat_cores = []
         for i in range(dim):
             self.mat_cores.append(
-                self.add_weight(name='mat_core_%d' % (i + 1), shape=[self.out_modes[i] * self.mat_ranks[i + 1], self.mat_ranks[i] * self.inp_modes[i]], initializer='glorot_normal', trainable=True))
-        self.bias = self.add_weight(name="bias", shape=(out_ch,), initializer='zeros', trainable=True)
+                self.add_weight(name='mat_core_%d' % (i + 1),
+                                shape=[self.out_modes[i] * self.mat_ranks[i + 1], self.mat_ranks[i] * self.inp_modes[i]],
+                                initializer=self.kernel_initializer,
+                                trainable=True))
+
+        if self.use_bias:
+            self.bias = self.add_weight(name="bias", shape=(out_ch,), initializer=self.bias_initializer, trainable=True)
+
         super(TTLayerConv, self).build(input_shape)
 
     def call(self, input):
@@ -76,7 +93,12 @@ class TTLayerConv(Layer):
             tmp = tf.matmul(self.mat_cores[i], tmp)
             tmp = tf.reshape(tmp, [self.out_modes[i], -1])
             tmp = tf.transpose(tmp, [1, 0])
-        out = tf.add(tf.reshape(tmp, [-1, h, w, np.prod(self.out_modes)]), self.bias, name='out')
+
+        if self.use_bias:
+            out = tf.add(tf.reshape(tmp, [-1, h, w, np.prod(self.out_modes)]), self.bias, name='out')
+
+        if self.activation is not None:
+            out = self.activation(out)
         return out
 
     def compute_output_shape(self, input_shape):
