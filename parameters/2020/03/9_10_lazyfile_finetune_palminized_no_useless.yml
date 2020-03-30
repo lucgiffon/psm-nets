@@ -28,7 +28,7 @@ base:
 #  max_lr: {"--max-lr": [0.1]}
 #  nb_epoch: {"--nb-epoch": [10]}
   nb_sepoch_step_size: {"--epoch-step-size": [2]}
-  use_clr: ["--use-clr", ""]
+  use_clr: ["--use-clr"]
   keep_classif: ["--keep-last-layer", ""]
 
 

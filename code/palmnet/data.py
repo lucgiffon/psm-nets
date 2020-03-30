@@ -19,7 +19,8 @@ MAP_EXTERNAL_MODEL_FILENAME = {
     "svhn_vgg19_2048x2048": "svhn_vgg19_2048x2048_1572278831.h5",
     "mnist-500": "mnist_500.h5",
     "cifar100-resnet50": "resnet_50_cifar100.h5",
-    "cifar100-resnet20": "resnet_20_cifar100.h5"
+    "cifar100-resnet20": "resnet_20_cifar100.h5",
+    "cifar10_tensortrain_base": "cifar10_tensor_train_base_1585409008.h5"
 }
 
 param_training = namedtuple("ParamTraining", ["batch_size", "epochs", "optimizer", "params_optimizer", "min_lr", "max_lr", "loss", "image_data_generator", "callbacks"])
@@ -161,6 +162,18 @@ cifar100_resnet_param_training = param_training(
     # callbacks=[LearningRateScheduler(scheduler_cifar100_resnet)],
     callbacks=[]
 )
+cifar10_tensor_train_param_training = param_training(
+    batch_size=64,
+    epochs=100,
+    optimizer=keras.optimizers.SGD,
+    params_optimizer={"lr":0.1, "momentum": 0.9},
+    min_lr=0.1,
+    max_lr=0.1,
+    loss="categorical_crossentropy",
+    image_data_generator=image_data_generator_cifar_svhn,
+    # callbacks=[LearningRateScheduler(scheduler)]
+    callbacks=[]
+)
 
 MAP_EXTERNAL_MODEL_PARAM_TRAINING = {
     "mnist_500": mnist_500_param_training,
@@ -172,6 +185,7 @@ MAP_EXTERNAL_MODEL_PARAM_TRAINING = {
     "cifar100_vgg19_2048x2048": cifar100_param_training,
     "cifar100_resnet": cifar100_resnet_param_training,
     "svhn_vgg19_2048x2048": svhn_param_training,
+    "cifar10_tensortrain_base": cifar10_tensor_train_param_training
 }
 
 

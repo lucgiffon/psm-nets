@@ -95,7 +95,8 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
         layer_name = layer.name
         sparse_factorization = dct_name_facto[layer_name]
         logger.info('Prepare layer {}'.format(layer.name))
-        if sparse_factorization != (None, None) and (i != idx_last_dense_layer and paraman["--keep-last-layer"]):
+        # if sparse_factorization != (None, None) and (i != idx_last_dense_layer and paraman["--keep-last-layer"]):
+        if sparse_factorization != (None, None) and not (i == idx_last_dense_layer and paraman["--keep-last-layer"]):
             # scaling = 1.
             if paraman["--only-mask"]:
                 scaling = []
