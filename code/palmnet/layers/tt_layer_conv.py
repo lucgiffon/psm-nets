@@ -21,7 +21,7 @@ class TTLayerConv(Layer):
 
     '''
 
-    def __init__(self, window, inp_modes, out_modes, mat_ranks, bias_initializer='zeros', kernel_initializer='glorot_normal', use_bias=True, activation='relu', stride=(1, 1), padding='SAME', **kwargs):
+    def __init__(self, window, inp_modes, out_modes, mat_ranks, bias_initializer='zeros', kernel_initializer='glorot_normal', use_bias=True, activation=None, stride=(1, 1), padding='SAME', **kwargs):
         self.window = conv_utils.normalize_tuple(window, 2, 'kernel_size')
         self.stride = conv_utils.normalize_tuple(stride, 2, 'strides')
         self.padding = conv_utils.normalize_padding(padding)

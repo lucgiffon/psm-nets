@@ -1,4 +1,4 @@
-from keras import backend as K
+from keras import backend as K, activations, initializers
 from keras.engine.topology import Layer
 import numpy as np
 import tensorflow as tf
@@ -20,7 +20,12 @@ class TTLayerDense(Layer):
 
     """
 
-    def __init__(self, inp_modes, out_modes, mat_ranks, **kwargs):
+    def __init__(self, inp_modes, out_modes, mat_ranks, bias_initializer='zeros', kernel_initializer='glorot_normal', use_bias=True, activation=None, **kwargs):
+        self.activation = activations.get(activation)
+        self.use_bias = use_bias
+        self.kernel_initializer = initializers.get(kernel_initializer)
+        self.bias_initializer = initializers.get(bias_initializer)
+
         self.inp_modes = np.array(inp_modes).astype(int)
         self.out_modes = np.array(out_modes).astype(int)
         self.mat_ranks = np.array(mat_ranks).astype(int)
@@ -39,8 +44,10 @@ class TTLayerDense(Layer):
         self.mat_cores = []
         for i in range(dim):
             self.mat_cores.append(
-                self.add_weight(name='mat_core_%d' % (i + 1), shape=[self.out_modes[i] * self.mat_ranks[i + 1], self.mat_ranks[i] * self.inp_modes[i]], initializer='glorot_normal', trainable=True))
-        self.bias = self.add_weight(name="bias", shape=(np.prod(self.out_modes),), initializer='zeros', trainable=True)
+                self.add_weight(name='mat_core_%d' % (i + 1), shape=[self.out_modes[i] * self.mat_ranks[i + 1], self.mat_ranks[i] * self.inp_modes[i]], initializer=self.kernel_initializer, trainable=True))
+
+        if self.use_bias:
+            self.bias = self.add_weight(name="bias", shape=(np.prod(self.out_modes),), initializer=self.bias_initializer, trainable=True)
         super(TTLayerDense, self).build(input_shape)
 
     def call(self, input):
@@ -52,7 +59,12 @@ class TTLayerDense(Layer):
             out = tf.matmul(self.mat_cores[i], out)
             out = tf.reshape(out, [self.out_modes[i], -1])
             out = tf.transpose(out, [1, 0])
-        out = tf.add(tf.reshape(out, [-1, np.prod(self.out_modes)]), self.bias, name='out')
+
+        if self.use_bias:
+            out = tf.add(tf.reshape(out, [-1, np.prod(self.out_modes)]), self.bias, name='out')
+
+        if self.activation is not None:
+            out = self.activation(out)
         return out
 
     def compute_output_shape(self, input_shape):
