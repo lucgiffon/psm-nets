@@ -14,7 +14,7 @@ from scipy.sparse import coo_matrix
 from scipy.special import softmax
 from tensorflow.python.keras.engine.base_layer import InputSpec
 
-from palmnet.core.palminize import Palminizable
+from palmnet.core.palminizable import Palminizable
 # from palmnet.layers.sparse_masked import SparseFixed, SparseFactorisationConv2D#, SparseFactorisationDense
 from palmnet.layers.pbp_layer import PBPDense, PBPDenseDensify
 from palmnet.utils import insert_layer_nonseq, get_sparsity_pattern, create_random_block_diag, create_permutation_matrix

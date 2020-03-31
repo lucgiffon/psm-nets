@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from operator import mul
 import pathlib
 
-from palmnet.core.palminize import Palminizable
+from palmnet.core.palminizable import Palminizable
 from palmnet.layers.sparse_masked import SparseFixed, SparseFactorisationConv2D, SparseFactorisationDense
 from palmnet.utils import insert_layer_nonseq, get_sparsity_pattern
 import pickle

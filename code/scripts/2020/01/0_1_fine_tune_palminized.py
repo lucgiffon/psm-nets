@@ -49,7 +49,8 @@ import signal
 import docopt
 from scipy.sparse import coo_matrix
 
-from palmnet.core.palminize import Palminizer, Palminizable
+from palmnet.core.palminize import Palminizer
+from palmnet.core.palminizable import Palminizable
 from palmnet.data import Mnist, Test, Svhn, Cifar100, Cifar10
 from palmnet.layers.sparse_tensor import SparseFactorisationDense, SparseFactorisationConv2D
 from palmnet.utils import get_sparsity_pattern, insert_layer_nonseq, timeout_signal_handler

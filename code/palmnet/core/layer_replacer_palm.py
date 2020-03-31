@@ -2,15 +2,14 @@ from abc import abstractmethod, ABCMeta
 import numpy as np
 
 from palmnet.core.layer_replacer import LayerReplacer
-from palmnet.core.palminize import Palminizer, Palminizable
+from palmnet.core.palminize import Palminizer
+from palmnet.core.palminizable import Palminizable
 from palmnet.data import Cifar100
-from keras.models import Model, Sequential
-from keras.layers import InputLayer
+from keras.models import Sequential
 from palmnet.layers.sparse_masked import SparseFactorisationDense, SparseFactorisationConv2DDensify
-from palmnet.utils import get_sparsity_pattern, get_idx_last_dense_layer
-from skluc.utils import log_memory_usage, logger
-from collections import defaultdict
-from keras.layers import Dense, Conv2D
+from palmnet.utils import get_sparsity_pattern
+from skluc.utils import logger
+from keras.layers import Dense
 
 
 

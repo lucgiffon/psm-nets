@@ -14,7 +14,7 @@ from operator import mul
 import pathlib
 import keras.backend as K
 
-from palmnet.core.palminize import Palminizable
+from palmnet.core.palminizable import Palminizable
 from palmnet.layers.sparse_tensor import SparseFixed, SparseFactorisationDense, SparseFactorisationConv2D
 from palmnet.utils import insert_layer_nonseq, get_sparsity_pattern
 import pickle

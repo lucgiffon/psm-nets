@@ -16,7 +16,7 @@ import numpy as np
 import keras.backend as K
 from collections import defaultdict
 
-from palmnet.core.palminize import Palminizable
+from palmnet.core.palminizable import Palminizable
 
 from skluc.utils import logger
 import scipy
@@ -612,3 +612,21 @@ def get_facto_for_channel_and_order(channel, order):
         next_idx_to_upscale = int((next_idx_to_upscale + 1) % order)
 
     return base[::-1] # biggest values at the end for no reason :)
+
+
+def build_dct_tt_ranks(model, rank_value=2, order=4):
+    tt_ranks_conv = [rank_value] * order + [1]
+    tt_ranks_dense = [rank_value] * order + [1]
+    tt_ranks_dense[0] = 1
+
+    dct_layer_params = defaultdict(lambda: dict())
+    for layer in model.layers:
+        if isinstance(layer, Conv2D):
+            dct_layer_params[layer.name]["tt_ranks"] = tt_ranks_conv
+        elif isinstance(layer, Dense):
+            dct_layer_params[layer.name]["tt_ranks"] = tt_ranks_dense
+        else:
+            dct_layer_params[layer.name] = None
+
+    return dct_layer_params
+

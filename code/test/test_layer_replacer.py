@@ -2,12 +2,14 @@ import unittest
 from copy import deepcopy
 
 from palmnet.core.layer_replacer_palm import LayerReplacerPalm
-from palmnet.core.palminize import Palminizer, Palminizable
+from palmnet.core.palminize import Palminizer
+from palmnet.core.palminizable import Palminizable
 from palmnet.data import Cifar100, Mnist
 from pprint import pprint
 import numpy as np
 from keras.layers import Dense
-from palmnet.utils import get_idx_last_dense_layer
+
+from palmnet.utils import get_idx_last_layer_of_class
 
 
 class TestLayerReplacerPalm(unittest.TestCase):
@@ -34,7 +36,7 @@ class TestLayerReplacerPalm(unittest.TestCase):
                 model_transformer = LayerReplacerPalm(keep_last_layer, only_mask, dct_name_facto)
                 new_model = model_transformer.fit_transform(self.base_model)
 
-                idx_last_dense = get_idx_last_dense_layer(new_model)
+                idx_last_dense = get_idx_last_layer_of_class(new_model)
                 if keep_last_layer:
                     # test pour verifier que new model a bien une couche Dense (sinon c'est -1)
                     assert idx_last_dense != -1, "When keep last layer, there"

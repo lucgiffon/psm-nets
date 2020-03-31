@@ -44,7 +44,7 @@ import keras
 import signal
 import docopt
 
-from palmnet.core.palminize import Palminizable
+from palmnet.core.palminizable import Palminizable
 from palmnet.data import Mnist, Test, Svhn, Cifar100, Cifar10
 from palmnet.layers.pbp_layer import PBPDenseDensify
 from palmnet.models import sparse_random_vgg19_model, sparse_random_lenet_model, pbp_lenet_model, create_pbp_model, create_dense_model

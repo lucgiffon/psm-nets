@@ -53,7 +53,7 @@ import docopt
 from keras.layers import Dense, InputLayer
 from keras.models import Model
 
-from palmnet.core.palminize import Palminizable
+from palmnet.core.palminizable import Palminizable
 from palmnet.data import Mnist, Test, Svhn, Cifar100, Cifar10
 from palmnet.layers.pbp_layer import PBPDenseDensify, PBPDenseFixedPerm, PBPDenseFixedPermLookup, SparseFactorisationDensePBPFixed
 from palmnet.layers.sparse_masked import SparseFactorisationDense
