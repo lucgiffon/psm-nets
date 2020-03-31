@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABCMeta
 import numpy as np
 
+from palmnet.core.layer_replacer import LayerReplacer
 from palmnet.core.palminize import Palminizer, Palminizable
 from palmnet.data import Cifar100
 from keras.models import Model, Sequential
@@ -12,110 +13,6 @@ from collections import defaultdict
 from keras.layers import Dense, Conv2D
 
 
-class LayerReplacer(metaclass=ABCMeta):
-    def __init__(self, keep_last_layer, dct_name_compression):
-        self.keep_last_layer = keep_last_layer
-        self.dct_name_facto = dct_name_compression
-        self.dct_bool_replaced_layers = defaultdict(lambda: False)
-        self.dct_old_name_new_name = defaultdict(lambda: None)
-        self.dct_new_name_old_name = defaultdict(lambda: None)
-
-    def __refresh_and_apply_layer_to_input(self, layer, layer_inputs):
-        new_fresh_layer = layer.__class__(**layer.get_config())
-        old_layer_weights = layer.get_weights()
-        x = new_fresh_layer(layer_inputs)
-        new_fresh_layer.set_weights(old_layer_weights)
-        return x, new_fresh_layer
-
-    def fit_transform(self, model):
-
-        if not isinstance(model.layers[0], InputLayer):
-            model = Model(input=model.input, output=model.output)
-
-        network_dict = {'input_layers_of': defaultdict(lambda: []), 'new_output_tensor_of': defaultdict(lambda: [])}
-
-        # Set the output tensor of the input layer
-        network_dict['new_output_tensor_of'].update(
-            {model.layers[0].name: model.input})
-
-
-        for i, layer in enumerate(model.layers):
-            # each layer is set as `input` layer of all its outbound layers
-            for node in layer._outbound_nodes:
-                outbound_layer_name = node.outbound_layer.name
-                network_dict['input_layers_of'][outbound_layer_name].append(layer.name)
-
-        idx_last_dense_layer = get_idx_last_dense_layer(model) if self.keep_last_layer else -1
-        idx_last_dense_layer -= 1
-
-        for i, layer in enumerate(model.layers[1:]):
-            log_memory_usage("Before layer {}".format(layer.name))
-
-            # get all layers input
-            layer_inputs = [network_dict['new_output_tensor_of'][curr_layer_input] for curr_layer_input in network_dict['input_layers_of'][layer.name]]
-            if len(layer_inputs) == 1:
-                layer_inputs = layer_inputs[0]
-
-            sparse_factorization = self.dct_name_facto[layer.name]
-            logger.info('Prepare layer {}'.format(layer.name))
-            if sparse_factorization != (None, None) and not (i == idx_last_dense_layer and self.keep_last_layer):
-                # if there is a replacement available and not (it is the last layer and we want to keep it as is)
-                # create new layer
-                if isinstance(layer, Dense):
-                    logger.debug("Dense layer treatment")
-                    replacing_layer, replacing_weights, less_values_than_base = self._replace_dense(layer, sparse_factorization)
-                elif isinstance(layer, Conv2D):
-                    logger.debug("Conv2D layer treatment")
-                    replacing_layer, replacing_weights, less_values_than_base = self._replace_conv2D(layer, sparse_factorization)
-                else:
-                    raise ValueError("Unsupported layer class")
-
-                if less_values_than_base: # then replace layer with compressed layer
-                    replacing_layer.name = '{}_-_{}'.format(layer.name, replacing_layer.name)
-
-                    x = replacing_layer(layer_inputs)
-
-                    self.dct_old_name_new_name[layer.name] = replacing_layer.name
-                    self.dct_new_name_old_name[replacing_layer.name] = layer.name
-                    self.dct_bool_replaced_layers[layer.name] = True
-
-                    self._set_weights_to_layer(replacing_layer, replacing_weights)
-
-                    logger.info('Layer {} modified into {}'.format(layer.name, replacing_layer.name))
-                else:
-                    x, new_fresh_layer = self.__refresh_and_apply_layer_to_input(layer, layer_inputs)
-                    logger.info('Layer {} unmodified'.format(new_fresh_layer.name))
-            else:
-                x, new_fresh_layer = self.__refresh_and_apply_layer_to_input(layer, layer_inputs)
-                # x = layer(layer_inputs)
-                logger.info('Layer {} unmodified'.format(new_fresh_layer.name))
-
-            network_dict['new_output_tensor_of'].update({layer.name: x})
-
-        model = Model(inputs=model.inputs, outputs=x)
-
-        return model
-
-    def have_been_replaced(self, layer_name):
-        return self.dct_bool_replaced_layers[layer_name]
-
-    def get_replaced_layer_name(self, new_layer_name):
-        return self.dct_new_name_old_name[new_layer_name]
-
-    def get_replacing_layer_name(self, old_layer_name):
-        return self.dct_old_name_new_name[old_layer_name]
-
-    @abstractmethod
-    def _replace_conv2D(self, layer, sparse_factorization):
-        pass
-
-    @abstractmethod
-    def _replace_dense(self, layer, sparse_factorization):
-        pass
-
-    @abstractmethod
-    def _set_weights_to_layer(self, replacing_layer, replacing_weights):
-        pass
 
 
 class LayerReplacerPalm(LayerReplacer):

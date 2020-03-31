@@ -1,7 +1,7 @@
 import unittest
 from copy import deepcopy
 
-from palmnet.core.layer_replacer import LayerReplacerPalm
+from palmnet.core.layer_replacer_palm import LayerReplacerPalm
 from palmnet.core.palminize import Palminizer, Palminizable
 from palmnet.data import Cifar100, Mnist
 from pprint import pprint
@@ -35,7 +35,9 @@ class TestLayerReplacerPalm(unittest.TestCase):
                 new_model = model_transformer.fit_transform(self.base_model)
 
                 idx_last_dense = get_idx_last_dense_layer(new_model)
-                print(idx_last_dense)
+                if keep_last_layer:
+                    # test pour verifier que new model a bien une couche Dense (sinon c'est -1)
+                    assert idx_last_dense != -1, "When keep last layer, there"
                 atleast_one = False
                 for idx_layer, new_layer in enumerate(new_model.layers):
                     old_layer_name = model_transformer.get_replaced_layer_name(new_layer.name)
@@ -47,6 +49,8 @@ class TestLayerReplacerPalm(unittest.TestCase):
 
                         for i_weight, w_new in enumerate(new_layer_w):
                             w_sparse_facto = sparse_facto_w[i_weight]
+                            # test pour vérifier que les shape sont bien les meme avant de les comaprer
+                            assert w_new.shape == w_sparse_facto.shape, "Weights shape are not the same"
                             # arr_bool_comparison = (w_new == w_sparse_facto)
                             # bool_all_equal = arr_bool_comparison.all()
                             bool_all_equal = np.allclose(w_new, w_sparse_facto)
@@ -56,9 +60,9 @@ class TestLayerReplacerPalm(unittest.TestCase):
                                 assert bool_all_equal, "Weights should be the same when only_mask is False."
 
                     if (keep_last_layer and idx_layer == idx_last_dense):
-                        self.assertTrue(isinstance(new_layer, Dense), "Last dense layer should be of class Dense when keep_las_layer is True")
+                        assert isinstance(new_layer, Dense), "Last dense layer should be of class Dense when keep_las_layer is True"
 
-                self.assertTrue(atleast_one, msg="No layer have been replaced in test.")
+                assert atleast_one, "No layer have been replaced in test."
 
 
 

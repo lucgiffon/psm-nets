@@ -587,3 +587,18 @@ def get_idx_last_dense_layer(model):
     if idx_last_dense_layer == -1:
         logger.warning("No dense layer found")
     return idx_last_dense_layer
+
+
+def get_facto_for_channel_and_order(channel, order):
+    if int(np.log2(channel)) != np.log2(channel):
+        raise ValueError("Channel must be a power of two.")
+    base = [1] * order
+    base = np.array(base)
+    _prod = np.prod(base) # == 1
+    next_idx_to_upscale = 0
+    while _prod < channel:
+        base[next_idx_to_upscale] *= 2
+        _prod = np.prod(base)
+        next_idx_to_upscale = int((next_idx_to_upscale + 1) % order)
+
+    return base[::-1] # biggest values at the end for no reason :)
