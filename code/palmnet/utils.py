@@ -9,7 +9,7 @@ import six
 import os
 from keras.callbacks import Callback
 from keras.engine import InputLayer
-from keras.layers import Dense
+from keras.layers import Dense, Conv2D
 from keras.models import Model
 from pathlib import Path
 import numpy as np
@@ -579,19 +579,29 @@ class CyclicLR(Callback):
         logs['lr'] = K.get_value(self.model.optimizer.lr)
 
 
-def get_idx_last_dense_layer(model):
-    idx_last_dense_layer = -1
+def get_idx_last_layer_of_class(model, class_=Dense):
+    idx_last_layer_of_class = -1
     for i, layer in enumerate(model.layers):
-        if isinstance(layer, Dense):
-            idx_last_dense_layer = i
-    if idx_last_dense_layer == -1:
-        logger.warning("No dense layer found")
-    return idx_last_dense_layer
+        if isinstance(layer, class_):
+            idx_last_layer_of_class = i
+    if idx_last_layer_of_class == -1:
+        logger.warning(f"No layer of class {class_.__name__} found")
+    return idx_last_layer_of_class
+
+def get_idx_first_layer_of_class(model, class_=Conv2D):
+    idx_first_layer_of_class = -1
+    for i, layer in enumerate(model.layers):
+        if isinstance(layer, class_):
+            idx_first_layer_of_class = i
+            break
+    if idx_first_layer_of_class == -1:
+        logger.warning(f"No layer of class {class_.__name__} found")
+    return idx_first_layer_of_class
 
 
 def get_facto_for_channel_and_order(channel, order):
     if int(np.log2(channel)) != np.log2(channel):
-        raise ValueError("Channel must be a power of two.")
+        raise ValueError("Channel must be a power of two. {}".format(channel))
     base = [1] * order
     base = np.array(base)
     _prod = np.prod(base) # == 1

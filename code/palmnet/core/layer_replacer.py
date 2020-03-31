@@ -6,15 +6,16 @@ from palmnet.data import Cifar100
 from keras.models import Model, Sequential
 from keras.layers import InputLayer
 from palmnet.layers.sparse_masked import SparseFactorisationDense, SparseFactorisationConv2DDensify
-from palmnet.utils import get_sparsity_pattern, get_idx_last_dense_layer
+from palmnet.utils import get_sparsity_pattern, get_idx_last_layer_of_class, get_idx_first_layer_of_class
 from skluc.utils import log_memory_usage, logger
 from collections import defaultdict
 from keras.layers import Dense, Conv2D
 
 
 class LayerReplacer(metaclass=ABCMeta):
-    def __init__(self, keep_last_layer, dct_name_compression):
+    def __init__(self, keep_last_layer, keep_first_layer, dct_name_compression):
         self.keep_last_layer = keep_last_layer
+        self.keep_first_layer = keep_first_layer
         self.dct_name_compression = dct_name_compression
         self.dct_bool_replaced_layers = defaultdict(lambda: False)
         self.dct_old_name_new_name = defaultdict(lambda: None)
@@ -45,8 +46,10 @@ class LayerReplacer(metaclass=ABCMeta):
                 outbound_layer_name = node.outbound_layer.name
                 network_dict['input_layers_of'][outbound_layer_name].append(layer.name)
 
-        idx_last_dense_layer = get_idx_last_dense_layer(model) if self.keep_last_layer else -1
+        idx_last_dense_layer = get_idx_last_layer_of_class(model, Dense) if self.keep_last_layer else -1
         idx_last_dense_layer -= 1
+        idx_first_conv_layer = get_idx_first_layer_of_class(model, Conv2D) if self.keep_first_layer else -1
+        idx_first_conv_layer -= 1
 
         for i, layer in enumerate(model.layers[1:]):
             log_memory_usage("Before layer {}".format(layer.name))
@@ -57,20 +60,23 @@ class LayerReplacer(metaclass=ABCMeta):
                 layer_inputs = layer_inputs[0]
 
             sparse_factorization = self.dct_name_compression[layer.name]
+            # adapted to the palminized case... not very clean but OK
+            bool_find_modif = (sparse_factorization != None and sparse_factorization != (None, None))
             logger.info('Prepare layer {}'.format(layer.name))
-            if sparse_factorization != (None, None) and not (i == idx_last_dense_layer and self.keep_last_layer):
+            keep_this_layer = (i == idx_last_dense_layer and self.keep_last_layer) or (i == idx_first_conv_layer and self.keep_first_layer)
+            if bool_find_modif and not keep_this_layer:
                 # if there is a replacement available and not (it is the last layer and we want to keep it as is)
                 # create new layer
                 if isinstance(layer, Dense):
                     logger.debug("Dense layer treatment")
-                    replacing_layer, replacing_weights, less_values_than_base = self._replace_dense(layer, sparse_factorization)
+                    replacing_layer, replacing_weights, bool_modified = self._replace_dense(layer, sparse_factorization)
                 elif isinstance(layer, Conv2D):
                     logger.debug("Conv2D layer treatment")
-                    replacing_layer, replacing_weights, less_values_than_base = self._replace_conv2D(layer, sparse_factorization)
+                    replacing_layer, replacing_weights, bool_modified = self._replace_conv2D(layer, sparse_factorization)
                 else:
                     raise ValueError("Unsupported layer class")
 
-                if less_values_than_base: # then replace layer with compressed layer
+                if bool_modified: # then replace layer with compressed layer
                     replacing_layer.name = '{}_-_{}'.format(layer.name, replacing_layer.name)
 
                     x = replacing_layer(layer_inputs)
