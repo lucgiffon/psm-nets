@@ -3,6 +3,8 @@ from keras.engine.topology import Layer
 import numpy as np
 import tensorflow as tf
 
+from palmnet.utils import get_facto_for_channel_and_order
+
 '''
 Implementation of the paper 'Tensorizing Neural Networks', Alexander Novikov, Dmitry Podoprikhin, Anton Osokin, Dmitry P. Vetrov, NIPS, 2015
 to compress a dense layer using Tensor Train factorization.
@@ -20,27 +22,52 @@ class TTLayerDense(Layer):
 
     """
 
-    def __init__(self, inp_modes, out_modes, mat_ranks, bias_initializer='zeros', kernel_initializer='glorot_normal', use_bias=True, activation=None, **kwargs):
+    def __init__(self, nb_units, mat_ranks, inp_modes=None, out_modes=None, mode="auto", bias_initializer='zeros', kernel_initializer='glorot_normal', use_bias=True, activation=None, **kwargs):
         self.activation = activations.get(activation)
         self.use_bias = use_bias
         self.kernel_initializer = initializers.get(kernel_initializer)
         self.bias_initializer = initializers.get(bias_initializer)
 
-        self.inp_modes = np.array(inp_modes).astype(int)
-        self.out_modes = np.array(out_modes).astype(int)
+        self.mode = mode
+
         self.mat_ranks = np.array(mat_ranks).astype(int)
-        self.num_dim = self.inp_modes.shape[0]
+        self.order = len(self.mat_ranks) - 1
+        self.nb_units = nb_units
+
+        if self.mode == "auto":
+            self.inp_modes = inp_modes
+            self.out_modes = out_modes
+        elif self.mode == "manual":
+            if inp_modes is None or out_modes is None:
+                raise ValueError("inp_modes and out_modes should be specified in mode manual.")
+            self.inp_modes = np.array(inp_modes).astype(int)
+            self.out_modes = np.array(out_modes).astype(int)
+            self.num_dim = self.inp_modes.shape[0]
+
+            if np.prod(self.out_modes) != self.nb_units:
+                raise ValueError("out_modes product should equal to nb units: {} != {}".format(np.prod(self.out_modes), self.nb_units))
+            if self.inp_modes.shape[0] != self.out_modes.shape[0]:
+                raise ValueError("The number of input and output dimensions should be the same.")
+            if self.order != self.out_modes.shape[0]:
+                raise ValueError("Rank should have one more element than input/output shape")
+            for r in self.mat_ranks:
+                if isinstance(r, np.integer) != True:
+                    raise ValueError("The rank should be an array of integer.")
+        else:
+            raise ValueError("Unknown mode {}".format(self.mode))
+
         super(TTLayerDense, self).__init__(**kwargs)
-        if self.inp_modes.shape[0] != self.out_modes.shape[0]:
-            raise ValueError("The number of input and output dimensions should be the same.")
-        if self.mat_ranks.shape[0] != self.out_modes.shape[0] + 1:
-            raise ValueError("Rank should have one more element than input/output shape")
-        for r in self.mat_ranks:
-            if isinstance(r, np.integer) != True:
-                raise ValueError("The rank should be an array of integer.")
 
     def build(self, input_shape):
-        dim = self.num_dim
+        inp_ch = input_shape[-1]
+        if self.mode == "auto":
+            self.inp_modes = get_facto_for_channel_and_order(inp_ch, self.order) if self.inp_modes is None else self.inp_modes
+            self.out_modes = get_facto_for_channel_and_order(self.nb_units, self.order) if self.out_modes is None else self.out_modes
+
+        assert np.prod(self.out_modes) == self.nb_units, "The product of out_modes should equal to the number of filters."
+        assert np.prod(self.inp_modes) == inp_ch, "The product of inp_modes should equal to the number of channel in the last layer."
+
+        dim = self.order
         self.mat_cores = []
         for i in range(dim):
             self.mat_cores.append(
@@ -48,10 +75,11 @@ class TTLayerDense(Layer):
 
         if self.use_bias:
             self.bias = self.add_weight(name="bias", shape=(np.prod(self.out_modes),), initializer=self.bias_initializer, trainable=True)
+
         super(TTLayerDense, self).build(input_shape)
 
     def call(self, input):
-        dim = self.num_dim
+        dim = self.order
         out = tf.reshape(input, [-1, np.prod(self.inp_modes)])
         out = tf.transpose(out, [1, 0])
         for i in range(dim):
@@ -60,8 +88,10 @@ class TTLayerDense(Layer):
             out = tf.reshape(out, [self.out_modes[i], -1])
             out = tf.transpose(out, [1, 0])
 
+        out = tf.reshape(out, [-1, np.prod(self.out_modes)])
+
         if self.use_bias:
-            out = tf.add(tf.reshape(out, [-1, np.prod(self.out_modes)]), self.bias, name='out')
+            out = tf.add(out, self.bias, name='out')
 
         if self.activation is not None:
             out = self.activation(out)
@@ -78,4 +108,3 @@ class TTLayerDense(Layer):
             "mat_ranks": self.mat_ranks
         })
         return super_config
-
