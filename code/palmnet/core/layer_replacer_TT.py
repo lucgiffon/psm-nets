@@ -8,6 +8,8 @@ from palmnet.layers.tt_layer_dense import TTLayerDense
 from collections import defaultdict
 from keras.layers import Dense, Conv2D
 
+from palmnet.utils import build_dct_tt_ranks
+
 
 class LayerReplacerTT(LayerReplacer):
 
@@ -47,23 +49,14 @@ class LayerReplacerTT(LayerReplacer):
 
 
 
+
 if __name__ == "__main__":
 
     from pprint import pprint
     # base_model = Cifar10.load_model("cifar10_tensortrain_base")
     base_model = Cifar100.load_model("cifar100_vgg19_2048x2048")
 
-    tt_ranks_conv = (2, 2, 2, 2, 1)
-    tt_ranks_dense = (1, 2, 2, 2, 1)
-
-    dct_layer_params = defaultdict(lambda: dict())
-    for layer in base_model.layers:
-        if isinstance(layer, Conv2D):
-            dct_layer_params[layer.name]["tt_ranks"] = tt_ranks_conv
-        elif isinstance(layer, Dense):
-            dct_layer_params[layer.name]["tt_ranks"] = tt_ranks_dense
-        else:
-            dct_layer_params[layer.name] = None
+    dct_layer_params = build_dct_tt_ranks(base_model)
 
     keep_last_layer = True
     model_transformer = LayerReplacerTT(dct_name_compression=dct_layer_params, keep_last_layer=keep_last_layer, keep_first_layer=True)
