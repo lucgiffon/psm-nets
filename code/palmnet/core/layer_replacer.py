@@ -15,7 +15,7 @@ from keras.layers import Dense, Conv2D
 class LayerReplacer(metaclass=ABCMeta):
     def __init__(self, keep_last_layer, dct_name_compression):
         self.keep_last_layer = keep_last_layer
-        self.dct_name_facto = dct_name_compression
+        self.dct_name_compression = dct_name_compression
         self.dct_bool_replaced_layers = defaultdict(lambda: False)
         self.dct_old_name_new_name = defaultdict(lambda: None)
         self.dct_new_name_old_name = defaultdict(lambda: None)
@@ -56,7 +56,7 @@ class LayerReplacer(metaclass=ABCMeta):
             if len(layer_inputs) == 1:
                 layer_inputs = layer_inputs[0]
 
-            sparse_factorization = self.dct_name_facto[layer.name]
+            sparse_factorization = self.dct_name_compression[layer.name]
             logger.info('Prepare layer {}'.format(layer.name))
             if sparse_factorization != (None, None) and not (i == idx_last_dense_layer and self.keep_last_layer):
                 # if there is a replacement available and not (it is the last layer and we want to keep it as is)
