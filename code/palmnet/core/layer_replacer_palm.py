@@ -15,9 +15,21 @@ from keras.layers import Dense
 
 
 class LayerReplacerPalm(LayerReplacer):
-    def __init__(self, keep_last_layer, only_mask, dct_name_compression):
+    def __init__(self, only_mask, palminizer=None, *args, **kwargs):
         self.only_mask = only_mask
-        super().__init__(keep_last_layer, dct_name_compression)
+        self.palminizer = palminizer
+        super().__init__(*args, **kwargs)
+
+    def _apply_replacement(self, layer):
+        _lambda, op_sparse_factors, _ = self.palminizer.palminize_layer(layer)
+        dct_replacement = {
+            "lambda": _lambda,
+            "sparse_factors": op_sparse_factors
+        }
+        if _lambda is None and op_sparse_factors is None:
+            return None
+        else:
+            return dct_replacement
 
     ##################################
     # LayerReplacer abstract methods #
@@ -101,33 +113,39 @@ class LayerReplacerPalm(LayerReplacer):
         return True
 
     def __get_weights_from_sparse_facto(self, sparse_factorization):
+        # backward compatibility
+        if type(sparse_factorization) == tuple:
+            sparse_factorization = {
+                "lambda":sparse_factorization[0],
+                "sparse_factors": sparse_factorization[1]
+            }
         # scaling = 1.
         if self.only_mask:
             scaling = []
         else:
-            scaling = [np.array(sparse_factorization[0])[None]]
+            scaling = [np.array(sparse_factorization["lambda"])[None]]
 
-        factors = [fac.toarray() for fac in sparse_factorization[1].get_list_of_factors()]
+        factors = [fac.toarray() for fac in sparse_factorization["sparse_factors"].get_list_of_factors()]
         sparsity_patterns = [get_sparsity_pattern(w) for w in factors]
 
         return scaling, factors, sparsity_patterns
 
 
 if __name__ == "__main__":
-    model1 = Sequential()
-    old_layer =  Dense(10, input_shape=(10,))
-    model1.add(old_layer)
-
-    model2 = Sequential()
-    new_layer = old_layer.__class__(**old_layer.get_config())
-    model2.add(new_layer)
-    new_layer.set_weights(old_layer.get_weights())
-
-    assert (new_layer.get_weights()[0] == old_layer.get_weights()[0]).all()
-    assert (new_layer.get_weights()[1] == old_layer.get_weights()[1]).all()
-
-
-    exit()
+    # model1 = Sequential()
+    # old_layer =  Dense(10, input_shape=(10,))
+    # model1.add(old_layer)
+    #
+    # model2 = Sequential()
+    # new_layer = old_layer.__class__(**old_layer.get_config())
+    # model2.add(new_layer)
+    # new_layer.set_weights(old_layer.get_weights())
+    #
+    # assert (new_layer.get_weights()[0] == old_layer.get_weights()[0]).all()
+    # assert (new_layer.get_weights()[1] == old_layer.get_weights()[1]).all()
+    #
+    #
+    # exit()
     from pprint import pprint
     # base_model = Cifar10.load_model("cifar10_tensortrain_base")
     base_model = Cifar100.load_model("cifar100-resnet20")
@@ -138,11 +156,11 @@ if __name__ == "__main__":
                             hierarchical=False,
                             fast_unstable_proj=True)
 
-    palminizable = Palminizable(base_model, palminizer)
-    palminizable.palminize()
-    pprint(palminizable.sparsely_factorized_layers)
-    keep_last_layer, only_mask, dct_name_facto = False, True, palminizable.sparsely_factorized_layers
-    model_transformer = LayerReplacer(keep_last_layer, only_mask, dct_name_facto)
+    # palminizable = Palminizable(base_model, palminizer)
+    # palminizable.palminize()
+    # pprint(palminizable.sparsely_factorized_layers)
+    keep_last_layer, only_mask = False, True
+    model_transformer = LayerReplacerPalm(only_mask, palminizer=palminizer, keep_last_layer=keep_last_layer)
     new_model = model_transformer.fit_transform(base_model)
     for l in new_model.layers:
         layer_w = l.get_weights()

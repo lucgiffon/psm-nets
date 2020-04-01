@@ -12,10 +12,30 @@ from palmnet.utils import build_dct_tt_ranks
 
 
 class LayerReplacerTT(LayerReplacer):
+    def __init__(self, rank_value, order, *args, **kwargs):
+        self.tt_ranks_conv = [rank_value] * order + [1]
+        self.tt_ranks_dense = [rank_value] * order + [1]
+        self.tt_ranks_dense[0] = 1
+
+        self.tt_ranks_dense = tuple(self.tt_ranks_dense)
+        self.tt_ranks_conv = tuple(self.tt_ranks_conv)
+        super().__init__(*args, **kwargs)
+
 
     ##################################
     # LayerReplacer abstract methods #
     ##################################
+    def _apply_replacement(self, layer):
+        dct_replacement = dict()
+        if isinstance(layer, Conv2D):
+            dct_replacement["tt_ranks"] = self.tt_ranks_conv
+        elif isinstance(layer, Dense):
+            dct_replacement["tt_ranks"] = self.tt_ranks_dense
+        else:
+            dct_replacement = None
+
+        return dct_replacement
+
     def _replace_conv2D(self, layer, sparse_factorization):
 
         nb_filters = layer.filters
@@ -56,10 +76,10 @@ if __name__ == "__main__":
     # base_model = Cifar10.load_model("cifar10_tensortrain_base")
     base_model = Cifar100.load_model("cifar100_vgg19_2048x2048")
 
-    dct_layer_params = build_dct_tt_ranks(base_model)
+    # dct_layer_params = build_dct_tt_ranks(base_model)
 
     keep_last_layer = True
-    model_transformer = LayerReplacerTT(dct_name_compression=dct_layer_params, keep_last_layer=keep_last_layer, keep_first_layer=True)
+    model_transformer = LayerReplacerTT(rank_value=2, order=4, keep_last_layer=keep_last_layer, keep_first_layer=True)
     new_model = model_transformer.fit_transform(base_model)
     for l in new_model.layers:
         layer_w = l.get_weights()

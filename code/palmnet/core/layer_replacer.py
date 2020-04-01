@@ -14,7 +14,7 @@ from keras.layers import Dense, Conv2D
 
 
 class LayerReplacer(metaclass=ABCMeta):
-    def __init__(self, keep_last_layer, keep_first_layer, dct_name_compression):
+    def __init__(self, keep_last_layer=False, keep_first_layer=False, dct_name_compression=None):
         self.keep_last_layer = keep_last_layer
         self.keep_first_layer = keep_first_layer
         self.dct_name_compression = dct_name_compression
@@ -29,7 +29,25 @@ class LayerReplacer(metaclass=ABCMeta):
         new_fresh_layer.set_weights(old_layer_weights)
         return x, new_fresh_layer
 
+    @abstractmethod
+    def _apply_replacement(self, layer):
+        pass
+
     def fit_transform(self, model):
+        self.fit(model)
+        return self.transform(model)
+
+    def fit(self, model):
+        if self.dct_name_compression is not None:
+            raise ValueError("{} has already been fit.".format(self.__class__.__name__))
+
+        self.dct_name_compression = dict()
+        for layer in model.layers:
+            dct_replacement = self._apply_replacement(layer)
+            # should return dict in most case but need to be backward compatible with older implementation of PALM
+            self.dct_name_compression[layer.name] = dct_replacement
+
+    def transform(self, model):
 
         if not isinstance(model.layers[0], InputLayer):
             model = Model(input=model.input, output=model.output)
@@ -154,7 +172,7 @@ if __name__ == "__main__":
     pprint(palminizable.sparsely_factorized_layers)
     keep_last_layer, only_mask, dct_name_facto = False, True, palminizable.sparsely_factorized_layers
     model_transformer = LayerReplacer(keep_last_layer, only_mask, dct_name_facto)
-    new_model = model_transformer.fit_transform(base_model)
+    new_model = model_transformer.transform(base_model)
     for l in new_model.layers:
         layer_w = l.get_weights()
         print(l.name)
