@@ -60,7 +60,7 @@ class Conv2DCustom(Layer, metaclass=ABCMeta):
         self.kernel_constraint = constraints.get(kernel_constraint)
         self.bias_constraint = constraints.get(bias_constraint)
 
-        self.init_padding_and_stride() # define padding height/width and stride height/width
+        self.init_padding_and_stride() # define padding height/width and strides height/width
 
     def init_padding_and_stride(self):
         if self.padding == "same":
@@ -105,7 +105,7 @@ class Conv2DCustom(Layer, metaclass=ABCMeta):
         """
         From batch input images. For each image in batch: slice it in imagettes of height `imagette_h` and width `imagette_width`, and then stack them.
 
-        The size of the output matrix depends on the padding and stride. But if padding is `same` and the stride is 1, the matrix is in `R^{HW \times hwc}`.
+        The size of the output matrix depends on the padding and strides. But if padding is `same` and the strides is 1, the matrix is in `R^{HW \times hwc}`.
 
         :param X:
         :param window_h:
@@ -148,7 +148,7 @@ class Conv2DCustom(Layer, metaclass=ABCMeta):
 
     @abstractmethod
     def build(self, input_shape):
-        pass
+        super().build(input_shape)
 
     @staticmethod
     def _compute_output_shape(input_shape, kernel_shape, padding_height, padding_width, stride_height, stride_width):

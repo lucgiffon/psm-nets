@@ -21,7 +21,7 @@ class LayerReplacerPalm(LayerReplacer):
         super().__init__(*args, **kwargs)
 
     def _apply_replacement(self, layer):
-        _lambda, op_sparse_factors, _ = self.palminizer.palminize_layer(layer)
+        _lambda, op_sparse_factors, _ = self.palminizer.palminize_layer(layer, apply_weights=False)
         dct_replacement = {
             "lambda": _lambda,
             "sparse_factors": op_sparse_factors

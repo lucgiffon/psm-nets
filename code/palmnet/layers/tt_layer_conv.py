@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 from keras.utils import conv_utils
 
+from palmnet.layers import Conv2DCustom
 from palmnet.utils import get_facto_for_channel_and_order
 
 '''
@@ -12,7 +13,7 @@ This layer performs a 2d convolution by decomposing the convolution kernel with 
 '''
 
 
-class TTLayerConv(Layer):
+class TTLayerConv(Conv2DCustom):
     '''
     parameters:
         Parameters:
@@ -20,28 +21,15 @@ class TTLayerConv(Layer):
         out_modes(list): [m_1, m_2, ..., m_k] such that m_1*m_2*...m_k = M
         mat_ranks(list): [1, r_1, r_2, ..., r_k, 1]
 
-
     '''
+    def __init__(self, mat_ranks, inp_modes=None, out_modes=None, mode='auto',  **kwargs):
+        super(TTLayerConv, self).__init__(**kwargs)
 
-    def __init__(self, window, mat_ranks, nb_filters, inp_modes=None, out_modes=None, mode='auto', bias_initializer='zeros', kernel_initializer='glorot_normal', use_bias=True, activation=None, stride=(1, 1), padding='SAME', **kwargs):
-        self.window = conv_utils.normalize_tuple(window, 2, 'kernel_size')
-        self.stride = conv_utils.normalize_tuple(stride, 2, 'strides')
-        self.padding = conv_utils.normalize_padding(padding)
-        self.padding = self.padding.upper() if type(self.padding) is str else self.padding
+        self.padding = self.padding.upper() if type(self.padding) == str else self.padding
 
-        self.activation = activations.get(activation)
-        self.use_bias = use_bias
-        self.kernel_initializer = initializers.get(kernel_initializer)
-        self.bias_initializer = initializers.get(bias_initializer)
-        # self.kernel_regularizer = regularizers.get(kernel_regularizer)
-        # self.bias_regularizer = regularizers.get(bias_regularizer)
-        # self.kernel_constraint = constraints.get(kernel_constraint)
-        # self.bias_constraint = constraints.get(bias_constraint)
         self.mode = mode
-
         self.mat_ranks = np.array(mat_ranks).astype(int)
         self.order = len(self.mat_ranks) - 1
-        self.nb_filters = nb_filters
 
         if self.mode == "auto":
             self.inp_modes = inp_modes
@@ -52,8 +40,8 @@ class TTLayerConv(Layer):
             self.inp_modes = np.array(inp_modes).astype(int)
             self.out_modes = np.array(out_modes).astype(int)
 
-            if np.prod(self.out_modes) != self.nb_filters:
-                raise ValueError("out_modes product should equal to filters: {} != {}".format(np.prod(self.out_modes), self.nb_filters))
+            if np.prod(self.out_modes) != self.filters:
+                raise ValueError("out_modes product should equal to filters: {} != {}".format(np.prod(self.out_modes), self.filters))
             if self.inp_modes.shape[0] != self.out_modes.shape[0]:
                 raise ValueError("The number of input and output dimensions should be the same.")
             if self.order != self.out_modes.shape[0]:
@@ -63,10 +51,6 @@ class TTLayerConv(Layer):
                     raise ValueError("The rank should be an array of integer.")
         else:
             raise ValueError("Unknown mode {}".format(self.mode))
-        super(TTLayerConv, self).__init__(**kwargs)
-
-
-
 
     def build(self, input_shape):
         inp_shape = input_shape[1:]
@@ -74,13 +58,13 @@ class TTLayerConv(Layer):
 
         if self.mode == "auto":
             self.inp_modes = get_facto_for_channel_and_order(inp_ch, self.order) if self.inp_modes is None else self.inp_modes
-            self.out_modes = get_facto_for_channel_and_order(self.nb_filters, self.order) if self.out_modes is None else self.out_modes
+            self.out_modes = get_facto_for_channel_and_order(self.filters, self.order) if self.out_modes is None else self.out_modes
 
-        assert np.prod(self.out_modes) == self.nb_filters, "The product of out_modes should equal to the number of filters."
+        assert np.prod(self.out_modes) == self.filters, "The product of out_modes should equal to the number of filters."
         assert np.prod(self.inp_modes) == inp_ch, "The product of inp_modes should equal to the number of channel in the last layer."
 
-        filters_shape = [self.window[0], self.window[1], 1, self.mat_ranks[0]]
-        self.filters = self.add_weight(name='filters', shape=filters_shape, initializer=self.kernel_initializer, trainable=True)
+        filters_shape = [self.kernel_size[0], self.kernel_size[1], 1, self.mat_ranks[0]]
+        self.filter_kernels = self.add_weight(name='filter_kernels', shape=filters_shape, initializer=self.kernel_initializer, trainable=True)
 
         out_ch = np.prod(self.out_modes)
         dim = self.order
@@ -97,14 +81,14 @@ class TTLayerConv(Layer):
 
         super(TTLayerConv, self).build(input_shape)
 
-    def call(self, input):
+    def convolution(self, input):
         inp_shape = input.get_shape().as_list()[1:]
         inp_h, inp_w, inp_ch = inp_shape[0:3]
         tmp = tf.reshape(input, [-1, inp_h, inp_w, inp_ch])
         tmp = tf.transpose(tmp, [0, 3, 1, 2])
         tmp = tf.reshape(tmp, [-1, inp_h, inp_w, 1])
-        # [1] + self.stride + [1]
-        tmp = tf.nn.conv2d(tmp, self.filters, (1, *self.stride, 1), self.padding)
+        # [1] + self.strides + [1]
+        tmp = tf.nn.conv2d(tmp, self.filter_kernels, (1, *self.strides, 1), self.padding)
         # tmp shape = [batch_size * inp_ch, h, w, r]
         h, w = tmp.get_shape().as_list()[1:3]
         tmp = tf.reshape(tmp, [-1, inp_ch, h, w, self.mat_ranks[0]])
@@ -124,11 +108,10 @@ class TTLayerConv(Layer):
             tmp = tf.transpose(tmp, [1, 0])
 
         out = tf.reshape(tmp, [-1, h, w, np.prod(self.out_modes)])
+
         if self.use_bias:
             out = tf.add(out, self.bias, name='out')
 
-        if self.activation is not None:
-            out = self.activation(out)
         return out
 
     def compute_output_shape(self, input_shape):
@@ -137,9 +120,6 @@ class TTLayerConv(Layer):
     def get_config(self):
         super_config = super().get_config()
         super_config.update({
-            "window": self.window,
-            "stride": self.stride,
-            "padding": self.padding,
             "inp_modes": self.inp_modes,
             "out_modes": self.out_modes,
             "mat_ranks": self.mat_ranks

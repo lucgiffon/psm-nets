@@ -16,14 +16,14 @@ class TestLayerReplacerPalm(unittest.TestCase):
 
     def setUp(self) -> None:
         self.base_model = Mnist.load_model("mnist_lenet")
-        palminizer = Palminizer(sparsity_fac=2,
+        self.palminizer = Palminizer(sparsity_fac=2,
                                 nb_factor=2,
                                 nb_iter=2,
                                 delta_threshold_palm=1e-6,
                                 hierarchical=False,
-                                fast_unstable_proj=True)
+                                fast_unstable_proj=False)
 
-        self.palminizable = Palminizable(self.base_model, palminizer)
+        self.palminizable = Palminizable(deepcopy(self.base_model), self.palminizer)
         self.palminizable.palminize()
         pprint(self.palminizable.sparsely_factorized_layers)
         self.dct_sparsely_factorized_layers = self.palminizable.sparsely_factorized_layers
@@ -66,6 +66,28 @@ class TestLayerReplacerPalm(unittest.TestCase):
 
                 assert atleast_one, "No layer have been replaced in test."
 
+    def test_fit_transform(self) -> None:
+        model_transformer = LayerReplacerPalm(palminizer=self.palminizer, keep_last_layer=True, only_mask=False, dct_name_compression=None)
+        new_model = model_transformer.fit_transform(deepcopy(self.base_model))
+
+        model_transformer_already_fit = LayerReplacerPalm(keep_last_layer=True, only_mask=False, dct_name_compression=self.dct_sparsely_factorized_layers)
+        new_model_2 = model_transformer_already_fit.transform(deepcopy(self.base_model))
+
+        for idx_layer, layer in enumerate(new_model.layers):
+            layer2 = new_model_2.layers[idx_layer]
+
+            w_layer_1 = layer.get_weights()
+            w_layer_2 = layer2.get_weights()
+
+            assert len(w_layer_1) == len(w_layer_2), f"weights of {layer.name} are of different size"
+
+            for index_w, w1 in enumerate(w_layer_1):
+                w2 = w_layer_2[index_w]
+                assert w1.shape == w2.shape, f"shape of weights must be the same in {layer.name}"
+                # try:
+                assert np.allclose(w1, w2), f"weights are different in {layer.name}"
+                # except:
+                #     print(w1, w2)
 
 
 if __name__ == '__main__':

@@ -86,7 +86,7 @@ class Palminizer:
         else:
             return final_lambda, final_factors, final_X
 
-    def palminize_layer(self, layer_obj):
+    def palminize_layer(self, layer_obj, apply_weights=True):
         """
         Takes a keras layer object as entry and modify its weights as reconstructed by the palm approximation.
 
@@ -102,14 +102,16 @@ class Palminizer:
             filter_matrix = layer_weights.reshape(filter_height*filter_width*in_chan, out_chan)
             _lambda, op_sparse_factors, reconstructed_filter_matrix = self.apply_palm(filter_matrix)
             new_layer_weights = reconstructed_filter_matrix.reshape(filter_height, filter_width, in_chan, out_chan)
-            layer_obj.set_weights((new_layer_weights, layer_bias))
+            if apply_weights:
+                layer_obj.set_weights((new_layer_weights, layer_bias))
             return _lambda, op_sparse_factors, new_layer_weights
         elif isinstance(layer_obj, Dense):
             logger.info("Find {}".format(layer_obj.__class__.__name__))
             layer_weights, layer_bias = layer_obj.get_weights()
             _lambda, op_sparse_factors, reconstructed_dense_matrix = self.apply_palm(layer_weights)
             new_layer_weights = reconstructed_dense_matrix
-            layer_obj.set_weights((new_layer_weights, layer_bias))
+            if apply_weights:
+                layer_obj.set_weights((new_layer_weights, layer_bias))
             return _lambda, op_sparse_factors, new_layer_weights
         else:
             logger.debug("Find {}. Can't Palminize this. Pass.".format(layer_obj.__class__.__name__))

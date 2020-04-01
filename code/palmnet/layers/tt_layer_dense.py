@@ -64,8 +64,8 @@ class TTLayerDense(Layer):
             self.inp_modes = get_facto_for_channel_and_order(inp_ch, self.order) if self.inp_modes is None else self.inp_modes
             self.out_modes = get_facto_for_channel_and_order(self.nb_units, self.order) if self.out_modes is None else self.out_modes
 
-        assert np.prod(self.out_modes) == self.nb_units, "The product of out_modes should equal to the number of filters."
-        assert np.prod(self.inp_modes) == inp_ch, "The product of inp_modes should equal to the number of channel in the last layer."
+        assert np.prod(self.out_modes) == self.nb_units, "The product of out_modes should equal to the number of output units."
+        assert np.prod(self.inp_modes) == inp_ch, "The product of inp_modes should equal to the input dimension."
 
         dim = self.order
         self.mat_cores = []
