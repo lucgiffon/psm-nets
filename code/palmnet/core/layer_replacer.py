@@ -1,23 +1,25 @@
 from abc import abstractmethod, ABCMeta
 import numpy as np
+import pickle
 
 from palmnet.core.palminizer import Palminizer
 from palmnet.core.palminizable import Palminizable
 from palmnet.data import Cifar100
 from keras.models import Model, Sequential
 from keras.layers import InputLayer
-from palmnet.layers.sparse_masked import SparseFactorisationDense, SparseFactorisationConv2DDensify
-from palmnet.utils import get_sparsity_pattern, get_idx_last_layer_of_class, get_idx_first_layer_of_class
+from palmnet.utils import get_idx_last_layer_of_class, get_idx_first_layer_of_class
 from skluc.utils import log_memory_usage, logger
 from collections import defaultdict
 from keras.layers import Dense, Conv2D
+import pathlib
 
 
 class LayerReplacer(metaclass=ABCMeta):
-    def __init__(self, keep_last_layer=False, keep_first_layer=False, dct_name_compression=None):
+    def __init__(self, keep_last_layer=False, keep_first_layer=False, dct_name_compression=None, path_checkpoint_file=None):
         self.keep_last_layer = keep_last_layer
         self.keep_first_layer = keep_first_layer
-        self.dct_name_compression = dct_name_compression
+        self.dct_name_compression = dct_name_compression if dct_name_compression is not None else dict()
+        self.path_checkpoint_file = path_checkpoint_file  # type: pathlib.Path
         self.dct_bool_replaced_layers = defaultdict(lambda: False)
         self.dct_old_name_new_name = defaultdict(lambda: None)
         self.dct_new_name_old_name = defaultdict(lambda: None)
@@ -33,19 +35,30 @@ class LayerReplacer(metaclass=ABCMeta):
     def _apply_replacement(self, layer):
         pass
 
+    def load_dct_name_compression(self):
+        with open(str(self.path_checkpoint_file), 'rb') as rb_file:
+            self.dct_name_compression = pickle.load(rb_file)
+
+    def save_dct_name_compression(self):
+        if self.path_checkpoint_file is None:
+            return
+
+        with open(str(self.path_checkpoint_file), 'wb') as wb_file:
+            pickle.dump(self.dct_name_compression, wb_file)
+
     def fit_transform(self, model):
         self.fit(model)
         return self.transform(model)
 
     def fit(self, model):
-        if self.dct_name_compression is not None:
-            raise ValueError("{} has already been fit.".format(self.__class__.__name__))
-
-        self.dct_name_compression = dict()
         for layer in model.layers:
-            dct_replacement = self._apply_replacement(layer)
-            # should return dict in most case but need to be backward compatible with older implementation of PALM
-            self.dct_name_compression[layer.name] = dct_replacement
+            if layer.name not in self.dct_name_compression:
+                dct_replacement = self._apply_replacement(layer)
+                # should return dict in most case but need to be backward compatible with older implementation of PALM
+                self.dct_name_compression[layer.name] = dct_replacement
+                self.save_dct_name_compression()
+            else:
+                logger.warning("skip layer {} because already in dict".format(layer.name))
 
     def transform(self, model):
 
@@ -141,40 +154,3 @@ class LayerReplacer(metaclass=ABCMeta):
     @abstractmethod
     def _set_weights_to_layer(self, replacing_layer, replacing_weights):
         pass
-
-if __name__ == "__main__":
-    model1 = Sequential()
-    old_layer =  Dense(10, input_shape=(10,))
-    model1.add(old_layer)
-
-    model2 = Sequential()
-    new_layer = old_layer.__class__(**old_layer.get_config())
-    model2.add(new_layer)
-    new_layer.set_weights(old_layer.get_weights())
-
-    assert (new_layer.get_weights()[0] == old_layer.get_weights()[0]).all()
-    assert (new_layer.get_weights()[1] == old_layer.get_weights()[1]).all()
-
-
-    exit()
-    from pprint import pprint
-    # base_model = Cifar10.load_model("cifar10_tensortrain_base")
-    base_model = Cifar100.load_model("cifar100-resnet20")
-    palminizer = Palminizer(sparsity_fac=2,
-                            nb_factor=2,
-                            nb_iter=2,
-                            delta_threshold_palm=1e-6,
-                            hierarchical=False,
-                            fast_unstable_proj=True)
-
-    palminizable = Palminizable(base_model, palminizer)
-    palminizable.palminize()
-    pprint(palminizable.sparsely_factorized_layers)
-    keep_last_layer, only_mask, dct_name_facto = False, True, palminizable.sparsely_factorized_layers
-    model_transformer = LayerReplacer(keep_last_layer, only_mask, dct_name_facto)
-    new_model = model_transformer.transform(base_model)
-    for l in new_model.layers:
-        layer_w = l.get_weights()
-        print(l.name)
-        pprint([w for w in layer_w if len(w.shape)>1])
-

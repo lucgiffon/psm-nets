@@ -1,6 +1,9 @@
+import signal
+import os
+import os.path
 import unittest
 from copy import deepcopy
-
+import pathlib
 from palmnet.core.layer_replacer_palm import LayerReplacerPalm
 from palmnet.core.palminizer import Palminizer
 from palmnet.core.palminizable import Palminizable
@@ -8,8 +11,9 @@ from palmnet.data import Cifar100, Mnist
 from pprint import pprint
 import numpy as np
 from keras.layers import Dense
+import tempfile
 
-from palmnet.utils import get_idx_last_layer_of_class
+from palmnet.utils import get_idx_last_layer_of_class, timeout_signal_handler
 
 
 class TestLayerReplacerPalm(unittest.TestCase):
@@ -89,6 +93,37 @@ class TestLayerReplacerPalm(unittest.TestCase):
                 # except:
                 #     print(w1, w2)
 
+    def test_save(self):
+        palminizer = Palminizer(sparsity_fac=2,
+                                nb_factor=2,
+                                nb_iter=200,
+                                delta_threshold_palm=1e-6,
+                                hierarchical=False,
+                                fast_unstable_proj=False)
+
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            path_to_checkpoint = pathlib.Path(tmpdirname) / "checkpoint.pickle"
+            model_transformer = LayerReplacerPalm(sparse_factorizer=palminizer, keep_last_layer=True, only_mask=False, dct_name_compression=None, path_checkpoint_file=path_to_checkpoint)
+
+            signal.signal(signal.SIGALRM, timeout_signal_handler)
+            signal.alarm(2) # will interrupt execution
+            try:
+                model_transformer.fit(deepcopy(self.base_model))
+                raise AssertionError("Should have been interrupted")
+            except TimeoutError as to_err:
+                print("TIMEOUT")
+                new_model_transformer = LayerReplacerPalm(sparse_factorizer=palminizer, keep_last_layer=True, only_mask=False, dct_name_compression=None, path_checkpoint_file=path_to_checkpoint)
+                assert len(new_model_transformer.dct_name_compression) == 0, "new model transformer should have a length zero dict transformation"
+                new_model_transformer.load_dct_name_compression()
+                length_just_after = len(new_model_transformer.dct_name_compression)
+                assert length_just_after > 0, "new model transformer should have a length > 0 dict transformation after reloading"
+                new_model_transformer.fit(deepcopy(self.base_model))
+                length_after_refit = len(new_model_transformer.dct_name_compression)
+                print(length_just_after, length_after_refit)
+                new_model_transformer.transform(deepcopy(self.base_model))
+
+                with self.assertRaises(KeyError):
+                    model_transformer.transform(deepcopy(self.base_model))
 
 if __name__ == '__main__':
     unittest.main()
