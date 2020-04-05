@@ -16,8 +16,6 @@ import numpy as np
 import keras.backend as K
 from collections import defaultdict
 
-from palmnet.core.palminizable import Palminizable
-
 from skluc.utils import logger
 import scipy
 import scipy.special
@@ -31,40 +29,6 @@ def np_create_permutation_from_weight_matrix(weight_matrix, threshold):
     soft_permutation_mat[soft_permutation_mat < threshold] = 0
     soft_permutation_mat[soft_permutation_mat >= threshold] = 1
     return soft_permutation_mat
-
-def replace_intermediate_layer_in_keras(model, layer_name, new_layer):
-    raise NotImplementedError("Doesn't work for bizarre layers")
-    from keras.models import Model
-
-    if not isinstance(model .layers[0], InputLayer):
-        model = Model(input=model.input, output=model.output)
-
-    layers = [l for l in model.layers]
-
-    x = layers[0].output
-    for layer in layers:
-        if layer_name == layer.name:
-            x = new_layer(x)
-        else:
-            x = layers(x)
-
-    new_model = Model(input=layers[0].input, output=x)
-    return new_model
-
-def insert_intermediate_layer_in_keras(model, layer_id, new_layer):
-    raise NotImplementedError("Doesn't work for bizarre layers")
-    from keras.models import Model
-
-    layers = [l for l in model.layers]
-
-    x = layers[0].output
-    for i in range(1, len(layers)):
-        if i == layer_id:
-            x = new_layer(x)
-        x = layers[i](x)
-
-    new_model = Model(input=layers[0].input, output=x)
-    return new_model
 
 def insert_layer_nonseq(model, layer_regex, insert_layer_factory,
                         insert_layer_name=None, position='after'):
@@ -142,51 +106,8 @@ def insert_layer_nonseq(model, layer_regex, insert_layer_factory,
 def timeout_signal_handler(signum, frame):
     raise TimeoutError("TOO MUCH TIME FORCE EXIT")
 
-
-def count_model_param_and_flops(model, dct_layer_sparse_facto_op=None):
-    """
-    Return the number of params and the number of flops of 2DConvolutional Layers and Dense Layers for both the base model and the compressed model.
-
-    :return:
-    """
-    from keras.layers import Conv2D, Dense
-
-    from palmnet.layers import Conv2DCustom
-    from palmnet.layers.sparse_tensor import SparseFactorisationDense
-
-    nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed = 0, 0, 0, 0
-
-    param_by_layer = {}
-    flop_by_layer = {}
-
-    for layer in model.layers:
-        logger.warning("Process layer {}".format(layer.name))
-        if isinstance(layer, Conv2D) or isinstance(layer, Conv2DCustom):
-            nb_param_layer, nb_param_compressed_layer  = Palminizable.count_nb_param_layer(layer, dct_layer_sparse_facto_op)
-            nb_flop_layer, nb_flop_compressed_layer = Palminizable.count_nb_flop_conv_layer(layer, nb_param_layer, dct_layer_sparse_facto_op)
-
-        elif isinstance(layer, Dense) or isinstance(layer, SparseFactorisationDense):
-            nb_param_layer, nb_param_compressed_layer  = Palminizable.count_nb_param_layer(layer, dct_layer_sparse_facto_op)
-            nb_flop_layer, nb_flop_compressed_layer = Palminizable.count_nb_flop_dense_layer(layer, nb_param_layer, dct_layer_sparse_facto_op)
-
-        else:
-            logger.warning("Layer {}, class {}, hasn't been compressed".format(layer.name, layer.__class__.__name__))
-            nb_param_compressed_layer, nb_param_layer, nb_flop_layer, nb_flop_compressed_layer = 0, 0, 0, 0
-
-        param_by_layer[layer.name] = nb_param_layer
-        flop_by_layer[layer.name] = nb_flop_layer
-
-        nb_param_base += nb_param_layer
-        nb_param_compressed += nb_param_compressed_layer
-        nb_flop_base += nb_flop_layer
-        nb_flop_compressed += nb_flop_compressed_layer
-
-    return nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed, param_by_layer, flop_by_layer
-
-
 def get_sparsity_pattern(arr):
     return arr.astype(bool).astype(float)
-
 
 def create_random_block_diag(dim1, dim2, block_size, mask=False, greedy=True):
     """
@@ -281,7 +202,6 @@ def create_sparse_factorization_pattern(shape, block_size, nb_factors, permutati
         sparse_factors.append(create_sparse_matrix_pattern((min_dim, min_dim), block_size, permutation))
     sparse_factors.append(create_sparse_matrix_pattern((min_dim, shape[1]), block_size, permutation))
     return sparse_factors
-
 
 def cast_sparsity_pattern(sparsity_pattern):
     try:
@@ -392,8 +312,6 @@ class CSVLoggerByBatch(Callback):
     def __del__(self):
         if hasattr(self, 'csv_file') and not self.csv_file.closed:
             self.csv_file.close()
-
-
 
 class CyclicLR(Callback):
     """This callback implements a cyclical learning rate policy (CLR).
@@ -578,7 +496,6 @@ class CyclicLR(Callback):
         logs = logs or {}
         logs['lr'] = K.get_value(self.model.optimizer.lr)
 
-
 def get_idx_last_layer_of_class(model, class_=Dense):
     idx_last_layer_of_class = -1
     for i, layer in enumerate(model.layers):
@@ -598,7 +515,6 @@ def get_idx_first_layer_of_class(model, class_=Conv2D):
         logger.warning(f"No layer of class {class_.__name__} found")
     return idx_first_layer_of_class
 
-
 def get_facto_for_channel_and_order(channel, order):
     if int(np.log2(channel)) != np.log2(channel):
         raise ValueError("Channel must be a power of two. {}".format(channel))
@@ -612,7 +528,6 @@ def get_facto_for_channel_and_order(channel, order):
         next_idx_to_upscale = int((next_idx_to_upscale + 1) % order)
 
     return base[::-1] # biggest values at the end for no reason :)
-
 
 def build_dct_tt_ranks(model, rank_value=2, order=4):
     tt_ranks_conv = [rank_value] * order + [1]

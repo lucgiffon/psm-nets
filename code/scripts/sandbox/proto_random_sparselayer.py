@@ -6,11 +6,54 @@ from keras.datasets import mnist
 from keras.layers import Dense, Flatten
 from scipy.sparse import coo_matrix
 
+from palmnet.core.palminizable import Palminizable
 from palmnet.layers.sparse_tensor import RandomSparseFactorisationDense, RandomSparseFactorisationConv2D
-from palmnet.utils import create_sparse_factorization_pattern, get_sparsity_pattern, count_model_param_and_flops
+from palmnet.utils import create_sparse_factorization_pattern, get_sparsity_pattern
 import numpy as np
 import matplotlib.pyplot as plt
 
+from skluc.utils import logger
+
+
+def count_model_param_and_flops(model, dct_layer_sparse_facto_op=None):
+    """
+    Return the number of params and the number of flops of 2DConvolutional Layers and Dense Layers for both the base model and the compressed model.
+
+    :return:
+    """
+    from keras.layers import Conv2D, Dense
+
+    from palmnet.layers import Conv2DCustom
+    from palmnet.layers.sparse_tensor import SparseFactorisationDense
+
+    nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed = 0, 0, 0, 0
+
+    param_by_layer = {}
+    flop_by_layer = {}
+
+    for layer in model.layers:
+        logger.warning("Process layer {}".format(layer.name))
+        if isinstance(layer, Conv2D) or isinstance(layer, Conv2DCustom):
+            nb_param_layer, nb_param_compressed_layer  = Palminizable.count_nb_param_layer(layer, dct_layer_sparse_facto_op)
+            nb_flop_layer, nb_flop_compressed_layer = Palminizable.count_nb_flop_conv_layer(layer, nb_param_layer, dct_layer_sparse_facto_op)
+
+        elif isinstance(layer, Dense) or isinstance(layer, SparseFactorisationDense):
+            nb_param_layer, nb_param_compressed_layer  = Palminizable.count_nb_param_layer(layer, dct_layer_sparse_facto_op)
+            nb_flop_layer, nb_flop_compressed_layer = Palminizable.count_nb_flop_dense_layer(layer, nb_param_layer, dct_layer_sparse_facto_op)
+
+        else:
+            logger.warning("Layer {}, class {}, hasn't been compressed".format(layer.name, layer.__class__.__name__))
+            nb_param_compressed_layer, nb_param_layer, nb_flop_layer, nb_flop_compressed_layer = 0, 0, 0, 0
+
+        param_by_layer[layer.name] = nb_param_layer
+        flop_by_layer[layer.name] = nb_flop_layer
+
+        nb_param_base += nb_param_layer
+        nb_param_compressed += nb_param_compressed_layer
+        nb_flop_base += nb_flop_layer
+        nb_flop_compressed += nb_flop_compressed_layer
+
+    return nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed, param_by_layer, flop_by_layer
 
 def main_create_sparse_facto():
     dim1 = 20
