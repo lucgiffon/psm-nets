@@ -56,7 +56,7 @@ from keras.models import Model
 from palmnet.core.palminizable import Palminizable
 from palmnet.data import Mnist, Test, Svhn, Cifar100, Cifar10
 from palmnet.layers.pbp_layer import PBPDenseDensify, PBPDenseFixedPerm, PBPDenseFixedPermLookup, SparseFactorisationDensePBPFixed
-from palmnet.layers.sparse_masked import SparseFactorisationDense
+from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
 from palmnet.models import sparse_random_vgg19_model, sparse_random_lenet_model, pbp_lenet_model, create_pbp_model, create_dense_model
 from palmnet.utils import timeout_signal_handler, get_sparsity_pattern, np_create_permutation_from_weight_matrix
 from palmnet.experiments.utils import ResultPrinter, ParameterManagerRandomSparseFacto, ParameterManagerEntropyRegularization, ParameterManagerEntropyRegularizationFinetune

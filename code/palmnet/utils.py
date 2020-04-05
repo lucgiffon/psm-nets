@@ -545,3 +545,34 @@ def build_dct_tt_ranks(model, rank_value=2, order=4):
 
     return dct_layer_params
 
+def get_nb_non_zero_values(lst_weights):
+    count = 0
+    for w in lst_weights:
+        count += np.sum(w.astype(bool))
+    return count
+
+def get_cumsum_size_weights(lst_weights):
+    count = 0
+    for w in lst_weights:
+        count += w.size
+    return count
+
+def get_nb_learnable_weights(layer):
+    from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
+    from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
+
+    if isinstance(layer, SparseFactorisationConv2D) or isinstance(layer, SparseFactorisationDense):
+        sp_patterns = layer.sparsity_patterns
+        assert sp_patterns is not None, f"No sparsity pattern found in layer {layer.name}"
+        count_sparsity_patterns = get_nb_non_zero_values(sp_patterns)
+        if layer.use_bias:
+            count_bias = 0
+        else:
+            count_bias = 0
+        if layer.use_scaling:
+            count_scaling = 1
+        else:
+            count_scaling = 0
+        return count_sparsity_patterns + count_bias + count_scaling
+    else:
+        return get_cumsum_size_weights(layer.get_weights())

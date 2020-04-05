@@ -1,6 +1,4 @@
-from keras import activations, initializers, regularizers, constraints
-from keras.layers import Layer, Conv2D
-from keras.utils import conv_utils
+from keras.layers import Conv2D
 
 from palmnet.layers import Conv2DCustom
 

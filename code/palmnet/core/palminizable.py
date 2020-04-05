@@ -105,7 +105,7 @@ class Palminizable:
         from keras.layers import Conv2D, Dense
 
         from palmnet.layers import Conv2DCustom
-        from palmnet.layers.sparse_tensor import SparseFactorisationDense
+        from palmnet.layers.sparse_facto_sparse_tensor_deprecated import SparseFactorisationDense
 
         nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed = 0, 0, 0, 0
 

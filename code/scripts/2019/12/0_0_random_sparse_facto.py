@@ -41,7 +41,7 @@ import docopt
 
 from palmnet.core.palminizable import Palminizable
 from palmnet.data import Mnist, Test, Svhn, Cifar100, Cifar10
-from palmnet.layers.sparse_tensor import RandomSparseFactorisationDense, RandomSparseFactorisationConv2D
+from palmnet.layers.sparse_facto_sparse_tensor_deprecated import RandomSparseFactorisationDense, RandomSparseFactorisationConv2D
 from palmnet.models import sparse_random_vgg19_model, sparse_random_lenet_model
 from palmnet.utils import timeout_signal_handler
 from palmnet.experiments.utils import ResultPrinter, ParameterManagerRandomSparseFacto

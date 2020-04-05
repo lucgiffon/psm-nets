@@ -10,7 +10,8 @@ from operator import mul
 import pathlib
 
 from palmnet.core.palminizable import Palminizable
-from palmnet.layers.sparse_masked import SparseFixed, SparseFactorisationConv2D, SparseFactorisationDense
+from palmnet.layers.sparse_facto_masked_deprecated import SparseFixed, SparseFactorisationConv2D
+from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
 from palmnet.utils import insert_layer_nonseq, get_sparsity_pattern
 import pickle
 

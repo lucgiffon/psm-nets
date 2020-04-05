@@ -52,7 +52,7 @@ from scipy.sparse import coo_matrix
 from palmnet.core.palminizer import Palminizer
 from palmnet.core.palminizable import Palminizable
 from palmnet.data import Mnist, Test, Svhn, Cifar100, Cifar10
-from palmnet.layers.sparse_tensor import SparseFactorisationDense, SparseFactorisationConv2D
+from palmnet.layers.sparse_facto_sparse_tensor_deprecated import SparseFactorisationDense, SparseFactorisationConv2D
 from palmnet.utils import get_sparsity_pattern, insert_layer_nonseq, timeout_signal_handler
 from palmnet.experiments.utils import ParameterManagerPalminize, ParameterManagerPalminizeFinetune, ResultPrinter
 from skluc.utils import logger, log_memory_usage

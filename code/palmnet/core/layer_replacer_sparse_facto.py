@@ -4,7 +4,8 @@ import numpy as np
 from palmnet.core.layer_replacer import LayerReplacer
 from palmnet.core.palminizer import Palminizer
 from palmnet.data import Cifar100
-from palmnet.layers.sparse_masked import SparseFactorisationDense, SparseFactorisationConv2DDensify
+from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
+from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
 from palmnet.utils import get_sparsity_pattern
 from skluc.utils import logger
 
@@ -48,9 +49,9 @@ class LayerReplacerSparseFacto(LayerReplacer):
             activation = layer.activation
             padding = layer.padding
             regularizer = layer.kernel_regularizer
-            replacing_layer = SparseFactorisationConv2DDensify(use_scaling=not self.only_mask, strides=strides, filters=nb_filters, kernel_size=kernel_size,
-                                                               sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias, activation=activation, padding=padding,
-                                                               kernel_regularizer=regularizer)
+            replacing_layer = SparseFactorisationConv2D(use_scaling=not self.only_mask, strides=strides, filters=nb_filters, kernel_size=kernel_size,
+                                                        sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias, activation=activation, padding=padding,
+                                                        kernel_regularizer=regularizer)
             replacing_weights = scaling + factor_data + [layer.get_weights()[-1]] if layer.use_bias else []
 
         return replacing_layer, replacing_weights, less_values_than_base

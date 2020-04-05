@@ -63,7 +63,8 @@ from palmnet.core.palminizer import Palminizer
 from palmnet.core.palminizable import Palminizable
 from palmnet.data import Mnist, Test, Svhn, Cifar100, Cifar10
 # from palmnet.layers.sparse_tensor import SparseFactorisationDense#, SparseFactorisationConv2DDensify
-from palmnet.layers.sparse_masked import SparseFactorisationDense, SparseFactorisationConv2DDensify
+from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
+from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
 from palmnet.utils import get_sparsity_pattern, insert_layer_nonseq, timeout_signal_handler, get_lr_metric, CSVLoggerByBatch
 from palmnet.experiments.utils import ParameterManagerPalminize, ParameterManagerPalminizeFinetune, ResultPrinter
 from skluc.utils import logger, log_memory_usage
@@ -119,7 +120,7 @@ def replace_layers_with_sparse_facto(model, dct_name_facto):
                 activation = layer.activation
                 padding = layer.padding
                 regularizer = layer.kernel_regularizer
-                replacing_layer = SparseFactorisationConv2DDensify(use_scaling=not paraman["--only-mask"], strides=strides, filters=nb_filters, kernel_size=kernel_size, sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias, activation=activation, padding=padding, kernel_regularizer=regularizer)
+                replacing_layer = SparseFactorisationConv2D(use_scaling=not paraman["--only-mask"], strides=strides, filters=nb_filters, kernel_size=kernel_size, sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias, activation=activation, padding=padding, kernel_regularizer=regularizer)
                 replacing_weights = scaling + factor_data + [layer.get_weights()[-1]] if layer.use_bias else []
                 # new_model = insert_layer_nonseq(new_model, layer_name, lambda: replacing_layer, position="replace")
                 # replacing_layer.set_weights(replacing_weights)
@@ -239,7 +240,7 @@ def main():
         base_score = float(df["base_score"])
         before_finetuned_score = float(df["before_finetuned_score"])
         palminized_score = float(df["palminized_score"])
-        fine_tuned_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={'SparseFactorisationConv2DDensify':SparseFactorisationConv2DDensify,
+        fine_tuned_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={'SparseFactorisationConv2DDensify':SparseFactorisationConv2D,
                                                                             "SparseFactorisationDense": SparseFactorisationDense})
 
     else:

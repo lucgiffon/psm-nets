@@ -7,7 +7,7 @@ from keras.layers import Dense, Flatten
 from scipy.sparse import coo_matrix
 
 from palmnet.core.palminizable import Palminizable
-from palmnet.layers.sparse_tensor import RandomSparseFactorisationConv2D, RandomSparseFactorisationDense, RandomSparseFactorisationConv2DDensify
+from palmnet.layers.sparse_facto_sparse_tensor_deprecated import RandomSparseFactorisationConv2D, RandomSparseFactorisationDense, RandomSparseFactorisationConv2DDensify
 import numpy as np
 
 from palmnet.utils import get_sparsity_pattern
