@@ -59,7 +59,7 @@ import docopt
 from scipy.sparse import coo_matrix
 from palmnet.utils import CyclicLR
 
-from palmnet.core.palminize import Palminizer
+from palmnet.core.palminizer import Palminizer
 from palmnet.core.palminizable import Palminizable
 from palmnet.data import Mnist, Test, Svhn, Cifar100, Cifar10
 # from palmnet.layers.sparse_tensor import SparseFactorisationDense#, SparseFactorisationConv2DDensify

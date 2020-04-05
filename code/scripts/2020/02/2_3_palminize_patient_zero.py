@@ -42,7 +42,7 @@ import numpy as np
 
 import docopt
 
-from palmnet.core.palminize import Palminizer
+from palmnet.core.palminizer import Palminizer
 from palmnet.core.palminizable import Palminizable
 from palmnet.experiments.utils import ParameterManagerPalminize, ResultPrinter
 from skluc.utils import logger, log_memory_usage

@@ -31,7 +31,7 @@ class Palminizable:
         :return: The same, model object with new weights.
         """
         for layer in self.compressed_model.layers:
-            _lambda, op_sparse_factors, _ = self.palminizer.palminize_layer(layer)
+            _lambda, op_sparse_factors, _ = self.palminizer.factorize_layer(layer)
             self.sparsely_factorized_layers[layer.name] = (_lambda, op_sparse_factors)
 
         self.is_palminized = True

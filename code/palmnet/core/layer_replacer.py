@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABCMeta
 import numpy as np
 
-from palmnet.core.palminize import Palminizer
+from palmnet.core.palminizer import Palminizer
 from palmnet.core.palminizable import Palminizable
 from palmnet.data import Cifar100
 from keras.models import Model, Sequential

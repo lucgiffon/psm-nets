@@ -2,7 +2,7 @@ import unittest
 from copy import deepcopy
 
 from palmnet.core.layer_replacer_palm import LayerReplacerPalm
-from palmnet.core.palminize import Palminizer
+from palmnet.core.palminizer import Palminizer
 from palmnet.core.palminizable import Palminizable
 from palmnet.data import Cifar100, Mnist
 from pprint import pprint
@@ -28,7 +28,7 @@ class TestLayerReplacerPalm(unittest.TestCase):
         pprint(self.palminizable.sparsely_factorized_layers)
         self.dct_sparsely_factorized_layers = self.palminizable.sparsely_factorized_layers
 
-    def test_keep_last(self) -> None:
+    def test_transform(self) -> None:
         for keep_last_layer in [True, False]:
             for only_mask in [True, False]:
                 dct_name_facto = self.dct_sparsely_factorized_layers
@@ -67,7 +67,7 @@ class TestLayerReplacerPalm(unittest.TestCase):
                 assert atleast_one, "No layer have been replaced in test."
 
     def test_fit_transform(self) -> None:
-        model_transformer = LayerReplacerPalm(palminizer=self.palminizer, keep_last_layer=True, only_mask=False, dct_name_compression=None)
+        model_transformer = LayerReplacerPalm(sparse_factorizer=self.palminizer, keep_last_layer=True, only_mask=False, dct_name_compression=None)
         new_model = model_transformer.fit_transform(deepcopy(self.base_model))
 
         model_transformer_already_fit = LayerReplacerPalm(keep_last_layer=True, only_mask=False, dct_name_compression=self.dct_sparsely_factorized_layers)

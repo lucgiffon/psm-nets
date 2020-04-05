@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 from operator import mul
 import pathlib
 
-from palmnet.core.palminize import Palminizable
+from palmnet.core.sparse_factorizer import Palminizable
 
 from palmnet.utils import insert_layer_nonseq, get_sparsity_pattern
 import pickle
