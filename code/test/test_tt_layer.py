@@ -8,6 +8,9 @@ from palmnet.layers.tt_layer_dense import TTLayerDense
 from keras.models import Sequential
 from keras.layers import Conv2D, GlobalAveragePooling2D, Dense
 
+from palmnet.utils import get_nb_learnable_weights
+
+
 class TestTTLayers(unittest.TestCase):
     def setUp(self) -> None:
         (self.X_train, self.y_train), (self.X_test, self.y_test) = cifar10.load_data()
@@ -39,13 +42,15 @@ class TestTTLayers(unittest.TestCase):
         model = Sequential()
         input_shape = (32, 32, 3)
 
-        model.add(Conv2D(nb_dim, (3, 3), padding='same', input_shape=input_shape))
-        model.add(TTLayerConv(kernel_size=[3, 3], filters=nb_dim, mat_ranks=tt_ranks_conv, mode="auto", name="ttlayerconv", padding="same"))
-        model.add(Conv2D(nb_dim, (3, 3), padding='same'))
-        model.add(GlobalAveragePooling2D())
-        model.add(Dense(nb_dim))
-        model.add(TTLayerDense(nb_units=nb_dim, mat_ranks=tt_ranks_dense, mode="auto", name="ttlayerdense"))
-        model.add(Dense(nb_dim))
+        model.add(Conv2D(nb_dim, (3, 3), padding='same', input_shape=input_shape, name="conv2D_1"))
+        model.add(TTLayerConv(kernel_size=[3, 3], filters=nb_dim, mat_ranks=tt_ranks_conv, mode="auto", name="ttlayerconv", padding="same", use_bias=False))
+        model.add(TTLayerConv(kernel_size=[3, 3], filters=nb_dim, mat_ranks=tt_ranks_conv, mode="auto", name="ttlayerconv2", padding="same", use_bias=True))
+        model.add(Conv2D(nb_dim, (3, 3), padding='same', name="conv2D_2"))
+        model.add(GlobalAveragePooling2D(name="glob_pool"))
+        model.add(Dense(nb_dim, name="dense1"))
+        model.add(TTLayerDense(nb_units=nb_dim, mat_ranks=tt_ranks_dense, mode="auto", name="ttlayerdense", use_bias=False))
+        model.add(TTLayerDense(nb_units=nb_dim, mat_ranks=tt_ranks_dense, mode="auto", name="ttlayerdense2", use_bias=True))
+        model.add(Dense(nb_dim, name="dense2"))
         return model
 
     def test_tt_layers_fine(self):
@@ -83,10 +88,48 @@ class TestTTLayers(unittest.TestCase):
             expected_prod = tuple([4] * order)
             model = self.build_model_full_auto(dim, tt_rank_conv, tt_rank_dense)
 
+            dct_name_expected_nb_weights = {
+                "conv2D_1": 3*3*3*dim + dim,
+                "conv2D_2": dim*3*3*dim + dim,
+                "dense1": dim*dim + dim,
+                "dense2": dim*dim + dim,
+                "glob_pool": 0,
+                "ttlayerconv": 0,
+                "ttlayerconv2": 0 + dim,
+                "ttlayerdense": 0,
+                "ttlayerdense2": 0 + dim,
+            }
+
             for layer in model.layers:
                 if isinstance(layer, TTLayerConv) or isinstance(layer, TTLayerDense):
                     assert tuple(layer.inp_modes) == expected_prod, "Bad inp modes layer name: {}".format(layer.name)
                     assert tuple(layer.out_modes) == expected_prod, "Bad out modes layer name: {}".format(layer.name)
+
+                if isinstance(layer, TTLayerConv):
+                    nb_val_convs_tt = 3*3*tt_rank_conv[0]
+                    for j in range(order):
+                        r_j = tt_rank_conv[j + 1]
+                        r_j_minus_1 = tt_rank_conv[j]
+                        mj_nj = layer.inp_modes[j] * layer.out_modes[j]
+                        nb_val_convs_tt += r_j * r_j_minus_1 * mj_nj
+
+                    found = get_nb_learnable_weights(layer)
+                    expected = nb_val_convs_tt+dct_name_expected_nb_weights[layer.name]
+                elif isinstance(layer, TTLayerDense):
+                    nb_val_dense_tt = 0
+                    for j in range(order):
+                        r_j = tt_rank_dense[j + 1]
+                        r_j_minus_1 = tt_rank_dense[j]
+                        mj_nj = layer.inp_modes[j] * layer.out_modes[j]
+                        nb_val_dense_tt += r_j * r_j_minus_1 * mj_nj
+                    found = get_nb_learnable_weights(layer)
+                    expected = nb_val_dense_tt+dct_name_expected_nb_weights[layer.name]
+                else:
+                    found = get_nb_learnable_weights(layer)
+                    expected = dct_name_expected_nb_weights[layer.name]
+                assert found  == expected, f"not good {found}!={expected} {layer.name} {expected+dim}"
+
+
 
     def test_tt_layer_crash(self):
         # not power of two
