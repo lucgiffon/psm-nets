@@ -490,8 +490,6 @@ class CyclicLR(Callback):
         for k, v in logs.items():
             self.history.setdefault(k, []).append(v)
 
-
-
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
         logs['lr'] = K.get_value(self.model.optimizer.lr)
@@ -566,7 +564,7 @@ def get_nb_learnable_weights(layer):
         assert sp_patterns is not None, f"No sparsity pattern found in layer {layer.name}"
         count_sparsity_patterns = get_nb_non_zero_values(sp_patterns)
         if layer.use_bias:
-            count_bias = 0
+            count_bias = layer.filters if isinstance(layer, SparseFactorisationConv2D) else layer.units
         else:
             count_bias = 0
         if layer.use_scaling:
