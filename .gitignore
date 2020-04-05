@@ -1,3 +1,5 @@
+*.whl
+
 reports/figures/*
 
 # project related
