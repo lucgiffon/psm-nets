@@ -103,6 +103,46 @@ class ParameterManagerPalminize(ParameterManager):
         self["--delta-threshold"] = float(self["--delta-threshold"]) if self["--delta-threshold"] is not None else None
         self["--nb-factor"] = int(self["--nb-factor"]) if self["--nb-factor"] is not None else None
 
+
+class ParameterManagerTensotrainAndTuckerDecomposition(ParameterManager):
+    def __init__(self, dct_params, **kwargs):
+        super().__init__(self, **dct_params, **kwargs)
+        self["--min-lr"] = float(self["--min-lr"]) if self["--min-lr"] is not None else None
+        self["--max-lr"] = float(self["--max-lr"]) if self["--max-lr"] is not None else None
+        self["--lr"] = float(self["--lr"]) if self["--lr"] is not None else None
+        self["--nb-epoch"] = int(self["--nb-epoch"]) if self["--nb-epoch"] is not None else None
+        self["--epoch-step-size"] = int(self["--epoch-step-size"]) if self["--epoch-step-size"] is not None else None
+
+        # tensortrain parameters
+        self["--rank-value"] = int(self["--rank-value"]) if self["--rank-value"] is not None else None
+        self["--order"] = int(self["--order"]) if self["--order"] is not None else None
+
+        self.__init_hash_expe()
+        self.__init_output_file()
+
+    def __init_output_file(self):
+        self["output_file_resprinter"] = Path(self["hash"] + "_results.csv")
+        self["output_file_modelprinter"] = Path(self["hash"] + "_model.h5")
+        self["output_file_notfinishedprinter"] = Path(self["hash"] + ".notfinished")
+        self["output_file_csvcbprinter"] = Path(self["hash"] + "_history.csv")
+
+    def __init_hash_expe(self):
+        lst_elem_to_remove_for_hash = [
+            'identifier',
+            '-v',
+            '--help',
+            "output_file_resprinter",
+            "output_file_modelprinter",
+            "output_file_notfinishedprinter",
+            "output_file_csvcbprinter"
+        ]
+
+        keys_expe = sorted(self.keys())
+        any(keys_expe.remove(item) for item in lst_elem_to_remove_for_hash if item in keys_expe)
+        val_expe = [self[k] for k in keys_expe]
+        str_expe = [str(val) for pair in zip(keys_expe, val_expe) for val in pair]
+        self["hash"] = hex(zlib.crc32(str.encode("".join(str_expe))))
+
 class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
     def __init__(self, dct_params, **kwargs):
         super().__init__(dct_params, **kwargs)

@@ -513,19 +513,34 @@ def get_idx_first_layer_of_class(model, class_=Conv2D):
         logger.warning(f"No layer of class {class_.__name__} found")
     return idx_first_layer_of_class
 
-def get_facto_for_channel_and_order(channel, order):
-    if int(np.log2(channel)) != np.log2(channel):
-        raise ValueError("Channel must be a power of two. {}".format(channel))
-    base = [1] * order
-    base = np.array(base)
-    _prod = np.prod(base) # == 1
-    next_idx_to_upscale = 0
-    while _prod < channel:
-        base[next_idx_to_upscale] *= 2
-        _prod = np.prod(base)
-        next_idx_to_upscale = int((next_idx_to_upscale + 1) % order)
 
-    return base[::-1] # biggest values at the end for no reason :)
+DCT_CHANNEL_PREDEFINED_FACTORIZATIONS = {
+    10: [2, 5],
+    100: [2, 5, 10],
+    6: [2, 3],
+    16: [2, 2, 4],
+    3: [3]
+}
+
+def get_facto_for_channel_and_order(channel, order, dct_predefined_facto=None):
+    if dct_predefined_facto is not None and channel in dct_predefined_facto:
+        predef_facto = dct_predefined_facto[channel]
+        missing_elm = order - len(predef_facto)
+        facto = [1]*missing_elm + predef_facto
+        return facto
+    elif int(np.log2(channel)) != np.log2(channel):
+        raise ValueError("Channel must be a power of two. {}".format(channel))
+    else:
+        base = [1] * order
+        base = np.array(base)
+        _prod = np.prod(base) # == 1
+        next_idx_to_upscale = 0
+        while _prod < channel:
+            base[next_idx_to_upscale] *= 2
+            _prod = np.prod(base)
+            next_idx_to_upscale = int((next_idx_to_upscale + 1) % order)
+
+        return base[::-1] # biggest values at the end for no reason :)
 
 def build_dct_tt_ranks(model, rank_value=2, order=4):
     tt_ranks_conv = [rank_value] * order + [1]

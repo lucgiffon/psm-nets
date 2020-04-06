@@ -1,0 +1,6 @@
+tensortrain --order 4 --rank-value 2 -v --min-lr 1e-06 --max-lr 0.1 --nb-epoch 10 --epoch-step-size 10 --use-clr --keep-first-layer --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 2 -v --min-lr 1e-06 --max-lr 0.1 --nb-epoch 10 --epoch-step-size 10 --use-clr --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 6 -v --min-lr 1e-06 --max-lr 0.1 --nb-epoch 10 --epoch-step-size 10 --use-clr --keep-first-layer --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 6 -v --min-lr 1e-06 --max-lr 0.1 --nb-epoch 10 --epoch-step-size 10 --use-clr --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 10 -v --min-lr 1e-06 --max-lr 0.1 --nb-epoch 10 --epoch-step-size 10 --use-clr --keep-first-layer --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 10 -v --min-lr 1e-06 --max-lr 0.1 --nb-epoch 10 --epoch-step-size 10 --use-clr --mnist --mnist-lenet

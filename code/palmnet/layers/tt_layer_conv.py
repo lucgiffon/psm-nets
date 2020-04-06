@@ -5,7 +5,7 @@ import tensorflow as tf
 from keras.utils import conv_utils
 
 from palmnet.layers import Conv2DCustom
-from palmnet.utils import get_facto_for_channel_and_order
+from palmnet.utils import get_facto_for_channel_and_order, DCT_CHANNEL_PREDEFINED_FACTORIZATIONS
 
 '''
 Implementation of the paper 'Ultimate tensorization: compressing convolutional and FC layers alike', Timur Garipov, Dmitry Podoprikhin, Alexander Novikov, Dmitry P. Vetrov, 2016
@@ -57,8 +57,8 @@ class TTLayerConv(Conv2DCustom):
         inp_h, inp_w, inp_ch = inp_shape[0:3]
 
         if self.mode == "auto":
-            self.inp_modes = get_facto_for_channel_and_order(inp_ch, self.order) if self.inp_modes is None else self.inp_modes
-            self.out_modes = get_facto_for_channel_and_order(self.filters, self.order) if self.out_modes is None else self.out_modes
+            self.inp_modes = get_facto_for_channel_and_order(inp_ch, self.order, dct_predefined_facto=DCT_CHANNEL_PREDEFINED_FACTORIZATIONS) if self.inp_modes is None else self.inp_modes
+            self.out_modes = get_facto_for_channel_and_order(self.filters, self.order, dct_predefined_facto=DCT_CHANNEL_PREDEFINED_FACTORIZATIONS) if self.out_modes is None else self.out_modes
 
         assert np.prod(self.out_modes) == self.filters, "The product of out_modes should equal to the number of filters."
         assert np.prod(self.inp_modes) == inp_ch, "The product of inp_modes should equal to the number of channel in the last layer."
@@ -115,13 +115,17 @@ class TTLayerConv(Conv2DCustom):
         return out
 
     def compute_output_shape(self, input_shape):
-        return (input_shape[0], input_shape[1], input_shape[2], np.prod(self.out_modes))
+        return self._compute_output_shape(input_shape, kernel_shape=(*self.kernel_size, input_shape[-1], self.filters),
+                                          padding_height=self.padding_height, padding_width=self.padding_width,
+                                          stride_height=self.strides_height, stride_width=self.strides_width)
+        # return (input_shape[0], input_shape[1], input_shape[2], np.prod(self.out_modes))
 
     def get_config(self):
         super_config = super().get_config()
         super_config.update({
             "inp_modes": self.inp_modes,
             "out_modes": self.out_modes,
-            "mat_ranks": self.mat_ranks
+            "mat_ranks": self.mat_ranks,
+            "mode": self.mode,
         })
         return super_config

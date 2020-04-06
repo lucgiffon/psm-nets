@@ -129,7 +129,21 @@ class TestTTLayers(unittest.TestCase):
                     expected = dct_name_expected_nb_weights[layer.name]
                 assert found  == expected, f"not good {found}!={expected} {layer.name} {expected+dim}"
 
+    @staticmethod
+    def build_model_full_auto_predef(nb_dim, tt_ranks_conv = (2, 2, 2, 2, 1), tt_ranks_dense = (1, 2, 2, 2, 1)):
+        model = Sequential()
+        input_shape = (32, 32, 3)
+        model.add(TTLayerConv(input_shape=input_shape, kernel_size=[3, 3], filters=nb_dim, mat_ranks=tt_ranks_conv, mode="auto", name="ttlayerconv", padding="same", use_bias=False))
+        model.add(TTLayerConv(kernel_size=[3, 3], filters=nb_dim, mat_ranks=tt_ranks_conv, mode="auto", name="ttlayerconv2", padding="same", use_bias=True))
+        model.add(Conv2D(nb_dim, (3, 3), padding='same', name="conv2D_2"))
+        model.add(GlobalAveragePooling2D(name="glob_pool"))
+        model.add(Dense(nb_dim, name="dense1"))
+        model.add(TTLayerDense(nb_units=nb_dim, mat_ranks=tt_ranks_dense, mode="auto", name="ttlayerdense", use_bias=False))
+        model.add(TTLayerDense(nb_units=10, mat_ranks=tt_ranks_dense, mode="auto", name="ttlayerdense2", use_bias=True))
+        return model
 
+    def test_tt_layer_predef(self):
+        model = self.build_model_full_auto(16)
 
     def test_tt_layer_crash(self):
         # not power of two

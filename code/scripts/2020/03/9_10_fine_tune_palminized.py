@@ -265,6 +265,8 @@ def main():
         x_test = np.reshape(x_test, (-1, 784))
         x_train = np.reshape(x_train, (-1, 784))
 
+    raise ValueError("The init_nb_epoch below isn't set properly on restart. Trust me, there is a problem with the csv length.")
+    # noinspection PyUnreachableCode
     if os.path.exists(paraman["output_file_notfinishedprinter"]):
         df = pd.read_csv(paraman["output_file_resprinter"])
         init_nb_epoch = len(pd.read_csv(paraman["output_file_csvcbprinter"]))

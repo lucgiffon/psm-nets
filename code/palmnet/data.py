@@ -147,6 +147,7 @@ cifar100_param_training = param_training(
     # callbacks=[LearningRateScheduler(scheduler)]
     callbacks=[]
 )
+
 svhn_param_training = cifar10_param_training
 
 cifar100_resnet_param_training = param_training(

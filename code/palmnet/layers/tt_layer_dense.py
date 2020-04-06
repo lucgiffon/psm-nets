@@ -3,7 +3,7 @@ from keras.engine.topology import Layer
 import numpy as np
 import tensorflow as tf
 
-from palmnet.utils import get_facto_for_channel_and_order
+from palmnet.utils import get_facto_for_channel_and_order, DCT_CHANNEL_PREDEFINED_FACTORIZATIONS
 
 '''
 Implementation of the paper 'Tensorizing Neural Networks', Alexander Novikov, Dmitry Podoprikhin, Anton Osokin, Dmitry P. Vetrov, NIPS, 2015
@@ -61,8 +61,8 @@ class TTLayerDense(Layer):
     def build(self, input_shape):
         inp_ch = input_shape[-1]
         if self.mode == "auto":
-            self.inp_modes = get_facto_for_channel_and_order(inp_ch, self.order) if self.inp_modes is None else self.inp_modes
-            self.out_modes = get_facto_for_channel_and_order(self.nb_units, self.order) if self.out_modes is None else self.out_modes
+            self.inp_modes = get_facto_for_channel_and_order(inp_ch, self.order, dct_predefined_facto=DCT_CHANNEL_PREDEFINED_FACTORIZATIONS) if self.inp_modes is None else self.inp_modes
+            self.out_modes = get_facto_for_channel_and_order(self.nb_units, self.order, dct_predefined_facto=DCT_CHANNEL_PREDEFINED_FACTORIZATIONS) if self.out_modes is None else self.out_modes
 
         assert np.prod(self.out_modes) == self.nb_units, "The product of out_modes should equal to the number of output units."
         assert np.prod(self.inp_modes) == inp_ch, "The product of inp_modes should equal to the input dimension."
@@ -105,6 +105,7 @@ class TTLayerDense(Layer):
         super_config.update({
             "inp_modes": self.inp_modes,
             "out_modes": self.out_modes,
-            "mat_ranks": self.mat_ranks
+            "mat_ranks": self.mat_ranks,
+            "mode": self.mode,
         })
         return super_config

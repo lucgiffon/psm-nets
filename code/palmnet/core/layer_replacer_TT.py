@@ -46,7 +46,7 @@ class LayerReplacerTT(LayerReplacer):
 
         tt_ranks = self.dct_name_compression[layer.name]["tt_ranks"]
 
-        replacing_layer = TTLayerConv(filters=nb_filters, mat_ranks=tt_ranks, kernel_size=kernel_size, stride=strides, padding=padding, activation=activation, mode="auto")
+        replacing_layer = TTLayerConv(filters=nb_filters, mat_ranks=tt_ranks, kernel_size=kernel_size, strides=strides, padding=padding, activation=activation, mode="auto")
         replacing_weights = None
 
         return replacing_layer, replacing_weights, True

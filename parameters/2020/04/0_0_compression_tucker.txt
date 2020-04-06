@@ -1,0 +1,12 @@
+-v --keep-first-layer --svhn --svhn-vgg19
+-v --svhn --svhn-vgg19
+-v --keep-first-layer --mnist --mnist-lenet
+-v --mnist --mnist-lenet
+-v --keep-first-layer --cifar10 --cifar10-vgg19
+-v --cifar10 --cifar10-vgg19
+-v --keep-first-layer --cifar100 --cifar100-resnet20
+-v --keep-first-layer --cifar100 --cifar100-resnet50
+-v --keep-first-layer --cifar100 --cifar100-vgg19
+-v --cifar100 --cifar100-resnet20
+-v --cifar100 --cifar100-resnet50
+-v --cifar100 --cifar100-vgg19
