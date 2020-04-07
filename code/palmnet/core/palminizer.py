@@ -1,13 +1,8 @@
 import logging
-from abc import ABCMeta
-
-from keras.layers import Conv2D, Dense
 
 from palmnet.core.sparse_factorizer import SparseFactorizer
 from qkmeans.core.utils import build_constraint_set_smart
 from qkmeans.palm.palm_fast import hierarchical_palm4msa, palm4msa
-
-from skluc.utils import logger
 
 import numpy as np
 
@@ -79,7 +74,7 @@ class Palminizer(SparseFactorizer):
                          update_right_to_left=True,
                          delta_objective_error_threshold=self.delta_threshold_palm,
                          track_objective=False)
-            final_X *= final_lambda # added later because palm4msa actually doesn't return the final_X multiplied by lambda contrary to hierarchical
+            final_X *= final_lambda  # added later because palm4msa actually doesn't return the final_X multiplied by lambda contrary to hierarchical
 
         if transposed:
             return final_lambda, final_factors.transpose(), final_X.T

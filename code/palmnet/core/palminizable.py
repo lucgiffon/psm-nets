@@ -9,8 +9,8 @@ class Palminizable:
     def __init__(self, keras_model, palminizer):
         self.base_model = keras_model
         self.compressed_model = deepcopy(keras_model)
-        self.sparsely_factorized_layers = {} # tuples: (base model, compressed model)
-        self.param_by_layer = {} # tuples: (base model, compressed model)
+        self.sparsely_factorized_layers = {}  # tuples: (base model, compressed model)
+        self.param_by_layer = {}  # tuples: (base model, compressed model)
         self.flop_by_layer = {}
         self.is_palminized = False
         self.palminizer = palminizer
@@ -19,7 +19,6 @@ class Palminizable:
         self.total_nb_param_compressed = None
         self.total_nb_flop_base = None
         self.total_nb_flop_compressed = None
-
 
     def palminize(self):
         """
@@ -142,7 +141,8 @@ class Palminizable:
 
         :return:
         """
-        self.total_nb_param_base, self.total_nb_param_compressed, self.total_nb_flop_base, self.total_nb_flop_compressed, self.param_by_layer, self.flop_by_layer = self.count_model_param_and_flops_(self.base_model, self.sparsely_factorized_layers)
+        self.total_nb_param_base, self.total_nb_param_compressed, self.total_nb_flop_base, self.total_nb_flop_compressed, self.param_by_layer, self.flop_by_layer = self.count_model_param_and_flops_(
+            self.base_model, self.sparsely_factorized_layers)
         #
         # nb_param_base, nb_param_compressed, nb_flop_base, nb_flop_compressed = 0, 0, 0, 0
         #
@@ -168,14 +168,13 @@ class Palminizable:
         #     nb_flop_base += nb_flop_layer
         #     nb_flop_compressed += nb_flop_compressed_layer
 
-
         return self.total_nb_param_base, self.total_nb_param_compressed, self.total_nb_flop_base, self.total_nb_flop_compressed
 
     @staticmethod
     def compile_model(model):
         model.compile(loss='categorical_crossentropy',
-                       optimizer="adam",
-                       metrics=['categorical_accuracy'])
+                      optimizer="adam",
+                      metrics=['categorical_accuracy'])
 
     def evaluate(self, x_test, y_test):
 

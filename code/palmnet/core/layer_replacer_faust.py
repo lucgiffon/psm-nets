@@ -6,6 +6,7 @@ import pickle
 import zlib
 import os
 
+
 class LayerReplacerFaust(LayerReplacerSparseFacto):
 
     def __init__(self, *args, **kwargs):

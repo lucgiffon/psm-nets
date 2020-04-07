@@ -34,10 +34,10 @@ class Faustizer(SparseFactorizer):
         # stop_crit = StoppingCriterion(num_its=30)
 
         return ParamsHierarchical(S_cons, R_cons,
-                            stop_crit,
-                            stop_crit,
-                            is_update_way_R2L=True,
-                            is_fact_side_left=True)
+                                  stop_crit,
+                                  stop_crit,
+                                  is_update_way_R2L=True,
+                                  is_fact_side_left=True)
 
     @staticmethod
     def build_constraints_faust(left_dim, right_dim, sparsity, N_fac, hierarchical, tol, nb_iter):
