@@ -1,0 +1,72 @@
+ --sparsity-factor 2 -v --hierarchical --svhn --svhn-vgg19
+ --sparsity-factor 2 -v --svhn --svhn-vgg19
+ --sparsity-factor 3 -v --hierarchical --svhn --svhn-vgg19
+ --sparsity-factor 3 -v --svhn --svhn-vgg19
+ --sparsity-factor 4 -v --hierarchical --svhn --svhn-vgg19
+ --sparsity-factor 4 -v --svhn --svhn-vgg19
+ --sparsity-factor 2 -v --nb-factor 2 --svhn --svhn-vgg19
+ --sparsity-factor 2 -v --nb-factor 3 --svhn --svhn-vgg19
+ --sparsity-factor 3 -v --nb-factor 2 --svhn --svhn-vgg19
+ --sparsity-factor 3 -v --nb-factor 3 --svhn --svhn-vgg19
+ --sparsity-factor 4 -v --nb-factor 2 --svhn --svhn-vgg19
+ --sparsity-factor 4 -v --nb-factor 3 --svhn --svhn-vgg19
+ --sparsity-factor 2 -v --hierarchical --mnist --mnist-lenet
+ --sparsity-factor 2 -v --mnist --mnist-lenet
+ --sparsity-factor 3 -v --hierarchical --mnist --mnist-lenet
+ --sparsity-factor 3 -v --mnist --mnist-lenet
+ --sparsity-factor 4 -v --hierarchical --mnist --mnist-lenet
+ --sparsity-factor 4 -v --mnist --mnist-lenet
+ --sparsity-factor 2 -v --nb-factor 2 --mnist --mnist-lenet
+ --sparsity-factor 2 -v --nb-factor 3 --mnist --mnist-lenet
+ --sparsity-factor 3 -v --nb-factor 2 --mnist --mnist-lenet
+ --sparsity-factor 3 -v --nb-factor 3 --mnist --mnist-lenet
+ --sparsity-factor 4 -v --nb-factor 2 --mnist --mnist-lenet
+ --sparsity-factor 4 -v --nb-factor 3 --mnist --mnist-lenet
+ --sparsity-factor 2 -v --hierarchical --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v --hierarchical --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v --cifar10 --cifar10-vgg19
+ --sparsity-factor 4 -v --hierarchical --cifar10 --cifar10-vgg19
+ --sparsity-factor 4 -v --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v --nb-factor 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v --nb-factor 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 4 -v --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 4 -v --nb-factor 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v --hierarchical --cifar100 --cifar100-resnet20
+ --sparsity-factor 2 -v --hierarchical --cifar100 --cifar100-resnet50
+ --sparsity-factor 2 -v --hierarchical --cifar100 --cifar100-vgg19
+ --sparsity-factor 2 -v --cifar100 --cifar100-resnet20
+ --sparsity-factor 2 -v --cifar100 --cifar100-resnet50
+ --sparsity-factor 2 -v --cifar100 --cifar100-vgg19
+ --sparsity-factor 3 -v --hierarchical --cifar100 --cifar100-resnet20
+ --sparsity-factor 3 -v --hierarchical --cifar100 --cifar100-resnet50
+ --sparsity-factor 3 -v --hierarchical --cifar100 --cifar100-vgg19
+ --sparsity-factor 3 -v --cifar100 --cifar100-resnet20
+ --sparsity-factor 3 -v --cifar100 --cifar100-resnet50
+ --sparsity-factor 3 -v --cifar100 --cifar100-vgg19
+ --sparsity-factor 4 -v --hierarchical --cifar100 --cifar100-resnet20
+ --sparsity-factor 4 -v --hierarchical --cifar100 --cifar100-resnet50
+ --sparsity-factor 4 -v --hierarchical --cifar100 --cifar100-vgg19
+ --sparsity-factor 4 -v --cifar100 --cifar100-resnet20
+ --sparsity-factor 4 -v --cifar100 --cifar100-resnet50
+ --sparsity-factor 4 -v --cifar100 --cifar100-vgg19
+ --sparsity-factor 2 -v --nb-factor 2 --cifar100 --cifar100-resnet20
+ --sparsity-factor 2 -v --nb-factor 2 --cifar100 --cifar100-resnet50
+ --sparsity-factor 2 -v --nb-factor 2 --cifar100 --cifar100-vgg19
+ --sparsity-factor 2 -v --nb-factor 3 --cifar100 --cifar100-resnet20
+ --sparsity-factor 2 -v --nb-factor 3 --cifar100 --cifar100-resnet50
+ --sparsity-factor 2 -v --nb-factor 3 --cifar100 --cifar100-vgg19
+ --sparsity-factor 3 -v --nb-factor 2 --cifar100 --cifar100-resnet20
+ --sparsity-factor 3 -v --nb-factor 2 --cifar100 --cifar100-resnet50
+ --sparsity-factor 3 -v --nb-factor 2 --cifar100 --cifar100-vgg19
+ --sparsity-factor 3 -v --nb-factor 3 --cifar100 --cifar100-resnet20
+ --sparsity-factor 3 -v --nb-factor 3 --cifar100 --cifar100-resnet50
+ --sparsity-factor 3 -v --nb-factor 3 --cifar100 --cifar100-vgg19
+ --sparsity-factor 4 -v --nb-factor 2 --cifar100 --cifar100-resnet20
+ --sparsity-factor 4 -v --nb-factor 2 --cifar100 --cifar100-resnet50
+ --sparsity-factor 4 -v --nb-factor 2 --cifar100 --cifar100-vgg19
+ --sparsity-factor 4 -v --nb-factor 3 --cifar100 --cifar100-resnet20
+ --sparsity-factor 4 -v --nb-factor 3 --cifar100 --cifar100-resnet50
+ --sparsity-factor 4 -v --nb-factor 3 --cifar100 --cifar100-vgg19

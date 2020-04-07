@@ -4,6 +4,8 @@ import os.path
 import unittest
 from copy import deepcopy
 import pathlib
+
+from palmnet.core.faustizer import Faustizer
 from palmnet.core.layer_replacer_palm import LayerReplacerPalm
 from palmnet.core.palminizer import Palminizer
 from palmnet.core.palminizable import Palminizable
@@ -124,6 +126,17 @@ class TestLayerReplacerPalm(unittest.TestCase):
 
                 with self.assertRaises(KeyError):
                     model_transformer.transform(deepcopy(self.base_model))
+
+
+    def test_faustizer(self):
+        palminizer = Faustizer(sparsity_fac=2,
+                                nb_factor=None,
+                                nb_iter=2,
+                                tol=1e-6,
+                                hierarchical=True)
+
+        model_transformer = LayerReplacerPalm(sparse_factorizer=palminizer, keep_last_layer=True, only_mask=False, dct_name_compression=None)
+        model_transformer.fit(deepcopy(self.base_model))
 
 if __name__ == '__main__':
     unittest.main()

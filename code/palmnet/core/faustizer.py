@@ -18,7 +18,7 @@ class Faustizer(SparseFactorizer):
     @staticmethod
     def create_param_hierarchical_rect_control_stop_criter(m, n, j, sparsity, tol, max_iter):
 
-        P = 1.4
+        P = 1.4*m**2
         rho = 0.8
 
         S1_cons = ConstraintInt('spcol', m, n, sparsity)
@@ -31,6 +31,7 @@ class Faustizer(SparseFactorizer):
             R_cons += [ConstraintInt('sp', m, m, int(ceil(P*rho**i)))]
 
         stop_crit = StoppingCriterion(tol=tol, maxiter=max_iter)
+        # stop_crit = StoppingCriterion(num_its=30)
 
         return ParamsHierarchical(S_cons, R_cons,
                             stop_crit,
@@ -97,6 +98,7 @@ class Faustizer(SparseFactorizer):
 
         if self.hierarchical:
             faust, final_lambda = hierarchical(matrix, constraints, ret_lambda=True)
+            # faust, final_lambda = hierarchical(matrix, ["rectmat", nb_factors, self.sparsity_fac, self.sparsity_fac], ret_lambda=True)
         else:
             faust, final_lambda = palm4msa(matrix, constraints, ret_lambda=True)
 
