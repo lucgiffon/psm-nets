@@ -111,7 +111,7 @@ if __name__ == "__main__":
     output_dir = root_output_dir / expe_path_no_useless
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    columns_not_to_num = ['hash']
+    columns_not_to_num = ['hash', 'output_file_csvcbprinter']
     # df_palminized_no_useless = df_palminized_no_useless.apply(pd.to_numeric, errors='coerce')
     df_palminized_no_useless.loc[:, df_palminized_no_useless.columns.difference(columns_not_to_num)] = df_palminized_no_useless.loc[:, df_palminized_no_useless.columns.difference(columns_not_to_num)].apply(pd.to_numeric, errors='coerce')
     df_palminized_no_useless = df_palminized_no_useless.sort_values(by=["hash"])
@@ -219,14 +219,17 @@ if __name__ == "__main__":
         dct_attributes["before-finetune-score"].append(float(row["before_finetuned_score"]))
         dct_attributes["finetuned-score"].append(float(row["finetuned_score"]))
 
-
-
+        # store path informations
+        path_pickle = pathlib.Path(row_before_finetune["results_dir"]) / row_before_finetune["output_file_modelprinter"]
+        path_history = src_results_dir_no_useless / row["output_file_csvcbprinter"]
+        dct_attributes["path-learning-history"].append(path_history)
+        dct_attributes["path-pickle-model-object"].append(path_pickle)
         ##############################
         # Layer by Layer information #
         ##############################
 
         # matrices analysis
-        path_pickle = pathlib.Path(row_before_finetune["results_dir"]) / row_before_finetune["output_file_modelprinter"]
+
         palmnet.hunt.show_most_common_types(limit=20)
         log_memory_usage("Before pickle")
         model_obj = None
