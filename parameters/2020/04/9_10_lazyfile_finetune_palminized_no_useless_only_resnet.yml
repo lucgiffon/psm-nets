@@ -1,0 +1,102 @@
+#  script.py [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data)
+# [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+# --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float]
+
+all:
+#  log_mnist:
+#  not_log_mnist:
+#  log_svhn:
+#  not_log_svhn:
+#  log_cifar10:
+#  not_log_cifar10:
+#  log_cifar100:
+#  not_log_cifar100:
+  log_cifar100_resnet:
+  not_log_cifar100_resnet:
+
+base:
+  sparsity_fac: {"--sparsity-factor": [2, 3, 4]}
+  verbosity: ["-v"]
+#  walltime: {"--walltime": [90]}
+#  min_lr: {"--min-lr": [0.000001]}
+#  max_lr: {"--max-lr": [0.1]}
+#  nb_epoch: {"--nb-epoch": [10]}
+  nb_sepoch_step_size: {"--epoch-step-size": [2]}
+  use_clr: ["--use-clr", ""]
+  keep_classif: ["--keep-last-layer", ""]
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch"]}
+
+## MNIST
+
+palmnet_mnist:
+  base:
+  mnist: ["--mnist"]
+  mnist_lenet: ["--mnist-lenet"]
+
+log_mnist:
+  palmnet_mnist:
+  hierarchical: ["--hierarchical", ""]
+
+not_log_mnist:
+  palmnet_mnist:
+  nb_fac: {"--nb-factor": [2, 3]}
+
+## SVHN
+
+palmnet_svhn:
+  base:
+  svhn: ["--svhn"]
+  svhn_vgg19: ["--svhn-vgg19"]
+
+log_svhn:
+  palmnet_svhn:
+  hierarchical: ["--hierarchical", ""]
+
+not_log_svhn:
+  palmnet_svhn:
+  nb_fac: {"--nb-factor": [2, 3]}
+
+## CIFAR10
+
+palmnet_cifar10:
+  base:
+  cifar10: ["--cifar10"]
+  cifar10_vgg19: ["--cifar10-vgg19"]
+
+log_cifar10:
+  palmnet_cifar10:
+  hierarchical: ["--hierarchical", ""]
+
+not_log_cifar10:
+  palmnet_cifar10:
+  nb_fac: {"--nb-factor": [2, 3]}
+
+## CIFAR100 VGG19
+
+palmnet_cifar100:
+  base:
+  cifar100: ["--cifar100"]
+  cifar100_vgg19: ["--cifar100-vgg19"]
+
+log_cifar100:
+  palmnet_cifar100:
+  hierarchical: ["--hierarchical", ""]
+
+not_log_cifar100:
+  palmnet_cifar100:
+  nb_fac: {"--nb-factor": [2, 3]}
+
+## CIFAR100 RESNET
+
+palmnet_cifar100_resnet:
+  base:
+  cifar100: ["--cifar100"]
+  cifar100_vgg19: ["--cifar100-resnet20", "--cifar100-resnet50"]
+
+log_cifar100_resnet:
+  palmnet_cifar100_resnet:
+  hierarchical: ["--hierarchical", ""]
+
+not_log_cifar100_resnet:
+  palmnet_cifar100_resnet:
+  nb_fac: {"--nb-factor": [2, 3]}

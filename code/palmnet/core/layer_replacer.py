@@ -1,11 +1,7 @@
 from abc import abstractmethod, ABCMeta
-import numpy as np
 import pickle
 
-from palmnet.core.palminizer import Palminizer
-from palmnet.core.palminizable import Palminizable
-from palmnet.data import Cifar100
-from keras.models import Model, Sequential
+from keras.models import Model
 from keras.layers import InputLayer
 from palmnet.utils import get_idx_last_layer_of_class, get_idx_first_layer_of_class
 from skluc.utils import log_memory_usage, logger

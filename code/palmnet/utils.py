@@ -589,3 +589,9 @@ def get_nb_learnable_weights(layer):
         return count_sparsity_patterns + count_bias + count_scaling
     else:
         return get_cumsum_size_weights(layer.get_weights())
+
+def get_nb_learnable_weights_from_model(model):
+    count_learnable_weights = 0
+    for layer in model.layers:
+        count_learnable_weights += get_nb_learnable_weights(layer)
+    return count_learnable_weights

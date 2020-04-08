@@ -191,8 +191,6 @@ if __name__ == "__main__":
                         hls_str = "hsl({}, {}%, 40%)".format(hue_by_sparsity[sp_fac], saturation_by_hier[hierarchical_value])
                         fig.add_trace(go.Bar(name='Mask {} {}'.format(sp_fac, hierarchical_str), x=[xticks[-1]] if hierarchical_value == 1 else xticks, y=finetune_score_values, marker_color=hls_str))
 
-
-
             # palminized
             ############
             for i, sp_fac_palm in enumerate(sparsy_factors_palm):

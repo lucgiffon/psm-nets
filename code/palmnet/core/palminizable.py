@@ -3,12 +3,12 @@ from copy import deepcopy
 import numpy as np
 
 from skluc.utils import logger
-
+# from palmnet.core.palminizer import Palminizer
 
 class Palminizable:
     def __init__(self, keras_model, palminizer):
         self.base_model = keras_model
-        self.compressed_model = deepcopy(keras_model)
+        # self.compressed_model = deepcopy(keras_model)
         self.sparsely_factorized_layers = {}  # tuples: (base model, compressed model)
         self.param_by_layer = {}  # tuples: (base model, compressed model)
         self.flop_by_layer = {}

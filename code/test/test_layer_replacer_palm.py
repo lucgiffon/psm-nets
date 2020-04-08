@@ -16,6 +16,7 @@ from keras.layers import Dense
 import tempfile
 
 from palmnet.utils import get_idx_last_layer_of_class, timeout_signal_handler
+from qkmeans.utils import log_memory_usage
 
 
 class TestLayerReplacerPalm(unittest.TestCase):
