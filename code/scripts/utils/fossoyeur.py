@@ -2,13 +2,14 @@
 Find Jobd Killed prematurely and print info about them
 
 Usage:
-    resurector.py [--input-dir path]
+    resurector.py [--input-dir path] [--output-dir path]
 
 Options:
   -h --help                             Show this screen.
   -vv                                   Set verbosity to debug.
   -v                                    Set verbosity to info.
   --input-dir path                      Set the input dir to look experiments from.
+  --output-dir path                     Set the output dir to save the experiments to if specified. Doesn't write anything by default.
 """
 
 import pathlib
@@ -20,16 +21,20 @@ import os
 from pprint import pprint
 import yaml
 
-regex_killed = re.compile(r"##.+? (\d+) KILLED ##")
+# regex_killed = re.compile(r"##.+? (\d+) KILLED ##")
 oarstat_command = "oarstat -f -j {} -Y"
 
-def main():
-    dct_params = docopt.docopt(__doc__)
+regex_command_line = re.compile(r'.+?\.py (.+)')
 
-    if dct_params["--input-dir"] is None:
+def main():
+    paraman = docopt.docopt(__doc__)
+
+    if paraman["--input-dir"] is None:
         input_dir_path = pathlib.Path(os.getcwd())
     else:
-        input_dir_path = pathlib.Path(dct_params["--input-dir"])
+        input_dir_path = pathlib.Path(paraman["--input-dir"])
+
+    lst_param_to_relaunch = list()
 
     for root, dir, files in os.walk(input_dir_path):
         root_path_to_file = pathlib.Path(root)
@@ -48,12 +53,20 @@ def main():
             command = job_output["command"]
             if exit_code != 0:  # error or interruption by OAR
                 print(file, exit_code, command)
+                match = regex_command_line.match(command)
+                print(match.group(1))
+                lst_param_to_relaunch.append(match.group(1))
 
-            #
-            # with open(path_to_file, 'r') as of:
-            #     str_of = of.read()
-            # search = regex_killed.search(str_of)
-            # if search is not None:
-            #     pprint(job_output)
+    if paraman["--output-dir"] is not None:
+        path_output_dir = pathlib.Path(paraman["--output-dir"])
+        output_file_name = f"{input_dir_path.name}_killed.txt"
+        path_output_file = path_output_dir / output_file_name
+        print()
+        with open(path_output_file, 'w') as ofile_w:
+            for param in lst_param_to_relaunch:
+                print(param)
+                ofile_w.write(f'{param}\n')
+
+
 if __name__ == "__main__":
     main()

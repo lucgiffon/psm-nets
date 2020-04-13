@@ -2,12 +2,13 @@
 This script finds a palminized model with given arguments then finetune it.
 
 Usage:
-    script.py --input-dir path [-h] [-v|-vv] [--keep-last-layer] [--lr float] [--use-clr [--min-lr float --max-lr float] [--epoch-step-size int]] [--nb-epoch int] [--only-mask] [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
+    script.py --input-dir path [-h] [-v|-vv] [--seed int] [--train-val-split float] [--keep-last-layer] [--lr float] [--use-clr policy] [--min-lr float --max-lr float] [--epoch-step-size int] [--nb-epoch int] [--only-mask] [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
 
 Options:
   -h --help                             Show this screen.
   -vv                                   Set verbosity to debug.
   -v                                    Set verbosity to info.
+  --seed int                            The seed for the experiments
   --input-dir path                      Path to input directory where to find previously generated results.
   --tb                                  Tell if tensorboard should be printed.
   --lr float                            Flat lr to be used (Overidable)
@@ -15,8 +16,10 @@ Options:
   --max-lr float                        Tells the max reasonable lr (Overide everything else).
   --nb-epoch int                        Number of epochs of training (Overide everything else).
   --epoch-step-size int                 Number of epochs for an half cycle of CLR.
-  --use-clr                             Tell to use clr.
+  --use-clr policy                      Tell to use clr. Policy can be "triangular" or "triangular2" (see Cyclical learning rate)
   --keep-last-layer                     Do not compress classification layer.
+  --train-val-split float               Tells the proportion of validation data. If not specified, validation data is test data.
+
 
 Dataset:
   --mnist                               Use Mnist dataset.
@@ -49,7 +52,7 @@ import pickle
 import pandas as pd
 import sys
 from collections import defaultdict
-
+from sklearn.model_selection import train_test_split
 import time
 from copy import deepcopy
 import keras
@@ -269,19 +272,27 @@ def main():
         x_test = np.reshape(x_test, (-1, 784))
         x_train = np.reshape(x_train, (-1, 784))
 
+    if paraman["--train-val-split"] is not None:
+        x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=paraman["--train-val-split"], random_state=paraman["--seed"])
+
+    else:
+        x_val, y_val = x_test, y_test
+
     # noinspection PyUnreachableCode
     if os.path.exists(paraman["output_file_notfinishedprinter"]):
         df = pd.read_csv(paraman["output_file_resprinter"])
         init_nb_epoch = pd.read_csv(paraman["output_file_csvcbprinter"])["epoch"].max() -1
+        logger.debug("Loaded results " + str(df))
         base_score = float(df["base_score"])
         before_finetuned_score = float(df["before_finetuned_score"])
         palminized_score = float(df["palminized_score"])
+        actual_learning_rate = float(df["actual-lr"])
         fine_tuned_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={'SparseFactorisationConv2D':SparseFactorisationConv2D,
                                                                             "SparseFactorisationDense": SparseFactorisationDense})
     else:
         init_nb_epoch = 0
 
-        mypalminizedmodel = pickle.load(open(paraman["input_model_path"], "rb"))  # type: Palminizable
+        mypalminizedmodel = pickle.load(open(paraman["input_model_path"], "rb"))
         log_memory_usage("After load mypalminized model")
         base_model = mypalminizedmodel.base_model
         dct_name_facto = mypalminizedmodel.sparsely_factorized_layers
@@ -331,9 +342,11 @@ def main():
 
         before_finetuned_score = fine_tuned_model.evaluate(x_test, y_test, verbose=1)[1]
         print(before_finetuned_score)
+        actual_learning_rate = K.eval(fine_tuned_model.optimizer.lr)
 
     # results must be already printed once in case process is killed afterward
     dct_results = {
+        "actual-lr": actual_learning_rate,
         "finetuned_score": None,
         "before_finetuned_score": before_finetuned_score,
         "base_score": base_score,
@@ -354,17 +367,23 @@ def main():
 
     call_backs = []
 
-    model_checkpoint_callback = keras.callbacks.ModelCheckpoint(str(paraman["output_file_modelprinter"]), monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, mode='auto', period=1)
+    model_checkpoint_callback = keras.callbacks.ModelCheckpoint(str(paraman["output_file_modelprinter"]),
+                                                                monitor='val_loss',
+                                                                verbose=0, save_best_only=False,
+                                                                save_weights_only=False, mode='auto', period=1)
     call_backs.append(model_checkpoint_callback)
     if paraman["--tb"]:
         tbCallBack = keras.callbacks.TensorBoard(log_dir=str(paraman["output_file_tensorboardprinter"]), histogram_freq=20, write_graph=False, write_images=False, batch_size=param_train_dataset.batch_size, write_grads=True, update_freq="epoch")
         call_backs.append(tbCallBack)
 
-    if paraman["--use-clr"]:
-        clr_cb = CyclicLR(base_lr=param_train_dataset.min_lr if paraman["--min-lr"] is None else paraman["--min-lr"],
-                          max_lr=param_train_dataset.max_lr if paraman["--max-lr"] is None else paraman["--max-lr"],
+    actual_min_lr = param_train_dataset.min_lr if paraman["--min-lr"] is None else paraman["--min-lr"]
+    actual_max_lr = param_train_dataset.max_lr if paraman["--max-lr"] is None else paraman["--max-lr"]
+    if paraman["--use-clr"] is not None:
+        clr_cb = CyclicLR(base_lr=actual_min_lr,
+                          max_lr=actual_max_lr,
                           step_size=(paraman["--epoch-step-size"]*(x_train.shape[0] // param_train_dataset.batch_size)),
-                          logrange=True)
+                          logrange=True,
+                          mode=paraman["--use-clr"])
         call_backs.append(clr_cb)
 
     csvcallback = CSVLoggerByBatch(str(paraman["output_file_csvcbprinter"]), n_batch_between_display=100, separator=',', append=True)
@@ -373,12 +392,13 @@ def main():
     finetuned_score = None
 
     open(paraman["output_file_notfinishedprinter"], 'w').close()
-
+    actual_number_of_epochs = (param_train_dataset.epochs if paraman["--nb-epoch"] is None else paraman["--nb-epoch"])
+    actual_batch_size = param_train_dataset.batch_size
     history = fine_tuned_model.fit(param_train_dataset.image_data_generator.flow(x_train, y_train, batch_size=param_train_dataset.batch_size),
-                                   epochs=(param_train_dataset.epochs if paraman["--nb-epoch"] is None else paraman["--nb-epoch"]) - init_nb_epoch,
+                                   epochs= actual_number_of_epochs - init_nb_epoch,
                                    # epochs=2 - init_nb_epoch,
                                    verbose=2,
-                                   # validation_data=(x_test, y_test),
+                                   validation_data=(x_val, y_val),
                                    callbacks=param_train_dataset.callbacks + call_backs)
 
     finetuned_score = fine_tuned_model.evaluate(x_test, y_test, verbose=1)[1]
@@ -389,6 +409,11 @@ def main():
 
 
     dct_results = {
+        "actual-batch-size": actual_batch_size,
+        "actual-nb-epochs": actual_number_of_epochs,
+        "actual-min-lr":actual_min_lr,
+        "actual-max-lr":actual_max_lr,
+        "actual-lr": actual_learning_rate,
         "finetuned_score": finetuned_score,
         "before_finetuned_score": before_finetuned_score,
         "base_score": base_score,

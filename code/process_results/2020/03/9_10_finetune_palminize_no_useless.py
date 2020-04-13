@@ -286,6 +286,8 @@ if __name__ == "__main__":
                 dct_results_matrices["layer-name-compressed"].append(compressed_layer.name)
                 dct_results_matrices["idx-layer"].append(idx_layer)
                 dct_results_matrices["data"].append(dct_attributes["dataset"][-1])
+                dct_results_matrices["keep-last-layer"].append(dct_attributes["keep-last-layer"][-1])
+                dct_results_matrices["use-clr"].append(dct_attributes["use-clr"][-1])
 
                 # get sparse factorization
                 scaling = sparse_factorization[0]
@@ -319,7 +321,7 @@ if __name__ == "__main__":
                 # get nb val of the full reconstructed matrix
                 sparsity_pattern_reconstructed = get_sparsity_pattern(reconstructed_matrix)
                 nb_non_zero = int(np.sum(sparsity_pattern_reconstructed))
-                size_bias = len(base_layer.get_weights()[-1])
+                size_bias = len(base_layer.get_weights()[-1]) if base_layer.use_bias else 0
                 dct_results_matrices["nb-non-zero-reconstructed"].append(nb_non_zero + size_bias)
                 # get nb val base layer and comrpessed layer
                 nb_weights_base_layer = get_nb_learnable_weights(base_layer)

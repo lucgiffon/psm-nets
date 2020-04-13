@@ -1,0 +1,2 @@
+--sparsity-factor 4 -v --epoch-step-size 2 --use-clr --keep-last-layer --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch --cifar100 --cifar100-vgg19 --nb-factor 2
+--sparsity-factor 2 -v --epoch-step-size 2 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch --cifar100 --cifar100-vgg19 --nb-factor 2

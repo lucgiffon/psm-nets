@@ -54,8 +54,10 @@ if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/processed")
 
     results_path = "2020/03/9_10_finetune_palminized_no_useless"
+    results_path_tucker = "2020/04/0_0_compression_tucker_tensortrain"
 
     src_results_path = root_source_dir / results_path / "results.csv"
+    src_results_path_tucker = root_source_dir / results_path_tucker / "results.csv"
 
     root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
     output_dir = root_output_dir / results_path / "histogrammes"
@@ -63,6 +65,9 @@ if __name__ == "__main__":
 
     df = pd.read_csv(src_results_path, header=0)
     df = df.fillna("None")
+
+    df_tucker = pd.read_csv(src_results_path_tucker, header=0)
+    df_tucker = df_tucker.fillna("None")
     # sparsity_factors = sorted(set(df_palminized["--sparsity-factor"]))
     nb_factors = set(df["nb-factor"].values)
 
@@ -85,15 +90,22 @@ if __name__ == "__main__":
 
     lum_by_clr = {
         1: 20,
-        0: 80
+        0: 30
+    }
+    lum_by_keep = {
+        1: 40,
+        0: 50
     }
 
     datasets = set(df["dataset"].values)
     for dataname in datasets:
         df_data = df[df["dataset"] == dataname]
+        df_tucker_data =  df_tucker[df_tucker["dataset"] == dataname]
         df_model_values = set(df_data["model"].values)
+
         for modelname in df_model_values:
             df_model = df_data[df_data["model"] == modelname]
+            df_tucker_model = df_tucker_data[df_tucker_data["model"] == modelname]
             for task in tasks:
                 xticks = ["2", "3", "log(min(A, B))"]
                 # xticks = ["A", "B", "log(min(A, B))"]
@@ -124,8 +136,24 @@ if __name__ == "__main__":
                         y=[val_base, val_base, val_base, val_base, val_base],
                         mode='lines',
                         name="base model"
-                    ))
+                ))
 
+                if task != "param-compression-rate-total":
+                    # tucker decompositon
+                    ######################
+                    for keep_first in [1, 0]:
+                        df_tucker_keep = df_tucker_model[df_tucker_model["keep-first-layer"] == keep_first]
+                        df_tucker_keep = df_tucker_keep.apply(pd.to_numeric, errors='coerce')
+                        val_tucker = df_tucker_keep[task].values.mean()
+                        str_trace = f"tucker model {'keep first' if keep_first else ''}"
+                        fig.add_trace(
+                            go.Scatter(
+                                x=[-1] + xticks + [1],
+                                y=[val_tucker, val_tucker, val_tucker, val_tucker, val_tucker],
+                                mode='lines',
+                                name=str_trace,
+                                hovertext=str_trace
+                            ))
 
                 # palminized
                 ############
@@ -142,10 +170,12 @@ if __name__ == "__main__":
                                 df_keep = df_clr[df_clr["keep-last-layer"] == keep_last_layer]
                                 df_keep = df_keep.apply(pd.to_numeric, errors='coerce')
                                 val = df_keep.sort_values("nb-factor", na_position="last")[task].values
-                                hls_str = "hsl({}, {}%, {}%)".format(hue_by_sparsity[sp_fac_palm], saturation_by_hier[hierarchical_value], lum_by_clr[clr_value])
-                                fig.add_trace(go.Bar(name=('Palm {} clr {}' + hierarchical_str).format(sp_fac_palm, clr_value),
+                                hls_str = "hsl({}, {}%, {}%)".format(hue_by_sparsity[sp_fac_palm], saturation_by_hier[hierarchical_value], lum_by_clr[clr_value] + lum_by_keep[keep_last_layer])
+                                str_trace = ('Palm {} clr {} keep {}' + hierarchical_str).format(sp_fac_palm, clr_value, keep_last_layer)
+                                fig.add_trace(go.Bar(name=str_trace,
                                                      x=[xticks[-1]] if hierarchical_value == 1 else xticks, y=val,
-                                                     marker_color=hls_str))
+                                                     marker_color=hls_str,
+                                                     hovertext=str_trace))
 
                 title = task + " " + dataname + " " + modelname
 
@@ -156,5 +186,5 @@ if __name__ == "__main__":
                                   yaxis_type=scale_tasks[task],
                                   xaxis={'type': 'category'},
                                   )
-                # fig.show()
+                fig.show()
                 fig.write_image(str((output_dir / title).absolute()) + ".png")

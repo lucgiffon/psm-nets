@@ -36,11 +36,11 @@ class ParameterManager(dict):
         self["output_file_modelprinter"] = Path(self["identifier"] + "_model_layers.pckle")
 
     def __init_seed(self):
-        self["--seed"] = int(self["--seed"])
         if self["--seed"] is not None:
+            self["--seed"] = int(self["--seed"])
             np.random.seed(self["--seed"])
         else:
-            self["--seed"] = int(self["--seed"])
+            self["--seed"] = int(self["--seed"])  # should break
 
     def get_dataset(self):
         """
@@ -148,6 +148,7 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
         super().__init__(dct_params, **kwargs)
         self.__init_hash_expe()
 
+        self.__init_seed()
         self["--input-dir"] = pathlib.Path(self["--input-dir"])
         self["--min-lr"] = float(self["--min-lr"]) if self["--min-lr"] is not None else None
         self["--max-lr"] = float(self["--max-lr"]) if self["--max-lr"] is not None else None
@@ -155,8 +156,26 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
         self["--nb-epoch"] = int(self["--nb-epoch"]) if self["--nb-epoch"] is not None else None
         self["--epoch-step-size"] = int(self["--epoch-step-size"]) if self["--epoch-step-size"] is not None else None
 
+        if self["--use-clr"] not in ["triangular", "triangular2"] and self["--use-clr"] is not None:
+            if type(self["--use-clr"]) is bool:
+                pass
+            else:
+                raise ValueError(f"CLR policy should be triangular or triangular2. {self['--use-clr']}")
+
+        if "--train-val-split" in self.keys():
+            self["--train-val-split"] = float(self["--train-val-split"]) if self["--train-val-split"] is not None else None
+            assert 0 <= self["--train-val-split"] <= 1, f"Train-val split should be comprise between 0 and 1. {self['--train-val-split']}"
+
         self.__init_model_path()
         self.__init_output_file()
+
+    def __init_seed(self):
+        if not "--seed" in self.keys():
+            self["--seed"] = np.random.randint(0, 2**32 - 2)
+
+        if self["--seed"] is not None:
+            self["--seed"] = int(self["--seed"])
+            np.random.seed(self["--seed"])
 
     def __init_hash_expe(self):
         lst_elem_to_remove_for_hash = [

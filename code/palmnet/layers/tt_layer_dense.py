@@ -103,6 +103,7 @@ class TTLayerDense(Layer):
     def get_config(self):
         super_config = super().get_config()
         super_config.update({
+            "nb_units": self.nb_units,
             "inp_modes": self.inp_modes,
             "out_modes": self.out_modes,
             "mat_ranks": self.mat_ranks,
