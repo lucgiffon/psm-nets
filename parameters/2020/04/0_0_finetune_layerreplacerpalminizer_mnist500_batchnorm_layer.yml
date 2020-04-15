@@ -1,0 +1,29 @@
+#  script.py [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data)
+# [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+# --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float]
+
+all:
+  palmnet_mnist_500:
+  palmnet_mnist_500_7:
+  palmnet_mnist_500_log:
+
+base:
+  sparsity_fac: {"--sparsity-factor": [2, 3, 4, 5]}
+  verbosity: ["-v"]
+  batchnorm: ["--batchnorm", ""]
+  mnist: ["--mnist"]
+  mnist_500: ["--mnist-500"]
+
+palmnet_mnist_500:
+  base:
+  nb_fac: {"--nb-factor": [4, 5, 6]}
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number"]}
+
+palmnet_mnist_500_7:
+  base:
+  nb_fac: {"--nb-factor": [7]}
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac"]}
+
+palmnet_mnist_500_log:
+  base:
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500"]}

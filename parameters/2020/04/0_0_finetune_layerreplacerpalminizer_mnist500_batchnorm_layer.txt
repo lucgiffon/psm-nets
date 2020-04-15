@@ -1,0 +1,40 @@
+--sparsity-factor 2 -v --batchnorm --mnist --mnist-500 --nb-factor 4 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 2 -v --batchnorm --mnist --mnist-500 --nb-factor 5 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 2 -v --batchnorm --mnist --mnist-500 --nb-factor 6 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 2 -v --mnist --mnist-500 --nb-factor 4 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 2 -v --mnist --mnist-500 --nb-factor 5 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 2 -v --mnist --mnist-500 --nb-factor 6 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 3 -v --batchnorm --mnist --mnist-500 --nb-factor 4 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 3 -v --batchnorm --mnist --mnist-500 --nb-factor 5 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 3 -v --batchnorm --mnist --mnist-500 --nb-factor 6 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 3 -v --mnist --mnist-500 --nb-factor 4 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 3 -v --mnist --mnist-500 --nb-factor 5 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 3 -v --mnist --mnist-500 --nb-factor 6 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 4 -v --batchnorm --mnist --mnist-500 --nb-factor 4 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 4 -v --batchnorm --mnist --mnist-500 --nb-factor 5 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 4 -v --batchnorm --mnist --mnist-500 --nb-factor 6 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 4 -v --mnist --mnist-500 --nb-factor 4 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 4 -v --mnist --mnist-500 --nb-factor 5 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 4 -v --mnist --mnist-500 --nb-factor 6 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 5 -v --batchnorm --mnist --mnist-500 --nb-factor 4 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 5 -v --batchnorm --mnist --mnist-500 --nb-factor 5 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 5 -v --batchnorm --mnist --mnist-500 --nb-factor 6 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 5 -v --mnist --mnist-500 --nb-factor 4 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 5 -v --mnist --mnist-500 --nb-factor 5 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 5 -v --mnist --mnist-500 --nb-factor 6 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_greater_fac_number
+--sparsity-factor 2 -v --batchnorm --mnist --mnist-500 --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac
+--sparsity-factor 2 -v --mnist --mnist-500 --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac
+--sparsity-factor 3 -v --batchnorm --mnist --mnist-500 --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac
+--sparsity-factor 3 -v --mnist --mnist-500 --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac
+--sparsity-factor 4 -v --batchnorm --mnist --mnist-500 --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac
+--sparsity-factor 4 -v --mnist --mnist-500 --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac
+--sparsity-factor 5 -v --batchnorm --mnist --mnist-500 --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac
+--sparsity-factor 5 -v --mnist --mnist-500 --nb-factor 7 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palmnet_zero_7_fac
+--sparsity-factor 2 -v --batchnorm --mnist --mnist-500 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500
+--sparsity-factor 2 -v --mnist --mnist-500 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500
+--sparsity-factor 3 -v --batchnorm --mnist --mnist-500 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500
+--sparsity-factor 3 -v --mnist --mnist-500 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500
+--sparsity-factor 4 -v --batchnorm --mnist --mnist-500 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500
+--sparsity-factor 4 -v --mnist --mnist-500 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500
+--sparsity-factor 5 -v --batchnorm --mnist --mnist-500 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500
+--sparsity-factor 5 -v --mnist --mnist-500 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/02/1_2_palminize_mnist500

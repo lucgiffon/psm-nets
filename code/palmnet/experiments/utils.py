@@ -162,7 +162,7 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
             else:
                 raise ValueError(f"CLR policy should be triangular or triangular2. {self['--use-clr']}")
 
-        if "--train-val-split" in self.keys():
+        if "--train-val-split" in self.keys() and self["--train-val-split"] is not None:
             self["--train-val-split"] = float(self["--train-val-split"]) if self["--train-val-split"] is not None else None
             assert 0 <= self["--train-val-split"] <= 1, f"Train-val split should be comprise between 0 and 1. {self['--train-val-split']}"
 

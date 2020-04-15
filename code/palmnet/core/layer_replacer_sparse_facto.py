@@ -11,9 +11,10 @@ from skluc.utils import logger
 
 
 class LayerReplacerSparseFacto(LayerReplacer):
-    def __init__(self, only_mask, sparse_factorizer=None,  *args, **kwargs):
+    def __init__(self, only_mask, sparse_factorizer=None,  intertwine_batchnorm=False, *args, **kwargs):
         self.only_mask = only_mask
         self.sparse_factorizer = sparse_factorizer
+        self.intertwine_batchnorm = intertwine_batchnorm
         super().__init__(*args, **kwargs)
 
     @staticmethod
@@ -70,7 +71,7 @@ class LayerReplacerSparseFacto(LayerReplacer):
             activation = layer.activation
             regularizer = layer.kernel_regularizer
             replacing_layer = SparseFactorisationDense(use_scaling=not self.only_mask, units=hidden_layer_dim, sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias,
-                                                       activation=activation, kernel_regularizer=regularizer)
+                                                       activation=activation, kernel_regularizer=regularizer, intertwine_batchnorm=self.intertwine_batchnorm)
             replacing_weights = scaling + factor_data + [layer.get_weights()[-1]] if layer.use_bias else []
 
         return replacing_layer, replacing_weights, less_values_than_base

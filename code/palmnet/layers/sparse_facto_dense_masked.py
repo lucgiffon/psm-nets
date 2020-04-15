@@ -1,5 +1,6 @@
 from keras import activations, initializers, regularizers, constraints, backend as K
 from keras.engine import Layer
+from keras.layers import BatchNormalization
 
 from palmnet.utils import cast_sparsity_pattern
 
@@ -34,6 +35,7 @@ class SparseFactorisationDense(Layer):
                  scaler_constraint=None,
                  kernel_constraint=None,
                  bias_constraint=None,
+                 intertwine_batchnorm=False,
                  **kwargs):
 
         if 'input_shape' not in kwargs and 'input_dim' in kwargs:
@@ -54,7 +56,6 @@ class SparseFactorisationDense(Layer):
         assert factors_trainable is None or all(type(elm) == bool for elm in factors_trainable)
         self.factors_trainable = factors_trainable
 
-
         self.units = units
         self.activation = activations.get(activation)
         self.use_bias = use_bias
@@ -71,6 +72,8 @@ class SparseFactorisationDense(Layer):
         self.scaler_regularizer = regularizers.get(scaler_regularizer)
         self.scaler_constraint = constraints.get(scaler_constraint)
 
+        self.intertwine_batchnorm = intertwine_batchnorm
+
     def get_config(self):
         base_config = super().get_config()
         config = {
@@ -85,7 +88,8 @@ class SparseFactorisationDense(Layer):
             'kernel_constraint': constraints.serialize(self.kernel_constraint),
             'bias_constraint': constraints.serialize(self.bias_constraint),
             'sparsity_patterns': self.sparsity_patterns,
-            'factors_trainable': self.factors_trainable
+            'factors_trainable': self.factors_trainable,
+            'intertwine_batchnorm': self.intertwine_batchnorm
         }
         config.update(base_config)
         return config
@@ -108,6 +112,12 @@ class SparseFactorisationDense(Layer):
 
         self.kernels = []
         self.sparsity_masks = []
+        # this list contains batchnorm function if asked or identity function
+        if self.intertwine_batchnorm:
+            self.batchnorms_or_id = []
+        else:
+            self.batchnorms_or_id = [lambda x: x] * self.nb_factor
+
         for i in range(self.nb_factor):
             input_dim, output_dim = self.sparsity_patterns[i].shape
             trainable = self.factors_trainable[i] if self.factors_trainable is not None else True
@@ -120,7 +130,10 @@ class SparseFactorisationDense(Layer):
                                                 trainable=trainable))
 
             self.sparsity_masks.append(K.constant(self.sparsity_patterns[i], dtype="float32", name="sparsity_mask_{}".format(i)))
-
+            if self.intertwine_batchnorm:
+                batchnorm = BatchNormalization()
+                batchnorm.build((-1, output_dim))
+                self.batchnorms_or_id.append(batchnorm)
 
 
         if self.use_bias:
@@ -140,6 +153,8 @@ class SparseFactorisationDense(Layer):
         for i in range(self.nb_factor):
             # multiply by the constant mask tensor so that gradient is 0 for zero entries.
             output = K.dot(output, self.kernels[i] * self.sparsity_masks[i])
+            # batchnorm_or_id contains either a batchnormlayer or the identity function which has no effect
+            output = self.batchnorms_or_id[i](output)
 
         if self.use_scaling:
             output = self.scaling* output
