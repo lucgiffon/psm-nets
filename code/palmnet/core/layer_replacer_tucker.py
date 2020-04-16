@@ -35,19 +35,17 @@ class LayerReplacerTucker(LayerReplacer):
         core, (first, last) = partial_tucker(layer_weights, modes=(2, 3), ranks=(in_rank, out_rank), init='svd', n_iter_max=500, tol=10e-10)
         return first, core, last
 
-    ##################################
-    # LayerReplacer abstract methods #
-    ##################################
-    def _apply_replacement(self, layer):
+    @staticmethod
+    def apply_tucker_decomposition_to_layer(layer):
         dct_replacement = dict()
         if isinstance(layer, Conv2D):
             layer_weights = layer.get_weights()[0]  # h, w, c_in, c_out
             assert len(layer_weights.shape) == 4, "Shape of convolution kernel should be of size 4"
             assert layer.data_format == "channels_last", "filter dimension should be last"
-            in_rank, out_rank = self.get_rank_layer(layer_weights)
+            in_rank, out_rank = LayerReplacerTucker.get_rank_layer(layer_weights)
             dct_replacement["in_rank"] = in_rank
             dct_replacement["out_rank"] = out_rank
-            first, core, last = self.get_tucker_decomposition(layer_weights, in_rank, out_rank)
+            first, core, last = LayerReplacerTucker.get_tucker_decomposition(layer_weights, in_rank, out_rank)
             first = first[np.newaxis, np.newaxis, :]
             last = last.T
             last = last[np.newaxis, np.newaxis, :]
@@ -60,8 +58,13 @@ class LayerReplacerTucker(LayerReplacer):
             dct_replacement = None
 
         return dct_replacement
+    ##################################
+    # LayerReplacer abstract methods #
+    ##################################
+    def _apply_replacement(self, layer):
+        return self.apply_tucker_decomposition_to_layer(layer)
 
-    def _replace_conv2D(self, layer, sparse_factorization):
+    def _replace_conv2D(self, layer, dct_compression):
         nb_filters = layer.filters
         strides = layer.strides
         kernel_size = layer.kernel_size
@@ -70,21 +73,21 @@ class LayerReplacerTucker(LayerReplacer):
         kernel_regularizer = layer.kernel_regularizer
         bias_regularizer = layer.bias_regularizer
 
-        in_rank = self.dct_name_compression[layer.name]["in_rank"]
-        out_rank = self.dct_name_compression[layer.name]["out_rank"]
+        in_rank = dct_compression["in_rank"]
+        out_rank = dct_compression["out_rank"]
 
         replacing_layer = TuckerLayerConv(in_rank=in_rank, out_rank=out_rank, filters=nb_filters,
                                           kernel_size=kernel_size, strides=strides, padding=padding, activation=activation,
                                           kernel_regularizer=kernel_regularizer, bias_regularizer=bias_regularizer)
 
-        replacing_weights = [self.dct_name_compression[layer.name]["first_conv_weights"]] \
-            + [self.dct_name_compression[layer.name]["core_conv_weights"]] \
-            + [self.dct_name_compression[layer.name]["last_conv_weights"]] \
+        replacing_weights = [dct_compression["first_conv_weights"]] \
+            + [dct_compression["core_conv_weights"]] \
+            + [dct_compression["last_conv_weights"]] \
             + [layer.get_weights()[-1]] if layer.use_bias else []
 
         return replacing_layer, replacing_weights, True
 
-    def _replace_dense(self, layer, sparse_factorization):
+    def _replace_dense(self, layer, dct_compression):
         """Dense layers are not replaced by tucker decomposition"""
         return None, None, False
 

@@ -49,6 +49,9 @@ class SparseFactorisationConv2D(Conv2DCustom):
     def get_config(self):
         config = super().get_config()
         config['sparsity_patterns'] = self.sparsity_patterns
+        config["scaler_initializer"] = self.scaler_initializer
+        config["scaler_regularizer"] = self.scaler_regularizer
+        config["scaler_constraint"] = self.scaler_constraint
         config['use_scaling'] = self.use_scaling
         return config
 

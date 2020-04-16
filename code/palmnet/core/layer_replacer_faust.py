@@ -1,10 +1,10 @@
-import numpy as np
+import os
+import pickle
+import zlib
+
 from pyfaust import Faust
 
 from palmnet.core.layer_replacer_sparse_facto import LayerReplacerSparseFacto
-import pickle
-import zlib
-import os
 
 
 class LayerReplacerFaust(LayerReplacerSparseFacto):
@@ -15,12 +15,6 @@ class LayerReplacerFaust(LayerReplacerSparseFacto):
             assert os.path.isdir(str(self.path_checkpoint_file))
             self.dct_references_faust = dict()
             self.path_dct_references_faust = self.path_checkpoint_file / "dict_faust_references.pickle"
-
-    @staticmethod
-    def _get_factors_from_op_sparsefacto(op_sparse_facto):
-        faust = op_sparse_facto
-        factors = [np.array(faust.factors(i).todense()) if not isinstance(faust.factors(i), np.ndarray) else faust.factors(i) for i in range(len(faust))]
-        return factors
 
     def load_dct_name_compression(self):
         with open(str(self.path_dct_references_faust), 'rb') as rb_file:

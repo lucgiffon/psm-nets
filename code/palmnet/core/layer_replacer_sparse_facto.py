@@ -11,16 +11,15 @@ from skluc.utils import logger
 
 
 class LayerReplacerSparseFacto(LayerReplacer):
+    """
+    Replace layers Conv and Dense of NN by their sparse factorized version.
+    """
     def __init__(self, only_mask, sparse_factorizer=None,  intertwine_batchnorm=False, *args, **kwargs):
         self.only_mask = only_mask
         self.sparse_factorizer = sparse_factorizer
         self.intertwine_batchnorm = intertwine_batchnorm
         super().__init__(*args, **kwargs)
 
-    @staticmethod
-    @abstractmethod
-    def _get_factors_from_op_sparsefacto(op_sparse_facto):
-        pass
 
     ##################################
     # LayerReplacer abstract methods #
@@ -36,9 +35,11 @@ class LayerReplacerSparseFacto(LayerReplacer):
         else:
             return dct_replacement
 
-    def _replace_conv2D(self, layer, sparse_factorization):
-        scaling, factor_data, sparsity_patterns = self._get_weights_from_sparse_facto(sparse_factorization)
-        less_values_than_base = self.__check_facto_less_values_than_base(layer, sparsity_patterns)
+    def _replace_conv2D(self, layer, dct_compression):
+        scaling, factor_data, sparsity_patterns = self.sparse_factorizer.get_weights_from_sparse_facto(dct_compression,
+                                                  return_scaling=not self.only_mask)
+
+        less_values_than_base = self.check_facto_less_values_than_base(layer, sparsity_patterns)
 
         if not less_values_than_base:
             replacing_weights = None
@@ -57,10 +58,11 @@ class LayerReplacerSparseFacto(LayerReplacer):
 
         return replacing_layer, replacing_weights, less_values_than_base
 
-    def _replace_dense(self, layer, sparse_factorization):
-        scaling, factor_data, sparsity_patterns = self._get_weights_from_sparse_facto(sparse_factorization)
+    @staticmethod
+    def replace_dense_static(layer, dct_compression, fct_get_weights_from_sparse_facto, use_scaling=True, itnertwine_batchnorm=False):
+        scaling, factor_data, sparsity_patterns = fct_get_weights_from_sparse_facto (dct_compression, return_scaling=use_scaling)
 
-        less_values_than_base = self.__check_facto_less_values_than_base(layer, sparsity_patterns)
+        less_values_than_base = LayerReplacerSparseFacto.check_facto_less_values_than_base(layer, sparsity_patterns)
 
         if not less_values_than_base:
             replacing_weights = None
@@ -70,11 +72,15 @@ class LayerReplacerSparseFacto(LayerReplacer):
             hidden_layer_dim = layer.units
             activation = layer.activation
             regularizer = layer.kernel_regularizer
-            replacing_layer = SparseFactorisationDense(use_scaling=not self.only_mask, units=hidden_layer_dim, sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias,
-                                                       activation=activation, kernel_regularizer=regularizer, intertwine_batchnorm=self.intertwine_batchnorm)
+            replacing_layer = SparseFactorisationDense(use_scaling=use_scaling, units=hidden_layer_dim, sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias,
+                                                       activation=activation, kernel_regularizer=regularizer, intertwine_batchnorm=itnertwine_batchnorm)
             replacing_weights = scaling + factor_data + [layer.get_weights()[-1]] if layer.use_bias else []
 
         return replacing_layer, replacing_weights, less_values_than_base
+
+    def _replace_dense(self, layer, dct_compression):
+        return self.replace_dense_static(layer, dct_compression, fct_get_weights_from_sparse_facto=self.sparse_factorizer.get_weights_from_sparse_facto,
+                                         use_scaling=not self.only_mask, itnertwine_batchnorm=self.intertwine_batchnorm)
 
     def _set_weights_to_layer(self, replacing_layer, replacing_weights):
         if self.only_mask:
@@ -91,7 +97,6 @@ class LayerReplacerSparseFacto(LayerReplacer):
 
         replacing_layer.set_weights(replacing_weights)
 
-
     ####################################
     # LayerReplacerSparseFacto methods #
     ####################################
@@ -99,25 +104,8 @@ class LayerReplacerSparseFacto(LayerReplacer):
         _lambda, op_sparse_factors, _ = self.sparse_factorizer.factorize_layer(layer, apply_weights=False)
         return _lambda, op_sparse_factors
 
-    def _get_weights_from_sparse_facto(self, sparse_factorization):
-        # backward compatibility
-        if type(sparse_factorization) == tuple:
-            sparse_factorization = {
-                "lambda":sparse_factorization[0],
-                "sparse_factors": sparse_factorization[1]
-            }
-
-        if self.only_mask:
-            scaling = []
-        else:
-            scaling = [np.array(sparse_factorization["lambda"])[None]]
-
-        factors = self._get_factors_from_op_sparsefacto(sparse_factorization["sparse_factors"])
-        sparsity_patterns = [get_sparsity_pattern(w) for w in factors]
-
-        return scaling, factors, sparsity_patterns
-
-    def __check_facto_less_values_than_base(self, layer, sparsity_patterns):
+    @staticmethod
+    def check_facto_less_values_than_base(layer, sparsity_patterns):
         """
         Check if there is actually less values in the compressed layer than base layer.
 
@@ -129,7 +117,7 @@ class LayerReplacerSparseFacto(LayerReplacer):
         nb_val_full_layer = np.sum(np.prod(w.shape) for w in layer_weights)
 
         nb_val_sparse_factors = np.sum([np.sum(fac) for fac in sparsity_patterns])
-
+        nb_val_sparse_factors += 1# +1 for the scaling factor
         if nb_val_full_layer <= nb_val_sparse_factors:
             logger.info("Less values in full matrix than factorization in layer {}. Keep full matrix. {} <= {}".format(layer.name, nb_val_full_layer, nb_val_sparse_factors))
             return False

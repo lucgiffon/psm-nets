@@ -18,7 +18,7 @@ class TuckerLayerConv(Conv2DCustom):
         # strides and padding only for the core layer
         core_input_shape = self.in_factor.compute_output_shape(input_shape)
         self.core = Conv2D(self.out_rank, kernel_size=self.kernel_size, kernel_initializer=self.kernel_initializer, padding=self.padding, kernel_regularizer=self.kernel_regularizer,
-                           use_bias=False)  # core
+                           strides=self.strides, use_bias=False)  # core
         self.core.build(core_input_shape)
         core_output_shape = self.core.compute_output_shape(core_input_shape)
 

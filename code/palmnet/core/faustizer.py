@@ -16,6 +16,12 @@ class Faustizer(SparseFactorizer):
         super().__init__(*args, **kwargs)
 
     @staticmethod
+    def get_factors_from_op_sparsefacto(op_sparse_facto):
+        faust = op_sparse_facto
+        factors = [np.array(faust.factors(i).todense()) if not isinstance(faust.factors(i), np.ndarray) else faust.factors(i) for i in range(len(faust))]
+        return factors
+
+    @staticmethod
     def create_param_hierarchical_rect_control_stop_criter(m, n, j, sparsity, tol, max_iter):
 
         P = 1.4*m**2

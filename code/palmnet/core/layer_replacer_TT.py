@@ -36,7 +36,7 @@ class LayerReplacerTT(LayerReplacer):
 
         return dct_replacement
 
-    def _replace_conv2D(self, layer, sparse_factorization):
+    def _replace_conv2D(self, layer, dct_compression):
 
         nb_filters = layer.filters
         strides = layer.strides
@@ -44,18 +44,18 @@ class LayerReplacerTT(LayerReplacer):
         activation = layer.activation
         padding = layer.padding
 
-        tt_ranks = self.dct_name_compression[layer.name]["tt_ranks"]
+        tt_ranks = dct_compression["tt_ranks"]
 
         replacing_layer = TTLayerConv(filters=nb_filters, mat_ranks=tt_ranks, kernel_size=kernel_size, strides=strides, padding=padding, activation=activation, mode="auto")
         replacing_weights = None
 
         return replacing_layer, replacing_weights, True
 
-    def _replace_dense(self, layer, sparse_factorization):
+    def _replace_dense(self, layer, dct_compression):
         hidden_layer_dim = layer.units
         activation = layer.activation
 
-        tt_ranks = self.dct_name_compression[layer.name]["tt_ranks"]
+        tt_ranks = dct_compression["tt_ranks"]
         replacing_layer = TTLayerDense(nb_units=hidden_layer_dim, mat_ranks=tt_ranks, activation=activation, mode="auto")
         replacing_weights = None
 

@@ -13,6 +13,11 @@ class Palminizer(SparseFactorizer):
         self.fast_unstable_proj = fast_unstable_proj
         super().__init__(*args, **kwargs)
 
+    @staticmethod
+    def get_factors_from_op_sparsefacto(op_sparse_facto):
+        factors = [fac.toarray() for fac in op_sparse_facto.get_list_of_factors()]
+        return factors
+
     def apply_factorization(self, matrix):
         """
         Apply Hierarchical-PALM4MSA algorithm to the input matrix and return the reconstructed approximation from

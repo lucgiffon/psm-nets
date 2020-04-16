@@ -140,11 +140,11 @@ class LayerReplacer(metaclass=ABCMeta):
         return self.dct_old_name_new_name[old_layer_name]
 
     @abstractmethod
-    def _replace_conv2D(self, layer, sparse_factorization):
+    def _replace_conv2D(self, layer, dct_compression):
         pass
 
     @abstractmethod
-    def _replace_dense(self, layer, sparse_factorization):
+    def _replace_dense(self, layer, dct_compression):
         pass
 
     @abstractmethod
