@@ -117,6 +117,9 @@ class ParameterManagerTensotrainAndTuckerDecomposition(ParameterManager):
         self["--rank-value"] = int(self["--rank-value"]) if self["--rank-value"] is not None else None
         self["--order"] = int(self["--order"]) if self["--order"] is not None else None
 
+        # tucker parameters
+        self["--rank-percentage-dense"] = float(self["--rank-percentage-dense"]) if self["--rank-percentage-dense"] is not None else None
+
         self.__init_hash_expe()
         self.__init_output_file()
 

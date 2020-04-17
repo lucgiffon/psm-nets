@@ -1,0 +1,36 @@
+tucker -v --keep-first-layer --rank-percentage-dense 0.1 --svhn --svhn-vgg19
+tucker -v --keep-first-layer --rank-percentage-dense 0.2 --svhn --svhn-vgg19
+tucker -v --keep-first-layer --rank-percentage-dense 0.3 --svhn --svhn-vgg19
+tucker -v --rank-percentage-dense 0.1 --svhn --svhn-vgg19
+tucker -v --rank-percentage-dense 0.2 --svhn --svhn-vgg19
+tucker -v --rank-percentage-dense 0.3 --svhn --svhn-vgg19
+tucker -v --keep-first-layer --rank-percentage-dense 0.1 --mnist --mnist-lenet
+tucker -v --keep-first-layer --rank-percentage-dense 0.2 --mnist --mnist-lenet
+tucker -v --keep-first-layer --rank-percentage-dense 0.3 --mnist --mnist-lenet
+tucker -v --rank-percentage-dense 0.1 --mnist --mnist-lenet
+tucker -v --rank-percentage-dense 0.2 --mnist --mnist-lenet
+tucker -v --rank-percentage-dense 0.3 --mnist --mnist-lenet
+tucker -v --keep-first-layer --rank-percentage-dense 0.1 --cifar10 --cifar10-vgg19
+tucker -v --keep-first-layer --rank-percentage-dense 0.2 --cifar10 --cifar10-vgg19
+tucker -v --keep-first-layer --rank-percentage-dense 0.3 --cifar10 --cifar10-vgg19
+tucker -v --rank-percentage-dense 0.1 --cifar10 --cifar10-vgg19
+tucker -v --rank-percentage-dense 0.2 --cifar10 --cifar10-vgg19
+tucker -v --rank-percentage-dense 0.3 --cifar10 --cifar10-vgg19
+tucker -v --keep-first-layer --rank-percentage-dense 0.1 --cifar100 --cifar100-resnet20
+tucker -v --keep-first-layer --rank-percentage-dense 0.1 --cifar100 --cifar100-resnet50
+tucker -v --keep-first-layer --rank-percentage-dense 0.1 --cifar100 --cifar100-vgg19
+tucker -v --keep-first-layer --rank-percentage-dense 0.2 --cifar100 --cifar100-resnet20
+tucker -v --keep-first-layer --rank-percentage-dense 0.2 --cifar100 --cifar100-resnet50
+tucker -v --keep-first-layer --rank-percentage-dense 0.2 --cifar100 --cifar100-vgg19
+tucker -v --keep-first-layer --rank-percentage-dense 0.3 --cifar100 --cifar100-resnet20
+tucker -v --keep-first-layer --rank-percentage-dense 0.3 --cifar100 --cifar100-resnet50
+tucker -v --keep-first-layer --rank-percentage-dense 0.3 --cifar100 --cifar100-vgg19
+tucker -v --rank-percentage-dense 0.1 --cifar100 --cifar100-resnet20
+tucker -v --rank-percentage-dense 0.1 --cifar100 --cifar100-resnet50
+tucker -v --rank-percentage-dense 0.1 --cifar100 --cifar100-vgg19
+tucker -v --rank-percentage-dense 0.2 --cifar100 --cifar100-resnet20
+tucker -v --rank-percentage-dense 0.2 --cifar100 --cifar100-resnet50
+tucker -v --rank-percentage-dense 0.2 --cifar100 --cifar100-vgg19
+tucker -v --rank-percentage-dense 0.3 --cifar100 --cifar100-resnet20
+tucker -v --rank-percentage-dense 0.3 --cifar100 --cifar100-resnet50
+tucker -v --rank-percentage-dense 0.3 --cifar100 --cifar100-vgg19
