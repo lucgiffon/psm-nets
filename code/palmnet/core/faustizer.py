@@ -79,7 +79,6 @@ class Faustizer(SparseFactorizer):
         :param sparsity_fac: The sparsity factor for PALM.
         :return:
         """
-        logging.info("Applying faust palm4msa to matrix with shape {}".format(matrix.shape))
         transposed = False
 
         not_H_bad_shape = (not self.hierarchical and matrix.shape[0] < matrix.shape[1]) # we want the bigger dimension to be on left because error is lower as R2L doesn't work
@@ -111,10 +110,12 @@ class Faustizer(SparseFactorizer):
                                                    hierarchical=self.hierarchical, tol=self.tol, nb_iter=self.nb_iter)
 
         if self.hierarchical and not nb_factors == 1:
+            logging.info("Applying hierarchical faust palm4msa to matrix with shape {}".format(matrix.shape))
             # in the case nb_factos==1, parameters have been built for the standard palm4msa
             faust, final_lambda = hierarchical(matrix, constraints, ret_lambda=True)
             # faust, final_lambda = hierarchical(matrix, ["rectmat", nb_factors, self.sparsity_fac, self.sparsity_fac], ret_lambda=True)
         else:
+            logging.info("Applying faust palm4msa to matrix with shape {}".format(matrix.shape))
             faust, final_lambda = palm4msa(matrix, constraints, ret_lambda=True)
 
         faust /= final_lambda
