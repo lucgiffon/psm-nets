@@ -37,7 +37,7 @@ class LayerReplacerSparseFactoTucker(LayerReplacer):
     def _apply_replacement(self, layer):
 
         if isinstance(layer, Conv2D):
-            dct_tucker_replacement = LayerReplacerTucker.apply_tucker_decomposition_to_layer(layer)
+            dct_tucker_replacement = LayerReplacerTucker.apply_tucker_or_low_rank_decomposition_to_layer(layer)
 
             dct_replacement = dict()
             dct_replacement["in_rank"] = dct_tucker_replacement["in_rank"]

@@ -16,12 +16,6 @@ class TestLayerReplacerTucker(unittest.TestCase):
 
     def setUp(self) -> None:
         self.base_model = Cifar100.load_model("cifar100_vgg19_2048x2048")
-        self.base_model_mnist = Mnist.load_model("mnist_lenet")
-        self.base_model_custom = Sequential()
-        self.base_model_custom.add(Conv2D(128, kernel_size=(5, 5), input_shape=(32, 32, 3)))
-        self.base_model_custom.add(Conv2D(128, kernel_size=(5, 5)))
-        self.base_model_custom.add(Conv2D(128, kernel_size=(5, 5)))
-        self.base_model_custom.add(Dense(128))
 
         (self.X_train, self.y_train), (self.X_test, self.y_test) = Cifar100.load_data()
 

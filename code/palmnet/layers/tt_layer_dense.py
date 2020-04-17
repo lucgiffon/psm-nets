@@ -1,16 +1,14 @@
+'''
+Implementation of the paper 'Tensorizing Neural Networks', Alexander Novikov, Dmitry Podoprikhin, Anton Osokin, Dmitry P. Vetrov, NIPS, 2015
+to compress a dense layer using Tensor Train factorization.
+TTLayer compute y = Wx + b in the compressed form.
+'''
 from keras import backend as K, activations, initializers
 from keras.engine.topology import Layer
 import numpy as np
 import tensorflow as tf
 
 from palmnet.utils import get_facto_for_channel_and_order, DCT_CHANNEL_PREDEFINED_FACTORIZATIONS
-
-'''
-Implementation of the paper 'Tensorizing Neural Networks', Alexander Novikov, Dmitry Podoprikhin, Anton Osokin, Dmitry P. Vetrov, NIPS, 2015
-to compress a dense layer using Tensor Train factorization.
-TTLayer compute y = Wx + b in the compressed form.
-'''
-
 
 class TTLayerDense(Layer):
     """ Given x\in\mathbb{R}^{N}, b\in\mathbb{R}^{M}, W\in\mathbb{R}^{M\times N}, y\in\mathbb{R}^{M}, compute y = Wx + b in the TT-format.

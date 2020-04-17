@@ -4,15 +4,8 @@ from copy import deepcopy
 from tensorly.decomposition import partial_tucker
 
 from palmnet.core.layer_replacer_tucker import LayerReplacerTucker
-from palmnet.core.palminizer import Palminizer
-from palmnet.core.palminizable import Palminizable
-from palmnet.data import Cifar100, Mnist
-from pprint import pprint
+from palmnet.data import Mnist
 import numpy as np
-from keras.layers import Dense
-
-from palmnet.utils import get_idx_last_layer_of_class
-from tensorly.tucker_tensor import tucker_to_tensor
 from tensorly.tenalg.n_mode_product import multi_mode_dot
 
 
@@ -23,6 +16,9 @@ class TestLayerReplacerTucker(unittest.TestCase):
 
     def test_simple(self):
         model_transformer = LayerReplacerTucker(keep_last_layer=True)
+        new_model = model_transformer.fit_transform(deepcopy(self.base_model))
+
+        model_transformer = LayerReplacerTucker(rank_percentage_dense=0.5, keep_last_layer=True)
         new_model = model_transformer.fit_transform(deepcopy(self.base_model))
 
     def test_tucker_decomposition(self):

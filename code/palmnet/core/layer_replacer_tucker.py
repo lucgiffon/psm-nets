@@ -1,21 +1,26 @@
-from abc import abstractmethod, ABCMeta
 import numpy as np
 import tensorly
+from keras.layers import Dense, Conv2D
 from tensorly.decomposition import partial_tucker
 
 from palmnet import VBMF
 from palmnet.core.layer_replacer import LayerReplacer
-from palmnet.data import Cifar100
-from palmnet.layers.tt_layer_conv import TTLayerConv
-from palmnet.layers.tt_layer_dense import TTLayerDense
-from collections import defaultdict
-from keras.layers import Dense, Conv2D
-
+from palmnet.layers.low_rank_dense_layer import LowRankDense
 from palmnet.layers.tucker_layer import TuckerLayerConv
-from palmnet.utils import build_dct_tt_ranks
 
 
 class LayerReplacerTucker(LayerReplacer):
+    def __init__(self, rank_dense=None, rank_percentage_dense=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.rank_dense = rank_dense
+        self.rank_percentage_dense = rank_percentage_dense
+        assert self.rank_percentage_dense is None or 0 < self.rank_percentage_dense < 1
+
+        if self.rank_dense is not None and self.rank_percentage_dense is not None:
+            raise ValueError("rank_dense and rank_percentage_dense can't be set together. Ambiguous.")
+
+        self.int_or_flt_rank = self.rank_dense if self.rank_dense is not None else self.rank_percentage_dense
 
     @staticmethod
     def get_rank_layer(weights):
@@ -36,7 +41,7 @@ class LayerReplacerTucker(LayerReplacer):
         return first, core, last
 
     @staticmethod
-    def apply_tucker_decomposition_to_layer(layer):
+    def apply_tucker_or_low_rank_decomposition_to_layer(layer, rank_dense=None):
         dct_replacement = dict()
         if isinstance(layer, Conv2D):
             layer_weights = layer.get_weights()[0]  # h, w, c_in, c_out
@@ -52,17 +57,34 @@ class LayerReplacerTucker(LayerReplacer):
             dct_replacement["first_conv_weights"] = first
             dct_replacement["core_conv_weights"] = core
             dct_replacement["last_conv_weights"] = last
-        elif isinstance(layer, Dense):
-            dct_replacement = None
+        elif isinstance(layer, Dense) and rank_dense is not None:
+            weight_matrix, bias = layer.get_weights()
+            U, S, V = np.linalg.svd(weight_matrix)
+            if 0 < rank_dense < 1:
+                rank = int(rank_dense * len(S))
+            else:  # type int
+                rank = rank_dense
+            U = U[:, :rank]
+            S = S[:rank]
+            V = V[:rank, :]
+
+            U = U * np.sqrt(S).reshape(1, -1)
+            V = np.sqrt(S).reshape(-1, 1) * V
+
+            dct_replacement["dense_in"] = U
+            dct_replacement["dense_out"] = V
+            dct_replacement["rank"] = rank
+
         else:
             dct_replacement = None
 
         return dct_replacement
+
     ##################################
     # LayerReplacer abstract methods #
     ##################################
     def _apply_replacement(self, layer):
-        return self.apply_tucker_decomposition_to_layer(layer)
+        return self.apply_tucker_or_low_rank_decomposition_to_layer(layer, self.int_or_flt_rank)
 
     def _replace_conv2D(self, layer, dct_compression):
         nb_filters = layer.filters
@@ -89,27 +111,21 @@ class LayerReplacerTucker(LayerReplacer):
 
     def _replace_dense(self, layer, dct_compression):
         """Dense layers are not replaced by tucker decomposition"""
-        return None, None, False
+        if dct_compression is not None:
+            hidden_layer_dim = layer.units
+            activation = layer.activation
+            regularizer = layer.kernel_regularizer
+            bias_regularizer = layer.bias_regularizer
+
+            rank = dct_compression["rank"]
+            replacing_layer = LowRankDense(units=hidden_layer_dim, rank=rank, activation=activation, kernel_regularizer=regularizer, bias_regularizer=bias_regularizer)
+            replacing_weights = [
+                dct_compression["dense_in"], dct_compression["dense_out"]
+            ] + [layer.get_weights()[-1]] if layer.use_bias else []
+            return replacing_layer, replacing_weights, True
+        else:
+            return None, None, False
 
     def _set_weights_to_layer(self, replacing_layer, replacing_weights):
         replacing_layer.set_weights(replacing_weights)
 
-
-
-
-# if __name__ == "__main__":
-#
-#     from pprint import pprint
-#     # base_model = Cifar10.load_model("cifar10_tensortrain_base")
-#     base_model = Cifar100.load_model("cifar100_vgg19_2048x2048")
-#
-#     # dct_layer_params = build_dct_tt_ranks(base_model)
-#
-#     keep_last_layer = True
-#     model_transformer = LayerReplacerTT(rank_value=2, order=4, keep_last_layer=keep_last_layer, keep_first_layer=True)
-#     new_model = model_transformer.fit_transform(base_model)
-#     for l in new_model.layers:
-#         layer_w = l.get_weights()
-#         print(l.name, l.__class__.__name__)
-#         # pprint([w for w in layer_w if len(w.shape)>1])
-#
