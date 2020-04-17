@@ -56,7 +56,7 @@ class Faustizer(SparseFactorizer):
         :param N_fac:
         :return:
         """
-        if not hierarchical:
+        if not hierarchical or N_fac==1: # if N_fac ==1 then hierarchical is equivalent to not hierarchical. (and hierarchical would crash)
             assert left_dim >= right_dim
 
             stop = StoppingCriterion(tol=tol, maxiter=nb_iter)
@@ -84,12 +84,12 @@ class Faustizer(SparseFactorizer):
 
         not_H_bad_shape = (not self.hierarchical and matrix.shape[0] < matrix.shape[1]) # we want the bigger dimension to be on left because error is lower as R2L doesn't work
         H_bad_shape = (self.hierarchical and matrix.shape[0] > matrix.shape[1]) # R2L work in that case
+
         if not_H_bad_shape or H_bad_shape:
             matrix = matrix.T
             transposed = True
 
         matrix = matrix.astype(float)
-
         left_dim, right_dim = matrix.shape
 
         # dynamic choice of the number of factor
@@ -98,11 +98,20 @@ class Faustizer(SparseFactorizer):
         else:
             nb_factors = self.nb_factor
 
+        if nb_factors == 1 and self.hierarchical:
+            # because in that case, it is actually not the hierarchical palm that will be used
+            # but the standard PALM instead because hierarchical is non-sense in that degenerate case
+            # and would crash
+            assert transposed is True
+            matrix = matrix.T
+            transposed = False
+            left_dim, right_dim = matrix.shape
 
         constraints = self.build_constraints_faust(left_dim, right_dim, sparsity=self.sparsity_fac, N_fac=nb_factors,
                                                    hierarchical=self.hierarchical, tol=self.tol, nb_iter=self.nb_iter)
 
-        if self.hierarchical:
+        if self.hierarchical and not nb_factors == 1:
+            # in the case nb_factos==1, parameters have been built for the standard palm4msa
             faust, final_lambda = hierarchical(matrix, constraints, ret_lambda=True)
             # faust, final_lambda = hierarchical(matrix, ["rectmat", nb_factors, self.sparsity_fac, self.sparsity_fac], ret_lambda=True)
         else:
