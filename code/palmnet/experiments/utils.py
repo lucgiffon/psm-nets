@@ -396,7 +396,8 @@ class ParameterManagerEntropyRegularizationFinetune(ParameterManagerEntropyRegul
 
 def get_line_of_interest(df, keys_of_interest, dct_values):
     queries = []
-
+    logger.debug(keys_of_interest)
+    set_element_to_remove = set()
     for k in keys_of_interest:
         logger.debug("{}, {}, {}".format(dct_values[k], type(dct_values[k]), k))
         try:
@@ -409,7 +410,7 @@ def get_line_of_interest(df, keys_of_interest, dct_values):
                 str_k = "{}".format(dct_values[k])
         except KeyError:
             logger.warning("key {} not present in input palminized results".format(k) )
-            keys_of_interest.remove(k)
+            set_element_to_remove.add(k)
             continue
         # if self[k] is None:
         #     str_k = "'None'"
@@ -420,6 +421,8 @@ def get_line_of_interest(df, keys_of_interest, dct_values):
 
         query = "df_of_interest['{}']=={}".format(k, str_k)
         queries.append(query)
+
+    keys_of_interest = list(set(keys_of_interest).difference(set_element_to_remove))
 
     # s_query = " & ".join(queries)
     df_of_interest = df

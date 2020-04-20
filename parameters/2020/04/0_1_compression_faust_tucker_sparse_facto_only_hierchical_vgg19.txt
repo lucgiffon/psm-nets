@@ -1,0 +1,9 @@
+ --sparsity-factor 2 -v --tucker --hierarchical --svhn --svhn-vgg19 --nb-iteration-palm 150
+ --sparsity-factor 3 -v --tucker --hierarchical --svhn --svhn-vgg19 --nb-iteration-palm 150
+ --sparsity-factor 4 -v --tucker --hierarchical --svhn --svhn-vgg19 --nb-iteration-palm 150
+ --sparsity-factor 2 -v --tucker --hierarchical --cifar10 --cifar10-vgg19 --nb-iteration-palm 150
+ --sparsity-factor 3 -v --tucker --hierarchical --cifar10 --cifar10-vgg19 --nb-iteration-palm 150
+ --sparsity-factor 4 -v --tucker --hierarchical --cifar10 --cifar10-vgg19 --nb-iteration-palm 150
+ --sparsity-factor 2 -v --tucker --hierarchical --cifar100 --cifar100-vgg19 --nb-iteration-palm 150
+ --sparsity-factor 3 -v --tucker --hierarchical --cifar100 --cifar100-vgg19 --nb-iteration-palm 150
+ --sparsity-factor 4 -v --tucker --hierarchical --cifar100 --cifar100-vgg19 --nb-iteration-palm 150

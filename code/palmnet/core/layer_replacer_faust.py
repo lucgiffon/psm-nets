@@ -26,7 +26,7 @@ class LayerReplacerFaust(LayerReplacerSparseFacto):
             else:
                 self.dct_name_compression[layer_name] = {
                     "lambda": tpl_faust_reference[0],
-                    "sparse_factors": Faust(filepath=tpl_faust_reference[1])
+                    "sparse_factors": Faust(filepath=str(self.path_checkpoint_file.parent / tpl_faust_reference[1]))
                 }
 
     def save_dct_name_compression(self):
@@ -53,5 +53,5 @@ class LayerReplacerFaust(LayerReplacerSparseFacto):
                 # store reference to path
                 self.dct_references_faust[layer_name] = (lambda_, path_faust)
 
-        with open(str(self.path_dct_references_faust), 'wb') as wb_file:
+        with open(str(self.path_dct_references_faust.absolute()), 'wb') as wb_file:
             pickle.dump(self.dct_references_faust, wb_file)

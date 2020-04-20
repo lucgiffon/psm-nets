@@ -36,8 +36,7 @@ class LayerReplacerSparseFacto(LayerReplacer):
             return dct_replacement
 
     def _replace_conv2D(self, layer, dct_compression):
-        scaling, factor_data, sparsity_patterns = self.sparse_factorizer.get_weights_from_sparse_facto(dct_compression,
-                                                  return_scaling=not self.only_mask)
+        scaling, factor_data, sparsity_patterns = self.sparse_factorizer.get_weights_from_sparse_facto(dct_compression, return_scaling=not self.only_mask)
 
         less_values_than_base = self.check_facto_less_values_than_base(layer, sparsity_patterns)
 

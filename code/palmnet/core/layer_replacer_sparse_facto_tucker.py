@@ -43,13 +43,13 @@ class LayerReplacerSparseFactoTucker(LayerReplacer):
             dct_replacement["in_rank"] = dct_tucker_replacement["in_rank"]
             dct_replacement["out_rank"] = dct_tucker_replacement["out_rank"]
 
-            for tucker_part_name in self.lst_tucker_weights:
+            for tucker_part_name in self.lst_tucker_weights:  # for each of the 3 parts of the tucker decomposition
                 tucker_part_weights = dct_tucker_replacement[tucker_part_name]
                 _lambda, op_sparse_factors, new_layer_weights = self.sparse_factorizer.factorize_conv2D_weights(tucker_part_weights)
                 dct_tucker_part_sparse_facto = {
                     "lambda": _lambda,
                     "sparse_factors": op_sparse_factors,
-                    "base_weights": tucker_part_weights
+                    "base_weights": tucker_part_weights  # we keep also the base weights of the tucker decomposition in order to be able to load it in case where palm doesn't present any benefit.
                 }
                 dct_replacement[tucker_part_name] = dct_tucker_part_sparse_facto
 

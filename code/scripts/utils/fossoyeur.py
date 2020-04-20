@@ -2,7 +2,7 @@
 Find Jobd Killed prematurely and print info about them
 
 Usage:
-    resurector.py [--input-dir path] [--output-dir path]
+    resurector.py [--input-dir path] [--output-dir path] [--last-modified int]
 
 Options:
   -h --help                             Show this screen.
@@ -10,6 +10,7 @@ Options:
   -v                                    Set verbosity to info.
   --input-dir path                      Set the input dir to look experiments from.
   --output-dir path                     Set the output dir to save the experiments to if specified. Doesn't write anything by default.
+  --last-modified int                   Looks only files modified less than `--last-modified` horus ago.
 """
 
 import pathlib
@@ -20,6 +21,7 @@ import re
 import os
 from pprint import pprint
 import yaml
+import time
 
 # regex_killed = re.compile(r"##.+? (\d+) KILLED ##")
 oarstat_command = "oarstat -f -j {} -Y"
@@ -28,7 +30,11 @@ regex_command_line = re.compile(r'.+?\.py (.+)')
 
 def main():
     paraman = docopt.docopt(__doc__)
-
+    paraman["--last-modified"] = int(paraman["--last-modified"]) if paraman["--last-modified"] is not None else None
+    if paraman["--last-modified"] is not None:
+        threshold_m_time = time.time() - 60*60*paraman["--last-modified"]
+    else:
+        threshold_m_time = None
     if paraman["--input-dir"] is None:
         input_dir_path = pathlib.Path(os.getcwd())
     else:
@@ -39,11 +45,12 @@ def main():
     for root, dir, files in os.walk(input_dir_path):
         root_path_to_file = pathlib.Path(root)
         for file in files:
-            if not (file.split(".")[-1] == "stderr"):
+            path_to_file = root_path_to_file / file
+
+            if not (file.split(".")[-1] == "stderr") or (threshold_m_time is not None and os.path.getmtime(path_to_file) < threshold_m_time):
                 # if this is not an OAR stderr file, pass
                 continue
 
-            path_to_file = root_path_to_file / file
 
             file_job_id = file.split(".")[-2]
             oarstat_command_job = oarstat_command.format(file_job_id)

@@ -15,7 +15,7 @@ class LayerReplacerSparseFactoTuckerFaust(LayerReplacerSparseFactoTucker):
             self.path_dct_references_faust = self.path_checkpoint_file / "dict_faust_references.pickle"
 
     def load_dct_name_compression(self):
-        with open(str(self.path_dct_references_faust), 'rb') as rb_file:
+        with open(str(self.path_dct_references_faust.absolute()), 'rb') as rb_file:
             self.dct_references_faust = pickle.load(rb_file)
 
         for layer_name, tpl_or_dct_faust_reference in self.dct_references_faust.items():
@@ -24,7 +24,7 @@ class LayerReplacerSparseFactoTuckerFaust(LayerReplacerSparseFactoTucker):
             elif type(tpl_or_dct_faust_reference) == tuple:
                 self.dct_name_compression[layer_name] = {
                     "lambda": tpl_or_dct_faust_reference[0],
-                    "sparse_factors": Faust(filepath=tpl_or_dct_faust_reference[1])
+                    "sparse_factors": Faust(filepath=str(self.path_checkpoint_file.parent / tpl_or_dct_faust_reference[1]))
                 }
             else:
                 # it is a dict
@@ -34,7 +34,8 @@ class LayerReplacerSparseFactoTuckerFaust(LayerReplacerSparseFactoTucker):
                 for tucker_part_name in self.lst_tucker_weights:
                     self.dct_name_compression[layer_name][tucker_part_name] = dict()
                     self.dct_name_compression[layer_name][tucker_part_name]["lambda"] = tpl_or_dct_faust_reference[tucker_part_name][0]
-                    self.dct_name_compression[layer_name][tucker_part_name]["sparse_factors"] = Faust(filepath=tpl_or_dct_faust_reference[tucker_part_name][1])
+                    self.dct_name_compression[layer_name][tucker_part_name]["sparse_factors"] = Faust(filepath=str(self.path_checkpoint_file.parent / tpl_or_dct_faust_reference[tucker_part_name][1]))
+                    self.dct_name_compression[layer_name][tucker_part_name]["base_weights"] = tpl_or_dct_faust_reference[tucker_part_name][2]
 
 
     def save_dct_name_compression(self):
@@ -48,7 +49,7 @@ class LayerReplacerSparseFactoTuckerFaust(LayerReplacerSparseFactoTucker):
             if dict_faust_obj is None:  # nothing to save
                 self.dct_references_faust[layer_name] = None
             else:
-                if "in_rank" in dict_faust_obj:
+                if "in_rank" in dict_faust_obj:  # for conv layer there is a tucker decomposition
                     self.dct_references_faust[layer_name] = dict()
                     self.dct_references_faust[layer_name]["in_rank"] = dict_faust_obj["in_rank"]
                     self.dct_references_faust[layer_name]["out_rank"] = dict_faust_obj["out_rank"]
@@ -63,9 +64,10 @@ class LayerReplacerSparseFactoTuckerFaust(LayerReplacerSparseFactoTucker):
                         lambda_ = dict_faust_obj[tucker_part_name]["lambda"]
                         faust_obj = dict_faust_obj[tucker_part_name]["sparse_factors"]
                         faust_obj.save(str(path_faust))
-                        # store reference to path
-                        self.dct_references_faust[layer_name][tucker_part_name] = (lambda_, path_faust)
-                else:
+                        base_weights = dict_faust_obj[tucker_part_name]["base_weights"]
+                        # store reference to path along wiht lambda value and the base weights of the tucker decomposition
+                        self.dct_references_faust[layer_name][tucker_part_name] = (lambda_, path_faust, base_weights)
+                else: # for layers without tucker decomposition, only faust
                     # create unique identifier for tucker sparse facto faust object
                     id_faust = id(dict_faust_obj)
                     hash_faust = hex(zlib.crc32(str.encode(str(id_faust))))

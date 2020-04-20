@@ -15,9 +15,11 @@ from palmnet.data import Cifar100, Mnist
 class TestLayerReplacerTucker(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.base_model = Cifar100.load_model("cifar100_vgg19_2048x2048")
+        # self.base_model = Cifar100.load_model("cifar100_vgg19_2048x2048")
+        # (self.X_train, self.y_train), (self.X_test, self.y_test) = Cifar100.load_data()
 
-        (self.X_train, self.y_train), (self.X_test, self.y_test) = Cifar100.load_data()
+        self.base_model = Cifar100.load_model("mnist_lenet")
+        (self.X_train, self.y_train), (self.X_test, self.y_test) = Mnist.load_data()
 
     def test_simple(self):
         faustizer = Faustizer(sparsity_fac=2,
@@ -36,7 +38,7 @@ class TestLayerReplacerTucker(unittest.TestCase):
             model_transformer_bis = LayerReplacerSparseFactoTuckerFaust(sparse_factorizer=faustizer,
                                                                path_checkpoint_file=path_to_checkpoint)
             model_transformer_bis.load_dct_name_compression()
-            new_model = model_transformer_bis.fit_transform(deepcopy(self.base_model))
+            new_model = model_transformer_bis.transform(deepcopy(self.base_model))
             print(new_model)
             new_model.compile(Adam(), loss="mse")
             result = new_model.predict(self.X_train[:10])
