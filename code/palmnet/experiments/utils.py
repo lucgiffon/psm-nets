@@ -429,11 +429,12 @@ def get_line_of_interest(df, keys_of_interest, dct_values):
     for query in queries:
         s_eval = "df_of_interest[{}]".format(query)
         logger.debug(s_eval)
-        df_of_interest = eval(s_eval)
+        df_of_interest_tmp = eval(s_eval)
         # try:
-        assert not len(df_of_interest) < 1, "No corresponding pretrained model found in directory. Query {} discarded all".format(query)
+        assert not len(df_of_interest_tmp) < 1, "No corresponding pretrained model found in directory. Query {} discarded all".format(query)
         # except:
         #     pass
+        df_of_interest = df_of_interest_tmp
 
     line_of_interest = df_of_interest
     line_of_interest.drop_duplicates(keys_of_interest, inplace=True)
