@@ -22,6 +22,7 @@ MAP_DATA_MODEL_URL = {
     "mnist_500": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/mnist_500.h5",
     "cifar100_resnet20": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/resnet_20_cifar100.h5",
     "cifar100_resnet50": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/resnet_50_cifar100.h5",
+    "cifar100_resnet50_new": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/resnet_resnet50_cifar100_1587927534.h5",
     "cifar10_tensor_train_base": "https://pageperso.lis-lab.fr/~luc.giffon/saved_models/cifar10_tensor_train_base_1585409008.h5",
 }
 
@@ -36,6 +37,7 @@ MAP_DATA_MODEL_MD5SUM = {
     "mnist_500": "1b023b05a01f24a99ac9a460488068f8",
     "cifar100_resnet20": "4845ec6461c5923fc77f42a157b6d0c1",
     "cifar100_resnet50": "d76774eb6f871b1192c144f0dc29340e",
+    "cifar100_resnet50_new": "11b49f1b1422e9d03d6cf2ae2c0249b1",
     "cifar10_tensor_train_base": "e985fbe4ade6893b7fb92655be1b846f"
 }
 

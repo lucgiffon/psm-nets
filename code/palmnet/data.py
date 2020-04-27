@@ -19,6 +19,7 @@ MAP_EXTERNAL_MODEL_FILENAME = {
     "svhn_vgg19_2048x2048": "svhn_vgg19_2048x2048_1572278831.h5",
     "mnist-500": "mnist_500.h5",
     "cifar100-resnet50": "resnet_50_cifar100.h5",
+    "cifar100-resnet50-new": "resnet_resnet50_cifar100_1587927534.h5",
     "cifar100-resnet20": "resnet_20_cifar100.h5",
     "cifar10_tensortrain_base": "cifar10_tensor_train_base_1585409008.h5"
 }

@@ -57,17 +57,25 @@ class SparseFactorizer(metaclass=ABCMeta):
         """
         if isinstance(layer_obj, Conv2D):
             logger.info("Find {}".format(layer_obj.__class__.__name__))
-            layer_weights, layer_bias = layer_obj.get_weights()
+            if layer_obj.use_bias :
+                layer_weights, layer_bias = layer_obj.get_weights()
+            else:
+                layer_weights = layer_obj.get_weights()[0]
+                layer_bias = []
             _lambda, op_sparse_factors, new_layer_weights = self.factorize_conv2D_weights(layer_weights)
             if apply_weights:
-                layer_obj.set_weights((new_layer_weights, layer_bias))
+                layer_obj.set_weights([new_layer_weights] + layer_bias)
             return _lambda, op_sparse_factors, new_layer_weights
         elif isinstance(layer_obj, Dense):
             logger.info("Find {}".format(layer_obj.__class__.__name__))
-            layer_weights, layer_bias = layer_obj.get_weights()
+            if layer_obj.use_bias:
+                layer_weights, layer_bias = layer_obj.get_weights()
+            else:
+                layer_weights = layer_obj.get_weights()
+                layer_bias = []
             _lambda, op_sparse_factors, new_layer_weights = self.factorize_dense_weights(layer_weights)
             if apply_weights:
-                layer_obj.set_weights((new_layer_weights, layer_bias))
+                layer_obj.set_weights([new_layer_weights] + layer_bias)
             return _lambda, op_sparse_factors, new_layer_weights
         else:
             logger.debug("Find {}. Can't Palminize this. Pass.".format(layer_obj.__class__.__name__))

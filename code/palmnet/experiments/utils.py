@@ -90,6 +90,8 @@ class ParameterManager(dict):
             return Mnist.load_model("mnist-500")
         elif self["--cifar100-resnet50"]:
             return Cifar100.load_model("cifar100-resnet50")
+        elif self["--cifar100-resnet50-new"]:
+            return Cifar100.load_model("cifar100-resnet50-new")
         elif self["--cifar100-resnet20"]:
             return Cifar100.load_model("cifar100-resnet20")
         else:
@@ -227,6 +229,11 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
             keys_of_interest.extend([
                 '--cifar100-resnet50',
                 '--cifar100-resnet20',
+            ])
+        if self["--cifar100-resnet50-new"] or self["--cifar100-resnet20-new"]:
+            keys_of_interest.extend([
+                '--cifar100-resnet50-new',
+                '--cifar100-resnet20-new',
             ])
         # queries = []
         # for k in keys_of_interest:
