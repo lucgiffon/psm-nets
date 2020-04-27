@@ -9,11 +9,15 @@ import scipy.stats
 from keras.models import Model
 import gc
 import palmnet.hunt
+from palmnet.core.faustizer import Faustizer
 from palmnet.core.layer_replacer_TT import LayerReplacerTT
 from palmnet.core.layer_replacer_palm import LayerReplacerPalm
+from palmnet.core.layer_replacer_sparse_facto_tucker_faust import LayerReplacerSparseFactoTuckerFaust
 from palmnet.data import param_training, image_data_generator_cifar_svhn, image_data_generator_mnist
 from palmnet.experiments.utils import get_line_of_interest, ParameterManager
 from palmnet.layers.low_rank_dense_layer import LowRankDense
+from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
+from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
 from palmnet.layers.tt_layer_conv import TTLayerConv
 from palmnet.layers.tt_layer_dense import TTLayerDense
 from palmnet.layers.tucker_layer import TuckerLayerConv
@@ -120,36 +124,30 @@ def cast_to_num(df):
 
 if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/")
-    experiment_name = "2020/04/0_0_compression_tucker_tensortrain"
+    experiment_name = "2020/04/0_1_compression_faust_tucker_sparse_facto"
 
     lst_paths_finetune = [
-        "2020/04/0_1_compression_tucker_low_rank_dense",
-        "2020/04/0_0_compression_tucker_tensortrain_errors",
-        "2020/04/0_0_compression_tucker_tensortrain",
+        "2020/04/0_1_compression_faust_tucker_sparse_facto",
     ]
 
-    df_tucker_tt = pd.concat(list(map(get_df_from_expe_path, lst_paths_finetune)))
-    df_tucker_tt = df_tucker_tt.dropna(subset=["failure"])
-    df_tucker_tt = df_tucker_tt[df_tucker_tt["failure"] == False]
-    df_tucker_tt = df_tucker_tt.drop(columns="oar_id").drop_duplicates()
-    df_tucker_tt = cast_to_num(df_tucker_tt)
+
+    df = get_df_from_expe_path(lst_paths_finetune[0])
+    df = df.dropna(subset=["failure"])
+    df = df[df["failure"] == False]
+    df = df.drop(columns="oar_id").drop_duplicates()
+    df = cast_to_num(df)
 
     root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/processed/")
     output_dir = root_output_dir / experiment_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
-
     dct_attributes = defaultdict(lambda: [])
     dct_results_matrices = defaultdict(lambda: [])
 
-    length_df = len(df_tucker_tt)
+    length_df = len(df)
 
-    for idx, (_, row) in enumerate(df_tucker_tt.iterrows()):
-        if row["tucker"] is True:
-            dct_attributes["compression"].append("tucker")
-            # continue
-        else:
-            dct_attributes["compression"].append("tensortrain")
+    for idx, (_, row) in enumerate(df.iterrows()):
+
 
         log_memory_usage("Start loop")
         print("row {}/{}".format(idx, length_df))
@@ -186,50 +184,43 @@ if __name__ == "__main__":
         else:
             raise ValueError("Unknown model")
 
-        # finetuning informations
-        dct_attributes["use-clr"].append(bool(row["--use-clr"]))  # this must be first because used in other attributes
-        dct_attributes["keep-last-layer"].append(bool(row["--keep-last-layer"]))
-        dct_attributes["keep-first-layer"].append(bool(row["--keep-first-layer"]))
+        # palm informations #
+        dct_attributes["tol"].append(float(row["--tol"]))
+        dct_attributes["hierarchical"].append(bool(row["--hierarchical"]))
+        dct_attributes["nb-factor"].append(int(row["--nb-factor"]) if not np.isnan(row["--nb-factor"]) else np.nan)
+        dct_attributes["nb-iteration-palm"].append(int(row["--nb-iteration-palm"]))
+        dct_attributes["sparsity-factor"].append(int(row["--sparsity-factor"]))
+
+        # # finetuning informations
+        # dct_attributes["use-clr"].append(bool(row["--use-clr"]))  # this must be first because used in other attributes
+        # dct_attributes["keep-last-layer"].append(bool(row["--keep-last-layer"]))
+        # dct_attributes["keep-first-layer"].append(bool(row["--keep-first-layer"]))
         # beware of this line here because the params_optimizer may change between experiments
-        dct_attributes["learning-rate"].append(float(dct_param_train_model[dct_attributes["model"][-1]].params_optimizer["lr"]))
-        dct_attributes["min-lr"].append(float(dct_param_train_model[dct_attributes["model"][-1]].min_lr) if dct_attributes["use-clr"][-1] else np.nan)
-        dct_attributes["max-lr"].append(float(dct_param_train_model[dct_attributes["model"][-1]].max_lr) if dct_attributes["use-clr"][-1] else np.nan)
-        dct_attributes["nb-epoch"].append(int(dct_param_train_model[dct_attributes["model"][-1]].epochs))
-        dct_attributes["epoch-step-size"].append(float(row["--epoch-step-size"]) if dct_attributes["use-clr"][-1] else np.nan)
-
-        # tensortrain informations
-        dct_attributes["rank-value"].append(int(row["--rank-value"]) if not np.isnan(row["--rank-value"]) else np.nan)
-        dct_attributes["order"].append(int(row["--order"]) if not np.isnan(row["--order"]) else np.nan)
-
-        # tucker informations
-        dct_attributes["rank-percentage-dense"].append(float(row["--rank-percentage-dense"]) if not np.isnan(row["--rank-percentage-dense"]) else np.nan)
+        # dct_attributes["learning-rate"].append(float(dct_param_train_model[dct_attributes["model"][-1]].params_optimizer["lr"]))
+        # dct_attributes["min-lr"].append(float(dct_param_train_model[dct_attributes["model"][-1]].min_lr) if dct_attributes["use-clr"][-1] else np.nan)
+        # dct_attributes["max-lr"].append(float(dct_param_train_model[dct_attributes["model"][-1]].max_lr) if dct_attributes["use-clr"][-1] else np.nan)
+        # dct_attributes["nb-epoch"].append(int(dct_param_train_model[dct_attributes["model"][-1]].epochs))
+        # dct_attributes["epoch-step-size"].append(float(row["--epoch-step-size"]) if dct_attributes["use-clr"][-1] else np.nan)
 
         # score informations
-        dct_attributes["base-model-score"].append(float(row["test_accuracy_base_model"]))
-        dct_attributes["before-finetune-score"].append(float(row["test_accuracy_compressed_model"]))
-        dct_attributes["finetuned-score"].append(float(row["test_accuracy_finetuned_model"]))
+        # dct_attributes["base-model-score"].append(float(row["test_accuracy_base_model"]))
+        # dct_attributes["before-finetune-score"].append(float(row["test_accuracy_compressed_model"]))
+        # dct_attributes["finetuned-score"].append(float(row["test_accuracy_finetuned_model"]))
 
         # store path informations
-        path_history = pathlib.Path(row["results_dir"]) / row["output_file_csvcbprinter"]
-        dct_attributes["path-learning-history"].append(path_history)
+        # path_history = pathlib.Path(row["results_dir"]) / row["output_file_csvcbprinter"]
+        # dct_attributes["path-learning-history"].append(path_history)
         path_model = pathlib.Path(row["results_dir"]) / row["output_file_modelprinter"]
         dct_attributes["path-model"].append(path_model)
 
         paraman = ParameterManager(row.to_dict())
         base_model = paraman.get_model()
 
-        try:
-            compressed_model = None
-            compressed_model = keras.models.load_model(str(path_model.absolute()), custom_objects={'TuckerLayerConv': TuckerLayerConv,
-                                                                                               'TTLayerConv': TTLayerConv,
-                                                                                               'TTLayerDense': TTLayerDense,
-                                                                                               'LowRankDense': LowRankDense})
-        except Exception as e:
-            print(e)
-            layer_replacer = LayerReplacerTT(rank_value=dct_attributes["rank-value"][-1], order=dct_attributes["order"][-1], keep_last_layer=dct_attributes["keep-last-layer"][-1],
-                                             keep_first_layer=dct_attributes["keep-first-layer"][-1])
-            compressed_model = None
-            compressed_model = layer_replacer.fit_transform(base_model)
+        layer_replacer = LayerReplacerSparseFactoTuckerFaust(keep_last_layer=False,
+                                                             sparse_factorizer=Faustizer(), path_checkpoint_file=path_model)
+        layer_replacer.load_dct_name_compression()
+        compressed_model = None
+        compressed_model = layer_replacer.transform(base_model)
         # load model
         # if row["tucker"] is True:
         #     compressed_model = keras.models.load_model(str(path_model.absolute()), custom_objects={'TuckerLayerConv': TuckerLayerConv,
@@ -254,21 +245,20 @@ if __name__ == "__main__":
         assert len(base_model.layers) == len(compressed_model.layers)
 
         for idx_layer, compressed_layer in enumerate(compressed_model.layers):
-            if any(isinstance(compressed_layer, _class) for _class in (TuckerLayerConv, TTLayerConv, TTLayerDense, LowRankDense)):
+            if any(isinstance(compressed_layer, _class) for _class in (TuckerLayerConv, TTLayerConv, TTLayerDense, LowRankDense, SparseFactorisationConv2D, SparseFactorisationDense)):
                 base_layer = base_model.layers[idx_layer]
                 log_memory_usage("Start secondary loop")
 
                 # get informations to identify the layer (and do cross references)
                 dct_results_matrices["idx-expe"].append(idx)
                 dct_results_matrices["model"].append(dct_attributes["model"][-1])
-                dct_results_matrices["compression"].append(dct_attributes["compression"][-1])
                 dct_results_matrices["layer-name-compressed"].append(compressed_layer.name)
                 dct_results_matrices["layer-name-base"].append(base_layer.name)
                 dct_results_matrices["idx-layer"].append(idx_layer)
                 dct_results_matrices["data"].append(dct_attributes["dataset"][-1])
-                dct_results_matrices["keep-last-layer"].append(dct_attributes["keep-last-layer"][-1])
-                dct_results_matrices["keep-first-layer"].append(dct_attributes["keep-first-layer"][-1])
-                dct_results_matrices["use-clr"].append(dct_attributes["use-clr"][-1])
+                # dct_results_matrices["keep-last-layer"].append(dct_attributes["keep-last-layer"][-1])
+                # dct_results_matrices["keep-first-layer"].append(dct_attributes["keep-first-layer"][-1])
+                # dct_results_matrices["use-clr"].append(dct_attributes["use-clr"][-1])
 
                 # complexity analysis #
                 # get nb val base layer and comrpessed layer
@@ -278,12 +268,10 @@ if __name__ == "__main__":
                 dct_results_matrices["nb-non-zero-compressed"].append(nb_weights_compressed_layer)
                 dct_results_matrices["nb-non-zero-compression-rate"].append(nb_weights_base_layer / nb_weights_compressed_layer)
 
-                # tensortrain informations
-                dct_results_matrices["rank-value"].append(int(row["--rank-value"]) if not np.isnan(row["--rank-value"]) else np.nan)
-                dct_results_matrices["order"].append(int(row["--order"]) if not np.isnan(row["--order"]) else np.nan)
-
-                # tucker informations
-                dct_results_matrices["rank-percentage-dense"].append(int(row["--rank-percentage-dense"]) if not np.isnan(row["--rank-percentage-dense"]) else np.nan)
+                # get palm setting options
+                dct_results_matrices["nb-factor-param"].append(dct_attributes["nb-factor"][-1])
+                dct_results_matrices["sparsity-factor"].append(dct_attributes["sparsity-factor"][-1])
+                dct_results_matrices["hierarchical"].append(dct_attributes["hierarchical"][-1])
 
         gc.collect()
         palmnet.hunt.show_most_common_types(limit=20)

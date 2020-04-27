@@ -523,6 +523,14 @@ DCT_CHANNEL_PREDEFINED_FACTORIZATIONS = {
 }
 
 def get_facto_for_channel_and_order(channel, order, dct_predefined_facto=None):
+    """
+    Return a factorisation of channel in `order` elements (the number of factors)
+
+    :param channel:
+    :param order:
+    :param dct_predefined_facto:
+    :return: the list of factors whose product equal to channel and of len  `order`
+    """
     if dct_predefined_facto is not None and channel in dct_predefined_facto:
         predef_facto = dct_predefined_facto[channel]
         missing_elm = order - len(predef_facto)
@@ -533,14 +541,14 @@ def get_facto_for_channel_and_order(channel, order, dct_predefined_facto=None):
     else:
         base = [1] * order
         base = np.array(base)
-        _prod = np.prod(base) # == 1
+        _prod = np.prod(base)  # == 1
         next_idx_to_upscale = 0
         while _prod < channel:
             base[next_idx_to_upscale] *= 2
             _prod = np.prod(base)
             next_idx_to_upscale = int((next_idx_to_upscale + 1) % order)
 
-        return base[::-1] # biggest values at the end for no reason :)
+        return base[::-1]  # biggest values at the end for no reason :)
 
 def build_dct_tt_ranks(model, rank_value=2, order=4):
     tt_ranks_conv = [rank_value] * order + [1]
@@ -573,6 +581,7 @@ def get_cumsum_size_weights(lst_weights):
 def get_nb_learnable_weights(layer):
     from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
     from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
+    from palmnet.layers.tucker_layer_sparse_facto import TuckerSparseFactoLayerConv
 
     if isinstance(layer, SparseFactorisationConv2D) or isinstance(layer, SparseFactorisationDense):
         sp_patterns = layer.sparsity_patterns
@@ -587,6 +596,9 @@ def get_nb_learnable_weights(layer):
         else:
             count_scaling = 0
         return count_sparsity_patterns + count_bias + count_scaling
+    if isinstance(layer, TuckerSparseFactoLayerConv):
+        # reuse code above
+        return get_nb_learnable_weights(layer.in_factor) + get_nb_learnable_weights(layer.core) + get_nb_learnable_weights(layer.out_factor)
     else:
         return get_cumsum_size_weights(layer.get_weights())
 

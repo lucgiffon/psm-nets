@@ -118,7 +118,8 @@ class ParameterManagerTensotrainAndTuckerDecomposition(ParameterManager):
         self["--order"] = int(self["--order"]) if self["--order"] is not None else None
 
         # tucker parameters
-        self["--rank-percentage-dense"] = float(self["--rank-percentage-dense"]) if self["--rank-percentage-dense"] is not None else None
+        if "--rank-percentage-dense" in self:
+            self["--rank-percentage-dense"] = float(self["--rank-percentage-dense"]) if self["--rank-percentage-dense"] is not None else None
 
         self.__init_hash_expe()
         self.__init_output_file()
@@ -128,6 +129,7 @@ class ParameterManagerTensotrainAndTuckerDecomposition(ParameterManager):
         self["output_file_modelprinter"] = Path(self["hash"] + "_model.h5")
         self["output_file_notfinishedprinter"] = Path(self["hash"] + ".notfinished")
         self["output_file_csvcbprinter"] = Path(self["hash"] + "_history.csv")
+        self["output_file_layerbylayer"] = Path(self["hash"] + "_layerbylayer.csv")
 
     def __init_hash_expe(self):
         lst_elem_to_remove_for_hash = [

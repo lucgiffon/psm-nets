@@ -66,7 +66,7 @@ def main():
 
     if paraman["--output-dir"] is not None:
         path_output_dir = pathlib.Path(paraman["--output-dir"])
-        output_file_name = f"{input_dir_path.name}_killed.txt"
+        output_file_name = f"{input_dir_path.name}_fossoyed.txt"
         path_output_file = path_output_dir / output_file_name
         print()
         with open(path_output_file, 'w') as ofile_w:

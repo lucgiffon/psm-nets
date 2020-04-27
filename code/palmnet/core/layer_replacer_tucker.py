@@ -10,10 +10,12 @@ from palmnet.layers.tucker_layer import TuckerLayerConv
 
 
 class LayerReplacerTucker(LayerReplacer):
-    def __init__(self, rank_dense=None, rank_percentage_dense=None, *args, **kwargs):
+    def __init__(self, rank_percentage_conv=None, rank_dense=None, rank_percentage_dense=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.rank_dense = rank_dense
+        self.rank_percentage_conv = rank_percentage_conv
+        assert self.rank_percentage_conv is None or 0 < self.rank_percentage_conv < 1
         self.rank_percentage_dense = rank_percentage_dense
         assert self.rank_percentage_dense is None or 0 < self.rank_percentage_dense < 1
 
@@ -41,13 +43,17 @@ class LayerReplacerTucker(LayerReplacer):
         return first, core, last
 
     @staticmethod
-    def apply_tucker_or_low_rank_decomposition_to_layer(layer, rank_dense=None):
+    def apply_tucker_or_low_rank_decomposition_to_layer(layer, rank_dense=None, rank_percentage_conv=None):
         dct_replacement = dict()
         if isinstance(layer, Conv2D):
             layer_weights = layer.get_weights()[0]  # h, w, c_in, c_out
             assert len(layer_weights.shape) == 4, "Shape of convolution kernel should be of size 4"
             assert layer.data_format == "channels_last", "filter dimension should be last"
-            in_rank, out_rank = LayerReplacerTucker.get_rank_layer(layer_weights)
+            if rank_percentage_conv is None:
+                in_rank, out_rank = LayerReplacerTucker.get_rank_layer(layer_weights)
+            else:
+                in_rank = np.ceil(rank_percentage_conv * layer_weights.shape[2])  # c_in
+                out_rank = np.ceil(rank_percentage_conv * layer_weights.shape[3])  # c_out
             dct_replacement["in_rank"] = in_rank
             dct_replacement["out_rank"] = out_rank
             first, core, last = LayerReplacerTucker.get_tucker_decomposition(layer_weights, in_rank, out_rank)
@@ -84,7 +90,8 @@ class LayerReplacerTucker(LayerReplacer):
     # LayerReplacer abstract methods #
     ##################################
     def _apply_replacement(self, layer):
-        return self.apply_tucker_or_low_rank_decomposition_to_layer(layer, self.int_or_flt_rank)
+        return self.apply_tucker_or_low_rank_decomposition_to_layer(layer, rank_dense=self.int_or_flt_rank,
+                                                                    rank_percentage_conv=self.rank_percentage_conv)
 
     def _replace_conv2D(self, layer, dct_compression):
         nb_filters = layer.filters

@@ -24,7 +24,8 @@ class TuckerSparseFactoLayerConv(Conv2DCustom):
             self.lst_sparsity_patterns_by_tucker_part.append(sparsity_pattern_tmp)
             self.lst_nb_factor.append(len(sparsity_pattern_tmp))
 
-            assert [sparsity_pattern_tmp[i].shape[1] == sparsity_pattern_tmp[i + 1].shape[0] for i in range(len(sparsity_pattern_tmp) - 1)]
+            shape_consistency = [sparsity_pattern_tmp[i].shape[1] == sparsity_pattern_tmp[i + 1].shape[0] for i in range(len(sparsity_pattern_tmp) - 1)]
+            assert shape_consistency or len(shape_consistency) == 0
 
         self.in_rank = in_rank
         self.out_rank = out_rank

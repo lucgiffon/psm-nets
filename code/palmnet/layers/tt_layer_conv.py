@@ -19,7 +19,7 @@ class TTLayerConv(Conv2DCustom):
         Parameters:
         inp_modes(list): [n_1, n_2, ..., n_k] such that n_1*n_2*...*n_k=N
         out_modes(list): [m_1, m_2, ..., m_k] such that m_1*m_2*...m_k = M
-        mat_ranks(list): [1, r_1, r_2, ..., r_k, 1]
+        mat_ranks(list): [r_0, r_1, r_2, ..., r_k, 1]
 
     '''
     def __init__(self, mat_ranks, inp_modes=None, out_modes=None, mode='auto',  **kwargs):
@@ -85,8 +85,8 @@ class TTLayerConv(Conv2DCustom):
         inp_shape = input.get_shape().as_list()[1:]
         inp_h, inp_w, inp_ch = inp_shape[0:3]
         tmp = tf.reshape(input, [-1, inp_h, inp_w, inp_ch])
-        tmp = tf.transpose(tmp, [0, 3, 1, 2])
-        tmp = tf.reshape(tmp, [-1, inp_h, inp_w, 1])
+        tmp = tf.transpose(tmp, [0, 3, 1, 2])  # channel first
+        tmp = tf.reshape(tmp, [-1, inp_h, inp_w, 1])  # somehow: multiply the size of the batch by 3 but only one channel
         # [1] + self.strides + [1]
         tmp = tf.nn.conv2d(tmp, self.filter_kernels, (1, *self.strides, 1), self.padding)
         # tmp shape = [batch_size * inp_ch, h, w, r]

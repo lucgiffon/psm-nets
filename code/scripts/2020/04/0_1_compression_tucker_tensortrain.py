@@ -55,16 +55,21 @@ import numpy as np
 import keras
 import docopt
 import os
+from collections import defaultdict
 import pandas as pd
+from pathlib import Path
+from keras.models import Model
+import zlib
 
 from palmnet.core.layer_replacer_TT import LayerReplacerTT
 from palmnet.core.layer_replacer_tucker import LayerReplacerTucker
 from palmnet.data import Mnist, Cifar10, Cifar100, Svhn, Test
-from palmnet.experiments.utils import ResultPrinter, ParameterManagerTensotrainAndTuckerDecomposition
+from palmnet.experiments.utils import ResultPrinter, ParameterManager
+from palmnet.layers.low_rank_dense_layer import LowRankDense
 from palmnet.layers.tt_layer_conv import TTLayerConv
 from palmnet.layers.tt_layer_dense import TTLayerDense
 from palmnet.layers.tucker_layer import TuckerLayerConv
-from palmnet.utils import CyclicLR, CSVLoggerByBatch
+from palmnet.utils import CyclicLR, CSVLoggerByBatch, get_nb_learnable_weights_from_model, get_nb_learnable_weights
 from skluc.utils import logger, log_memory_usage
 
 lst_results_header = [
@@ -74,19 +79,75 @@ lst_results_header = [
     "test_accuracy_finetuned_model",
     "test_loss_base_model",
     "test_loss_compressed_model",
-    "test_loss_finetuned_model"
+    "test_loss_finetuned_model",
+    "base_model_nb_param,"
+    "new_model_nb_param"
 ]
+
+
+class ParameterManagerTensotrainAndTuckerDecomposition(ParameterManager):
+    def __init__(self, dct_params, **kwargs):
+        super().__init__(self, **dct_params, **kwargs)
+        self["--min-lr"] = float(self["--min-lr"]) if self["--min-lr"] is not None else None
+        self["--max-lr"] = float(self["--max-lr"]) if self["--max-lr"] is not None else None
+        self["--lr"] = float(self["--lr"]) if self["--lr"] is not None else None
+        self["--nb-epoch"] = int(self["--nb-epoch"]) if self["--nb-epoch"] is not None else None
+        self["--epoch-step-size"] = int(self["--epoch-step-size"]) if self["--epoch-step-size"] is not None else None
+
+        # tensortrain parameters
+        self["--rank-value"] = int(self["--rank-value"]) if self["--rank-value"] is not None else None
+        self["--order"] = int(self["--order"]) if self["--order"] is not None else None
+
+        # tucker parameters
+        if "--rank-percentage-dense" in self:
+            self["--rank-percentage-dense"] = float(self["--rank-percentage-dense"]) if self["--rank-percentage-dense"] is not None else None
+
+        self.__init_hash_expe()
+        self.__init_output_file()
+
+    def __init_output_file(self):
+        self["output_file_resprinter"] = Path(self["hash"] + "_results.csv")
+        self["output_file_modelprinter"] = Path(self["hash"] + "_model.h5")
+        self["output_file_notfinishedprinter"] = Path(self["hash"] + ".notfinished")
+        self["output_file_csvcbprinter"] = Path(self["hash"] + "_history.csv")
+        self["output_file_layerbylayer"] = Path(self["hash"] + "_layerbylayer.csv")
+
+    def __init_hash_expe(self):
+        lst_elem_to_remove_for_hash = [
+            'identifier',
+            '-v',
+            '--help',
+            "output_file_resprinter",
+            "output_file_modelprinter",
+            "output_file_notfinishedprinter",
+            "output_file_csvcbprinter"
+        ]
+
+        keys_expe = sorted(self.keys())
+        any(keys_expe.remove(item) for item in lst_elem_to_remove_for_hash if item in keys_expe)
+        val_expe = [self[k] for k in keys_expe]
+        str_expe = [str(val) for pair in zip(keys_expe, val_expe) for val in pair]
+        self["hash"] = hex(zlib.crc32(str.encode("".join(str_expe))))
+
 
 def get_params_optimizer():
     # designed using cyclical learning rate with evaluation of different learning rates on 10 epochs
     dct_config_lr = {'--cifar10---cifar10-vgg19-tensortrain-4-10': 0.0001,
  '--cifar10---cifar10-vgg19-tensortrain-4-10-keep_first': 0.0001,
+ '--cifar10---cifar10-vgg19-tensortrain-4-12': 0.0001,
+ '--cifar10---cifar10-vgg19-tensortrain-4-12-keep_first': 0.001,
+ '--cifar10---cifar10-vgg19-tensortrain-4-14': 0.0001,
+ '--cifar10---cifar10-vgg19-tensortrain-4-14-keep_first': 0.0001,
  '--cifar10---cifar10-vgg19-tensortrain-4-2': 0.001,
  '--cifar10---cifar10-vgg19-tensortrain-4-2-keep_first': 0.001,
  '--cifar10---cifar10-vgg19-tensortrain-4-6': 0.0001,
  '--cifar10---cifar10-vgg19-tensortrain-4-6-keep_first': 1e-06,
  '--cifar100---cifar100-resnet20-tensortrain-4-10': 0.001,
  '--cifar100---cifar100-resnet20-tensortrain-4-10-keep_first': 0.001,
+ '--cifar100---cifar100-resnet20-tensortrain-4-12': 0.001,
+ '--cifar100---cifar100-resnet20-tensortrain-4-12-keep_first': 0.001,
+ '--cifar100---cifar100-resnet20-tensortrain-4-14': 0.001,
+ '--cifar100---cifar100-resnet20-tensortrain-4-14-keep_first': 0.001,
  '--cifar100---cifar100-resnet20-tensortrain-4-2': 0.001,
  '--cifar100---cifar100-resnet20-tensortrain-4-2-keep_first': 0.01,
  '--cifar100---cifar100-resnet20-tensortrain-4-6': 0.001,
@@ -99,18 +160,30 @@ def get_params_optimizer():
  '--cifar100---cifar100-resnet50-tensortrain-4-6-keep_first': 0.001,
  '--cifar100---cifar100-vgg19-tensortrain-4-10': 0.001,
  '--cifar100---cifar100-vgg19-tensortrain-4-10-keep_first': 0.001,
+ '--cifar100---cifar100-vgg19-tensortrain-4-12': 0.0001,
+ '--cifar100---cifar100-vgg19-tensortrain-4-12-keep_first': 1e-05,
+ '--cifar100---cifar100-vgg19-tensortrain-4-14': 1e-05,
+ '--cifar100---cifar100-vgg19-tensortrain-4-14-keep_first': 0.0001,
  '--cifar100---cifar100-vgg19-tensortrain-4-2': 0.001,
  '--cifar100---cifar100-vgg19-tensortrain-4-2-keep_first': 0.001,
  '--cifar100---cifar100-vgg19-tensortrain-4-6': 0.0001,
  '--cifar100---cifar100-vgg19-tensortrain-4-6-keep_first': 0.001,
  '--mnist---mnist-lenet-tensortrain-4-10': 1e-06,
  '--mnist---mnist-lenet-tensortrain-4-10-keep_first': 1e-05,
+ '--mnist---mnist-lenet-tensortrain-4-12': 1e-05,
+ '--mnist---mnist-lenet-tensortrain-4-12-keep_first': 1e-05,
+ '--mnist---mnist-lenet-tensortrain-4-14': 1e-06,
+ '--mnist---mnist-lenet-tensortrain-4-14-keep_first': 1e-06,
  '--mnist---mnist-lenet-tensortrain-4-2': 0.0001,
  '--mnist---mnist-lenet-tensortrain-4-2-keep_first': 0.0001,
  '--mnist---mnist-lenet-tensortrain-4-6': 1e-05,
  '--mnist---mnist-lenet-tensortrain-4-6-keep_first': 1e-05,
- '--svhn---svhn-vgg19-tensortrain-4-10': 0.0001,  # modified by hand
+ '--svhn---svhn-vgg19-tensortrain-4-10': 0.1,
  '--svhn---svhn-vgg19-tensortrain-4-10-keep_first': 1e-05,
+ '--svhn---svhn-vgg19-tensortrain-4-12': 1e-05,
+ '--svhn---svhn-vgg19-tensortrain-4-12-keep_first': 0.0001,
+ '--svhn---svhn-vgg19-tensortrain-4-14': 0.0001,
+ '--svhn---svhn-vgg19-tensortrain-4-14-keep_first': 1e-05,
  '--svhn---svhn-vgg19-tensortrain-4-2': 0.0001,
  '--svhn---svhn-vgg19-tensortrain-4-2-keep_first': 0.0001,
  '--svhn---svhn-vgg19-tensortrain-4-6': 0.0001,
@@ -252,6 +325,47 @@ def compress_and_evaluate_model(base_model, model_compilation_params, x_test, y_
 
     return new_model
 
+
+def count_models_parameters(base_model, new_model):
+    base_model_nb_param = get_nb_learnable_weights_from_model(base_model)
+    new_model_nb_param = get_nb_learnable_weights_from_model(new_model)
+
+    dct_results_param = {
+        "base_model_nb_param": base_model_nb_param,
+        "new_model_nb_param": new_model_nb_param
+    }
+
+    resprinter.add(dct_results_param)
+
+    if len(base_model.layers) < len(new_model.layers):
+        base_model = Model(inputs=base_model.inputs, outputs=base_model.outputs)
+
+    dct_results_matrices = defaultdict(lambda: [])
+
+    for idx_layer, compressed_layer in enumerate(new_model.layers):
+        if any(isinstance(compressed_layer, _class) for _class in (TuckerLayerConv, TTLayerConv, TTLayerDense, LowRankDense)):
+            base_layer = base_model.layers[idx_layer]
+            log_memory_usage("Start secondary loop")
+
+            # get informations to identify the layer (and do cross references)
+            dct_results_matrices["idx-expe"].append(paraman["identifier"])
+            dct_results_matrices["hash"].append(paraman["hash"])
+            dct_results_matrices["layer-name-compressed"].append(compressed_layer.name)
+            dct_results_matrices["layer-name-base"].append(base_layer.name)
+            dct_results_matrices["idx-layer"].append(idx_layer)
+
+            # complexity analysis #
+            # get nb val base layer and comrpessed layer
+            nb_weights_base_layer = get_nb_learnable_weights(base_layer)
+            dct_results_matrices["nb-non-zero-base"].append(nb_weights_base_layer)
+            nb_weights_compressed_layer = get_nb_learnable_weights(compressed_layer)
+            dct_results_matrices["nb-non-zero-compressed"].append(nb_weights_compressed_layer)
+            dct_results_matrices["nb-non-zero-compression-rate"].append(nb_weights_base_layer / nb_weights_compressed_layer)
+
+    df_results_layers = pd.DataFrame.from_dict(dct_results_matrices)
+    df_results_layers.to_csv(paraman["output_file_layerbylayer"])
+
+
 def get_or_load_new_model(model_compilation_params, x_test, y_test):
     if os.path.exists(paraman["output_file_notfinishedprinter"]):
         df_history = pd.read_csv(paraman["output_file_csvcbprinter"])
@@ -269,7 +383,7 @@ def get_or_load_new_model(model_compilation_params, x_test, y_test):
         resprinter.add(dct_results)
 
         if paraman["tucker"]:
-            new_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={'TuckerLayerConv':TuckerLayerConv})
+            new_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={'TuckerLayerConv': TuckerLayerConv, 'LowRankDense': LowRankDense})
         elif paraman["tensortrain"]:
             new_model = keras.models.load_model(paraman["output_file_modelprinter"], custom_objects={'TTLayerConv': TTLayerConv, "TTLayerDense": TTLayerDense})
         else:
@@ -280,10 +394,15 @@ def get_or_load_new_model(model_compilation_params, x_test, y_test):
 
         # New model compression #
         new_model = compress_and_evaluate_model(base_model, model_compilation_params, x_test, y_test)
+
+        # count the number of parameter
+        count_models_parameters(base_model, new_model)
+
         del base_model
         init_nb_epoch = 0
 
     return new_model, init_nb_epoch
+
 
 def fit_new_model(new_model, param_train_dataset, init_nb_epoch, call_backs, x_train, y_train, x_test, y_test):
     open(paraman["output_file_notfinishedprinter"], 'w').close()

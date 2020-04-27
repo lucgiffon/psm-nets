@@ -54,9 +54,11 @@ if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/processed")
 
     results_path = "2020/03/9_10_finetune_palminized_no_useless"
+    results_path_2 = "2020/04/9_10_finetune_palminized_no_useless"
     results_path_tucker = "2020/04/0_0_compression_tucker_tensortrain"
 
     src_results_path = root_source_dir / results_path / "results.csv"
+    src_results_path_2 = root_source_dir / results_path_2 / "results.csv"
     src_results_path_tucker = root_source_dir / results_path_tucker / "results.csv"
 
     root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
@@ -64,10 +66,13 @@ if __name__ == "__main__":
     output_dir.mkdir(parents=True, exist_ok=True)
 
     df = pd.read_csv(src_results_path, header=0)
+    df_2 = pd.read_csv(src_results_path_2, header=0)
+    df = pd.concat([df, df_2])
     df = df.fillna("None")
+    df = df.drop(columns=["Unnamed: 0", "idx-expe"]).drop_duplicates()
 
-    df_tucker = pd.read_csv(src_results_path_tucker, header=0)
-    df_tucker = df_tucker.fillna("None")
+    df_tucker_tt = pd.read_csv(src_results_path_tucker, header=0)
+    df_tucker_tt = df_tucker_tt.fillna("None")
     # sparsity_factors = sorted(set(df_palminized["--sparsity-factor"]))
     nb_factors = set(df["nb-factor"].values)
 
@@ -100,12 +105,12 @@ if __name__ == "__main__":
     datasets = set(df["dataset"].values)
     for dataname in datasets:
         df_data = df[df["dataset"] == dataname]
-        df_tucker_data =  df_tucker[df_tucker["dataset"] == dataname]
+        df_tucker_tt_data =  df_tucker_tt[df_tucker_tt["dataset"] == dataname]
         df_model_values = set(df_data["model"].values)
 
         for modelname in df_model_values:
             df_model = df_data[df_data["model"] == modelname]
-            df_tucker_model = df_tucker_data[df_tucker_data["model"] == modelname]
+            df_tucker_tt_model = df_tucker_tt_data[df_tucker_tt_data["model"] == modelname]
             for task in tasks:
                 xticks = ["2", "3", "log(min(A, B))"]
                 # xticks = ["A", "B", "log(min(A, B))"]
@@ -138,22 +143,44 @@ if __name__ == "__main__":
                         name="base model"
                 ))
 
-                if task != "param-compression-rate-total":
-                    # tucker decompositon
-                    ######################
+                # tucker decompositon
+                ######################
+                df_tucker = df_tucker_tt_model[df_tucker_tt_model["compression"] == "tucker"]
+                for keep_first in [1, 0]:
+                    df_tucker_keep = df_tucker[df_tucker["keep-first-layer"] == keep_first]
+                    df_tucker_keep = df_tucker_keep.apply(pd.to_numeric, errors='coerce')
+                    val_tucker = df_tucker_keep[task].values.mean()
+                    str_trace = f"tucker model {'keep first' if keep_first else ''}"
+                    fig.add_trace(
+                        go.Scatter(
+                            x=[-1] + xticks + [1],
+                            y=[val_tucker, val_tucker, val_tucker, val_tucker, val_tucker],
+                            mode='lines',
+                            name=str_trace,
+                            hovertext=str_trace
+                        ))
+
+                # tt decomposition
+                ######################
+                df_tt = df_tucker_tt_model[df_tucker_tt_model["compression"] == "tensortrain"]
+                rank_values = set(df_tt["rank-value"].values)
+                for rank_val in rank_values:
+                    df_tt_rank_val = df_tt[df_tt["rank-value"] == rank_val]
+
                     for keep_first in [1, 0]:
-                        df_tucker_keep = df_tucker_model[df_tucker_model["keep-first-layer"] == keep_first]
-                        df_tucker_keep = df_tucker_keep.apply(pd.to_numeric, errors='coerce')
-                        val_tucker = df_tucker_keep[task].values.mean()
-                        str_trace = f"tucker model {'keep first' if keep_first else ''}"
+                        df_tt_keep = df_tt_rank_val[df_tt_rank_val["keep-first-layer"] == keep_first]
+                        df_tt_keep = df_tt_keep.apply(pd.to_numeric, errors='coerce')
+                        val_tt = df_tt_keep[task].values.mean()
+                        str_trace = f"tt model {'keep first' if keep_first else ''} rank {rank_val}"
                         fig.add_trace(
                             go.Scatter(
                                 x=[-1] + xticks + [1],
-                                y=[val_tucker, val_tucker, val_tucker, val_tucker, val_tucker],
+                                y=[val_tt, val_tt, val_tt, val_tt, val_tt],
                                 mode='lines',
                                 name=str_trace,
                                 hovertext=str_trace
                             ))
+
 
                 # palminized
                 ############

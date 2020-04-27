@@ -1,0 +1,137 @@
+#  script.py [-h] [-v|-vv] (--mnist|--svhn|--cifar10|--cifar100|--test-data)
+# [--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+# --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float]
+
+all:
+  hierarchical_mnist:
+  not_hierarchical_mnist:
+  not_hierarchical_mnist_log:
+  hierarchical_svhn:
+  not_hierarchical_svhn:
+  not_hierarchical_svhn_log:
+  hierarchical_cifar10:
+  not_hierarchical_cifar10_log:
+  not_hierarchical_cifar10:
+  hierarchical_cifar100:
+  not_hierarchical_cifar100:
+  hierarchical_cifar100_resnet:
+  not_hierarchical_cifar100_resnet:
+
+base:
+  sparsity_fac: {"--sparsity-factor": [3, 5]}
+  verbosity: ["-v"]
+  min_lr: {"--min-lr": [0.000001]}
+  max_lr: {"--max-lr": [0.1]}
+  nb_epoch: {"--nb-epoch": [10]}
+  nb_sepoch_step_size: {"--epoch-step-size": [10]}
+  use_clr: {"--use-clr": ["triangular"]}
+  compression: ["faust"]
+  tucker: ["--tucker"]
+
+not_hier_input_dir:
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/04/0_1_compression_faust_tucker_sparse_facto"]}
+
+hier_input_dir:
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/04/0_1_compression_faust_tucker_sparse_facto_only_hierarchical"]}
+  nb_iter_palm: {"--nb-iteration-palm": [150]}
+
+
+## MNIST
+
+palmnet_mnist:
+  base:
+  mnist: ["--mnist"]
+  mnist_lenet: ["--mnist-lenet"]
+
+hierarchical_mnist:
+  palmnet_mnist:
+  hier_input_dir:
+  hierarchical: ["--hierarchical"]
+
+not_hierarchical_mnist:
+  palmnet_mnist:
+  not_hier_input_dir:
+  nb_fac: {"--nb-factor": [2, 3]}
+
+not_hierarchical_mnist_log:
+  palmnet_mnist:
+  not_hier_input_dir:
+
+
+## SVHN
+
+palmnet_svhn:
+  base:
+  svhn: ["--svhn"]
+  svhn_vgg19: ["--svhn-vgg19"]
+
+hierarchical_svhn:
+  palmnet_svhn:
+  hier_input_dir:
+  hierarchical: ["--hierarchical"]
+
+not_hierarchical_svhn:
+  palmnet_svhn:
+  not_hier_input_dir:
+  nb_fac: {"--nb-factor": [2, 3]}
+
+not_hierarchical_svhn_log:
+  palmnet_svhn:
+  not_hier_input_dir:
+
+## CIFAR10
+
+palmnet_cifar10:
+  base:
+  cifar10: ["--cifar10"]
+  cifar10_vgg19: ["--cifar10-vgg19"]
+
+hierarchical_cifar10:
+  palmnet_cifar10:
+  hier_input_dir:
+  hierarchical: ["--hierarchical"]
+
+not_hierarchical_cifar10:
+  palmnet_cifar10:
+  not_hier_input_dir:
+  nb_fac: {"--nb-factor": [2, 3]}
+
+not_hierarchical_cifar10_log:
+  palmnet_cifar10:
+  not_hier_input_dir:
+
+## CIFAR100 VGG19
+
+palmnet_cifar100:
+  base:
+  cifar100: ["--cifar100"]
+  cifar100_vgg19: ["--cifar100-vgg19"]
+
+hierarchical_cifar100:
+  palmnet_cifar100:
+  hier_input_dir:
+  hierarchical: ["--hierarchical", ""]
+#  hierarchical: [""]
+
+not_hierarchical_cifar100:
+  palmnet_cifar100:
+  not_hier_input_dir:
+  nb_fac: {"--nb-factor": [2, 3]}
+
+## CIFAR100 RESNET
+
+palmnet_cifar100_resnet:
+  base:
+  cifar100: ["--cifar100"]
+  cifar100_vgg19: ["--cifar100-resnet20", "--cifar100-resnet50"]
+
+hierarchical_cifar100_resnet:
+  palmnet_cifar100_resnet:
+  hier_input_dir:
+  hierarchical: ["--hierarchical", ""]
+#  hierarchical: [""]
+
+not_hierarchical_cifar100_resnet:
+  palmnet_cifar100_resnet:
+  not_hier_input_dir:
+  nb_fac: {"--nb-factor": [2, 3]}

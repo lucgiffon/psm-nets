@@ -1,4 +1,6 @@
 import pathlib
+import random
+
 import pandas as pd
 from palmnet.visualization.utils import get_palminized_model_and_df, get_df
 import matplotlib.pyplot as plt
@@ -54,13 +56,21 @@ scale_tasks = {
 if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/processed")
 
-    results_path = "2020/03/9_10_finetune_palminized_no_useless"
+    # results_path = "2020/03/9_10_finetune_palminized_no_useless"
+    results_path = "2020/04/9_10_finetune_palminized_no_useless"
+    results_path_tucker_tt = "2020/04/0_0_compression_tucker_tensortrain"
 
+    # src_results_path = root_source_dir / results_path / "results_layers.csv"
     src_results_path = root_source_dir / results_path / "results_layers.csv"
+    src_results_path_tucker_tt = root_source_dir / results_path_tucker_tt / "results_layers.csv"
+
 
     root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
     output_dir = root_output_dir / results_path / "histo_compressions"
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    df_tucker_tt = pd.read_csv(src_results_path_tucker_tt, header=0)
+    df_tucker_tt = df_tucker_tt.fillna("None")
 
     df = pd.read_csv(src_results_path, header=0)
     df = df.fillna("None")
@@ -92,9 +102,9 @@ if __name__ == "__main__":
         0: 80
     }
 
-
     df = df[df["keep-last-layer"] == 0]
     df = df[df["use-clr"] == 1]
+
 
     from sklearn import manifold
     from sklearn.metrics import euclidean_distances
@@ -113,10 +123,13 @@ if __name__ == "__main__":
     pos = (((pos - min_pos) / (max_pos - min_pos)))
     lst_color_codes = ["{}".format(tuple(lin)) for lin in pos]
     df = df.assign(color_code=lst_color_codes)
+
+
     del lst_color_codes
     datasets = set(df["data"].values)
     for dataname in datasets:
         df_data = df[df["data"] == dataname]
+        df_tucker_tt_data = df_tucker_tt[df_tucker_tt["data"] == dataname]
         df_model_values = set(df_data["model"].values)
         for modelname in df_model_values:
             dct_config_color = dict()
@@ -124,6 +137,7 @@ if __name__ == "__main__":
             dct_legend_hover = dict()
 
             df_model = df_data[df_data["model"] == modelname]
+            df_tucker_tt_model = df_tucker_tt_data[df_tucker_tt_data["model"] == modelname]
 
             dct_idx_layer = dict()
 
@@ -135,6 +149,7 @@ if __name__ == "__main__":
                 nb_fac_param = row["nb-factor-param"]
                 nb_fac = int(row["nb-factor-actual"])
 
+                # config string
                 hierarchical_str = "-H" if hierarchical_value == 1 else ""
                 str_config_legend = f"P sp{sp_fac_palm}-nb{nb_fac_param}-{hierarchical_str}"
                 str_config_recons_legend = "Reconstructed " + str_config_legend
@@ -183,12 +198,55 @@ if __name__ == "__main__":
                 #                      hovertext=str_config_recons
                 # ))
 
+            for idx_row, (_, row) in enumerate(df_tucker_tt_model.iterrows()):
+                # config attributes
+                idx_xp = str(row["idx-expe"])
+                rank_value = str(row["rank-value"])
+                order = str(row["order"])
+                rank_percent = str(row["rank-percentage-dense"])
+                compression = str(row["compression"])
+
+                # config string
+                if compression == "tucker" and rank_percent == "None":
+                    str_config_legend = f"Tucker %% sv: {rank_percent}"
+                    str_config_hover = str_config_legend
+                elif compression == "tucker":
+                    continue
+                else:
+                    str_config_legend = f"TT order: {order}; rank: {rank_value}"
+                    str_config_hover = str_config_legend
+                dct_legend_hover[str_config_legend] = str_config_hover
+
+                # comrpession-rate
+                nnz_compressed = row["nb-non-zero-compressed"]
+                nnz_base = row["nb-non-zero-base"]
+                compression_rate = row["nb-non-zero-compression-rate"]
+
+                if "layer-name-base" in row:
+                    layer_name = row["layer-name-base"].split("_-_")[0]
+                else:
+                    layer_name = row["layer-name-compressed"].split("_-_")[0]
+                idx_layer = row["idx-layer"]
+                if idx_layer in dct_idx_layer:
+                    assert dct_idx_layer[idx_layer] == layer_name
+                dct_idx_layer[idx_layer] = layer_name
+
+                dct_config_dct_layer_tpl_comp_nfac[str_config_legend][layer_name] = nnz_compressed
+                if layer_name in dct_config_dct_layer_tpl_comp_nfac["Base"]:
+                    assert nnz_base == dct_config_dct_layer_tpl_comp_nfac["Base"][layer_name]
+
+                row_color_code = "hsl({}, {}%, 50%)".format(random.randint(0, 100), random.randint(20, 80))
+
+                dct_config_color[str_config_hover] = row_color_code
+
             fig = go.Figure()
 
             sorted_configs = sorted(dct_legend_hover.keys()) + ["Base"]
             dct_config_color["Base"] = "black"
             dct_legend_hover["Base"] = "Base"
             for s_conf in sorted_configs:
+                if "Reconstructed" in s_conf:
+                    continue
                 hover_text = dct_legend_hover[s_conf]
                 lst_layers = []
                 lst_configs = []

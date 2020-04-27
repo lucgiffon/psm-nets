@@ -38,12 +38,14 @@ class Faustizer(SparseFactorizer):
 
         stop_crit = StoppingCriterion(tol=tol, maxiter=max_iter)
         # stop_crit = StoppingCriterion(num_its=30)
-
-        return ParamsHierarchical(S_cons, R_cons,
-                                  stop_crit,
-                                  stop_crit,
-                                  is_update_way_R2L=True,
-                                  is_fact_side_left=True)
+        try:
+            return ParamsHierarchical(S_cons, R_cons,
+                                      stop_crit,
+                                      stop_crit,
+                                      is_update_way_R2L=True,
+                                      is_fact_side_left=True)
+        except Exception as e:
+            print(e)
 
     @staticmethod
     def build_constraints_faust(left_dim, right_dim, sparsity, N_fac, hierarchical, tol, nb_iter):
@@ -97,13 +99,18 @@ class Faustizer(SparseFactorizer):
         else:
             nb_factors = self.nb_factor
 
+        if nb_factors == 0:
+            nb_factors = 1
+
         if nb_factors == 1 and self.hierarchical:
             # because in that case, it is actually not the hierarchical palm that will be used
             # but the standard PALM instead because hierarchical is non-sense in that degenerate case
             # and would crash
-            assert transposed is True
+
+            # as it was supposed to be run in herarchical mode the matrix is supposed to be in the bad shape
+            # to be run in not hierarchical mode.
             matrix = matrix.T
-            transposed = False
+            transposed = not transposed
             left_dim, right_dim = matrix.shape
 
         constraints = self.build_constraints_faust(left_dim, right_dim, sparsity=self.sparsity_fac, N_fac=nb_factors,

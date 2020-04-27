@@ -95,13 +95,11 @@ def show_for_tensortrain():
                         df_rank = df_order[df_order["--rank-value"] == rank]
                         fig = go.Figure()
                         for index, row in df_rank.iterrows():
-                            csv_file = src_results_dir / row["output_file_csvcbprinter"]
+                            csv_file = pathlib.Path(row["results_dir"]) / row["output_file_csvcbprinter"]
                             try:
                                 df_csv = pd.read_csv(csv_file)
                             except:
-                                print(csv_file)
-                                csv_file = src_results_dir_only_mnist_tensortrain / row["output_file_csvcbprinter"]
-                                df_csv = pd.read_csv(csv_file)
+                                continue
                             win_size = 5
                             lr_values = df_csv["lr"].values
                             lr_values_log = np.log10(lr_values)
@@ -131,7 +129,8 @@ def show_for_tensortrain():
                                           xaxis_type="log",
                                           xaxis={'type': 'category'},
                                           )
-                        # fig.show()
+                        # if rank == 12 or rank == 14:
+                        #     fig.show()
 
     print(dct_config_lr)
 
@@ -140,14 +139,18 @@ if __name__ == "__main__":
 
     expe_path = "2020/04/0_0_compression_tucker_tensortrain_find_lr"
     expe_path_only_mnist_tensortrain = "2020/04/0_0_compression_tucker_tensortrain_find_lr_only_mnist_tensortrain"
+    expe_path_tensortrain_12_14 = "2020/04/0_0_compression_tensortrain_find_lr_12_14"
 
     src_results_dir = root_source_dir / expe_path
     src_results_dir_only_mnist_tensortrain = root_source_dir / expe_path_only_mnist_tensortrain
+    src_results_dir_tensortrain_12_14 = root_source_dir / expe_path_tensortrain_12_14
 
-    df = get_df(src_results_dir)
-    df_only_mnist = get_df(src_results_dir_only_mnist_tensortrain)
+    get_df_and_assign = lambda x: get_df(x).assign(results_dir=str(x))
+    df = get_df_and_assign(src_results_dir)
+    df_only_mnist = get_df_and_assign(src_results_dir_only_mnist_tensortrain)
+    df_tensortrain_12_14 = get_df_and_assign(src_results_dir_tensortrain_12_14)
 
-    df = pd.concat([df, df_only_mnist])
+    df = pd.concat([df, df_only_mnist, df_tensortrain_12_14])
 
     df = df.dropna(subset=["failure"])
     df = df.drop(columns="oar_id").drop_duplicates()
@@ -159,4 +162,4 @@ if __name__ == "__main__":
 
 
     show_for_tensortrain()
-    show_for_tucker()
+    # show_for_tucker()
