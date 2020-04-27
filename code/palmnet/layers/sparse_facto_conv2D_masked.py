@@ -35,7 +35,7 @@ class SparseFactorisationConv2D(Conv2DCustom):
             self.sparsity_patterns = [cast_sparsity_pattern(s) for s in sparsity_patterns]
             self.nb_factor = len(sparsity_patterns)
 
-            shape_consistency = [sparsity_patterns[i].shape[1] == sparsity_patterns[i + 1].shape[0] for i in range(len(sparsity_patterns) - 1)]
+            shape_consistency = [self.sparsity_patterns[i].shape[1] == self.sparsity_patterns[i + 1].shape[0] for i in range(len(self.sparsity_patterns) - 1)]
             assert shape_consistency or len(shape_consistency) == 0
 
             # assert [self.sparsity_patterns[i].shape[1] == self.sparsity_patterns[i + 1].shape[0] for i in range(len(self.sparsity_patterns) - 1)]

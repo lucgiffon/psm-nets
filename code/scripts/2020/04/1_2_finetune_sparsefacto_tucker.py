@@ -143,6 +143,7 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
             '-v',
             '--help',
             '--input-dir',
+            "output_file_layerbylayer"
         ]
         keys_expe = sorted(self.keys())
         any(keys_expe.remove(item) for item in lst_elem_to_remove_for_hash)
