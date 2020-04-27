@@ -72,6 +72,7 @@ from palmnet.experiments.utils import ResultPrinter, ParameterManagerPalminize, 
 # from palmnet.layers.sparse_tensor import SparseFactorisationDense#, SparseFactorisationConv2DDensify
 from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
 from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
+from palmnet.layers.tucker_layer import TuckerLayerConv
 from palmnet.layers.tucker_layer_sparse_facto import TuckerSparseFactoLayerConv
 from palmnet.utils import CSVLoggerByBatch
 from palmnet.utils import CyclicLR
@@ -305,7 +306,8 @@ def get_or_load_new_model(model_compilation_params, x_test, y_test):
 
         new_model = keras.models.load_model(paraman["output_file_modelprinter"], custom_objects={'SparseFactorisationConv2D': SparseFactorisationConv2D,
                                                                                                  "SparseFactorisationDense": SparseFactorisationDense,
-                                                                                                 'TuckerSparseFactoLayerConv': TuckerSparseFactoLayerConv})
+                                                                                                 'TuckerSparseFactoLayerConv': TuckerSparseFactoLayerConv,
+                                                                                                 'TuckerLayerConv': TuckerLayerConv})
     else:
         # Base Model #
         base_model = get_and_evaluate_base_model(model_compilation_params, x_test, y_test)
