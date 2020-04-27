@@ -12,7 +12,7 @@ base:
 #  min_lr: {"--min-lr": [0.000001]}
 #  max_lr: {"--max-lr": [0.1]}
   split: {"--train-val-split": [0.2]}
-  nb_epoch: {"--nb-epoch": [400]}
+  nb_epoch: {"--nb-epoch": [500]}
   input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch"]}
 
 ## CIFAR10
