@@ -34,7 +34,7 @@ data/external/svhn.npz:
 
 ## Make Model
 
-models: mnist_lenet cifar10_vgg19_4096x4096 cifar100_vgg19_4096x4096 svhn_vgg19_4096x4096 cifar10_vgg19_2048x2048 cifar100_vgg19_2048x2048 svhn_vgg19_2048x2048 mnist_500 cifar100_resnet20 cifar100_resnet50 cifar10_tensortrain_base cifar100_resnet50_new
+models: mnist_lenet cifar10_vgg19_4096x4096 cifar100_vgg19_4096x4096 svhn_vgg19_4096x4096 cifar10_vgg19_2048x2048 cifar100_vgg19_2048x2048 svhn_vgg19_2048x2048 mnist_500 cifar100_resnet20 cifar100_resnet50 cifar10_tensortrain_base cifar100_resnet50_new cifar100_resnet20_new
 
 mnist_lenet: models/external/mnist_lenet_1570207294.h5
 
@@ -43,6 +43,8 @@ cifar100_resnet20: models/external/resnet_20_cifar100.h5
 cifar100_resnet50: models/external/resnet_50_cifar100.h5
 
 cifar100_resnet50_new: models/external/resnet_resnet50_cifar100_1587927534.h5
+
+cifar100_resnet20_new: models/external/resnet_resnet20_cifar100_1588012286.h5
 
 cifar10_vgg19_4096x4096: models/external/cifar10_vgg19_4096x4096_1570693209.h5
 
@@ -71,6 +73,9 @@ models/external/resnet_50_cifar100.h5:
 
 models/external/resnet_resnet50_cifar100_1587927534.h5:
 	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_resnet50_new models/external
+
+models/external/resnet_resnet20_cifar100_1588012286.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_resnet20_new models/external
 
 models/external/mnist_lenet_1570207294.h5:
 	$(PYTHON_INTERPRETER) code/models/make_models.py mnist_lenet models/external
