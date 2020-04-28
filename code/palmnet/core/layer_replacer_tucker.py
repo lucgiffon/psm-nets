@@ -52,8 +52,8 @@ class LayerReplacerTucker(LayerReplacer):
             if rank_percentage_conv is None:
                 in_rank, out_rank = LayerReplacerTucker.get_rank_layer(layer_weights)
             else:
-                in_rank = np.ceil(rank_percentage_conv * layer_weights.shape[2])  # c_in
-                out_rank = np.ceil(rank_percentage_conv * layer_weights.shape[3])  # c_out
+                in_rank = int(np.ceil(rank_percentage_conv * layer_weights.shape[2]))  # c_in
+                out_rank = int(np.ceil(rank_percentage_conv * layer_weights.shape[3]))  # c_out
             dct_replacement["in_rank"] = in_rank
             dct_replacement["out_rank"] = out_rank
             first, core, last = LayerReplacerTucker.get_tucker_decomposition(layer_weights, in_rank, out_rank)

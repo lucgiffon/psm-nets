@@ -2,8 +2,8 @@
 This script is for running compression of convolutional networks using tucker decomposition.
 
 Usage:
-    script.py tucker [-h] [-v|-vv] [--rank-percentage-dense float] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
-    script.py tensortrain [-h] [-v|-vv] [--rank-value int] [--order int] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py tucker [-h] [-v|-vv] [--rank-percentage-dense float] [--rank-percentage-conv float] [--rank-percentage float] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py tensortrain [-h] [-v|-vv] [--rank-value int] [--order int] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
 
 Options:
   -h --help                             Show this screen.
@@ -25,6 +25,7 @@ Model:
   --svhn-vgg19                          Use model vgg19 pretrained on svhn.
   --mnist-500                           Use model fc 500 hidden units pretrained on mnist.
   --cifar100-resnet50                   Use model resnet50 pretrained on cifar100.
+  --cifar100-resnet50-new               Use model resnet50 pretrained on cifar100.
   --cifar100-resnet20                   Use model resnet20 pretrained on cifar100.
 
 Compression specific options:
@@ -34,6 +35,7 @@ Compression specific options:
 Tucker specific option:
     --rank-percentage-dense float       Tell tucker to replace Dense layers by low rank decomposition with rank equal percentage of base rank
     --rank-percentage-conv float        Tell tucker to use a percentage of in_channel and out_channel to determine the rank in convolution and not VBMF.
+    --rank-percentage float             Tell tucker to use the same rank percentage for dense and conv
 
 Tensortrain specific option:
     --rank-value int                    The values for r0, r1 r... rk (exemple: 2, 4, 6)
@@ -100,10 +102,19 @@ class ParameterManagerTensotrainAndTuckerDecomposition(ParameterManager):
         self["--order"] = int(self["--order"]) if self["--order"] is not None else None
 
         # tucker parameters
-        if "--rank-percentage-dense" in self:
-            self["--rank-percentage-dense"] = float(self["--rank-percentage-dense"]) if self["--rank-percentage-dense"] is not None else None
-        if "--rank-percentage-conv" in self:
-            self["--rank-percentage-conv"] = float(self["--rank-percentage-conv"]) if self["--rank-percentage-conv"] is not None else None
+        self["--rank-percentage-dense"] = float(self["--rank-percentage-dense"]) if self["--rank-percentage-dense"] is not None else None
+        self["--rank-percentage-conv"] = float(self["--rank-percentage-conv"]) if self["--rank-percentage-conv"] is not None else None
+        self["--rank-percentage"] = float(self["--rank-percentage"]) if self["--rank-percentage"] is not None else None
+
+        assert (self["--rank-percentage-conv"] is None and self["--rank-percentage-dense"] is None) or self["--rank-percentage"] is None, "--rank-percentage and --rank-percentage-conv or dense can't be set together"
+
+        if self["--rank-percentage"] is not None:
+            self["actual-rank-percentage-dense"] = self["--rank-percentage"]
+            self["actual-rank-percentage-conv"] = self["--rank-percentage"]
+        else:
+            self["actual-rank-percentage-dense"] = self["--rank-percentage-dense"]
+            self["actual-rank-percentage-conv"] = self["--rank-percentage-conv"]
+
 
         self.__init_hash_expe()
         self.__init_output_file()
@@ -247,7 +258,6 @@ def get_params_optimizer():
     else:
         raise ValueError("Unknown compression method")
 
-
     params_optimizer = param_train_dataset.params_optimizer
 
     str_keep_first = "-keep_first" if paraman["--keep-first-layer"] else ""
@@ -308,7 +318,7 @@ def get_and_evaluate_base_model(model_compilation_params, x_test, y_test):
 def compress_and_evaluate_model(base_model, model_compilation_params, x_test, y_test):
     if paraman["tucker"]:
         layer_replacer = LayerReplacerTucker(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"],
-                                             rank_percentage_dense=paraman["--rank-percentage-dense"], rank_percentage_conv=paraman["--rank-percentage-conv"])
+                                             rank_percentage_dense=paraman["actual-rank-percentage-dense"], rank_percentage_conv=paraman["actual-rank-percentage-conv"])
     elif paraman["tensortrain"]:
         layer_replacer = LayerReplacerTT(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"],
                                          rank_value=paraman["--rank-value"], order=paraman["--order"])
