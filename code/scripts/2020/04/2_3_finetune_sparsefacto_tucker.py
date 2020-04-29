@@ -2,7 +2,7 @@
 This script finds a palminized model with given arguments then finetune it.
 
 Usage:
-    script.py faust [--tucker] --input-dir path [-h] [-v|-vv] [--seed int] [--train-val-split float] [--batchnorm] [--keep-last-layer] [--lr float] [--use-clr policy] [--min-lr float --max-lr float] [--epoch-step-size int] [--nb-epoch int] [--only-mask] [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
+    script.py faust [--tucker] --input-dir path [-h] [-v|-vv] [--seed int] [--train-val-split float] [--batchnorm] [--keep-last-layer] [--keep-first-layer] [--lr float] [--use-clr policy] [--min-lr float --max-lr float] [--epoch-step-size int] [--nb-epoch int] [--only-mask] [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
 
 Options:
   -h --help                             Show this screen.
@@ -18,6 +18,7 @@ Options:
   --epoch-step-size int                 Number of epochs for an half cycle of CLR.
   --use-clr policy                      Tell to use clr. Policy can be "triangular" or "triangular2" (see Cyclical learning rate)
   --keep-last-layer                     Do not compress classification layer.
+  --keep-first-layer                    Do not compress the first layer.
   --train-val-split float               Tells the proportion of validation data. If not specified, validation data is test data.
 
 
@@ -312,11 +313,11 @@ def count_models_parameters(base_model, new_model, dct_name_compression):
 def compress_and_evaluate_model(base_model, model_compilation_params, x_test, y_test):
     if paraman["--tucker"]:
         layer_replacer = LayerReplacerSparseFactoTuckerFaust(keep_last_layer=paraman["--keep-last-layer"], sparse_factorizer=Faustizer(),
-                                           path_checkpoint_file=paraman["input_model_path"])
+                                           path_checkpoint_file=paraman["input_model_path"], keep_first_layer=paraman["--keep-first-layer"])
     else:
         layer_replacer = LayerReplacerFaust(keep_last_layer=paraman["--keep-last-layer"], sparse_factorizer=Faustizer(),
                                            only_mask=paraman["--only-mask"], path_checkpoint_file=paraman["input_model_path"],
-                                           intertwine_batchnorm=paraman["--batchnorm"])
+                                           intertwine_batchnorm=paraman["--batchnorm"], keep_first_layer=paraman["--keep-first-layer"])
 
     layer_replacer.load_dct_name_compression()
     new_model = layer_replacer.transform(base_model)
@@ -356,6 +357,7 @@ def get_or_load_new_model(model_compilation_params, x_test, y_test):
             os.path.exists(paraman["output_file_modelprinter"]) and \
             os.path.exists(paraman["output_file_resprinter"]) and \
             os.path.exists(paraman["output_file_csvcbprinter"]):
+
         df_history = pd.read_csv(paraman["output_file_csvcbprinter"])
         init_nb_epoch = df_history["epoch"].max() - 1
         logger.info(f"Restart from iteration {init_nb_epoch}")
