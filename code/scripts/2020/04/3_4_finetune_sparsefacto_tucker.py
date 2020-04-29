@@ -76,7 +76,7 @@ from palmnet.experiments.utils import ResultPrinter, ParameterManagerPalminize, 
 from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
 from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
 from palmnet.layers.tucker_layer_sparse_facto import TuckerSparseFactoLayerConv
-from palmnet.utils import CSVLoggerByBatch, get_nb_learnable_weights, get_nb_learnable_weights_from_model, get_sparsity_pattern
+from palmnet.utils import CSVLoggerByBatch, get_nb_learnable_weights, get_nb_learnable_weights_from_model, get_sparsity_pattern, SafeModelCheckpoint
 from palmnet.utils import CyclicLR
 from palmnet.visualization.utils import get_df
 from skluc.utils import logger, log_memory_usage
@@ -209,25 +209,74 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
 
 
 def get_params_optimizer():
+    # designed using cyclical learning rate with evaluation of different learning rates on 10 epochs
+    dct_config_lr = {
+        'tucker_sparse_facto---cifar10---cifar10-vgg19-Q=2-K=3': 0.001,
+        'tucker_sparse_facto---cifar10---cifar10-vgg19-Q=3-K=3': 0.001,
+        'tucker_sparse_facto---cifar10---cifar10-vgg19-Q=None-K=3': 0.001,
+        'tucker_sparse_facto---cifar100---cifar100-resnet20-Q=2-K=3': 0.001,
+        'tucker_sparse_facto---cifar100---cifar100-resnet20-Q=3-K=3': 0.001,
+        'tucker_sparse_facto---cifar100---cifar100-resnet20-Q=None-K=3 H': 0.01,
+        'tucker_sparse_facto---cifar100---cifar100-resnet50-Q=2-K=3': 0.001,
+        'tucker_sparse_facto---cifar100---cifar100-resnet50-Q=3-K=3': 0.001,
+        'tucker_sparse_facto---cifar100---cifar100-resnet50-Q=None-K=3 H': 0.001,
+        'tucker_sparse_facto---cifar100---cifar100-vgg19-Q=2-K=3': 0.001,
+        'tucker_sparse_facto---cifar100---cifar100-vgg19-Q=3-K=3': 0.001,
+        'tucker_sparse_facto---mnist---mnist-lenet-Q=2-K=3': 1e-06,
+        'tucker_sparse_facto---mnist---mnist-lenet-Q=3-K=3': 1e-06,
+        'tucker_sparse_facto---mnist---mnist-lenet-Q=None-K=3': 1e-06,
+        'tucker_sparse_facto---mnist---mnist-lenet-Q=None-K=3 H': 1e-06,
+        'tucker_sparse_facto---svhn---svhn-vgg19-Q=2-K=3': 0.001,
+        'tucker_sparse_facto---svhn---svhn-vgg19-Q=3-K=3': 0.001,
+        'tucker_sparse_facto---svhn---svhn-vgg19-Q=None-K=3': 0.001
+    }
 
     if paraman["--mnist-lenet"]:
         param_train_dataset = Mnist.get_model_param_training()
+        str_data_param = "--mnist"
+        str_model_param = "--mnist-lenet"
     elif paraman["--mnist-500"]:
         param_train_dataset = Mnist.get_model_param_training("mnist_500")
+        str_data_param = ""
+        str_model_param = ""
     elif paraman["--cifar10-vgg19"]:
         param_train_dataset = Cifar10.get_model_param_training()
+        str_data_param = "--cifar10"
+        str_model_param = "--cifar10-vgg19"
     elif paraman["--cifar100-vgg19"]:
         param_train_dataset = Cifar100.get_model_param_training()
+        str_data_param = "--cifar100"
+        str_model_param = "--cifar100-vgg19"
     elif paraman["--cifar100-resnet20"]:
         param_train_dataset = Cifar100.get_model_param_training("cifar100_resnet")
+        str_data_param = "--cifar100"
+        str_model_param = "--cifar100-resnet20"
     elif paraman["--cifar100-resnet50"]:
         param_train_dataset = Cifar100.get_model_param_training("cifar100_resnet")
+        str_data_param = "--cifar100"
+        str_model_param = "--cifar100-resnet50"
     elif paraman["--svhn-vgg19"]:
         param_train_dataset = Svhn.get_model_param_training()
+        str_data_param = "--svhn"
+        str_model_param = "--svhn-vgg19"
     elif paraman["--test-model"]:
         param_train_dataset = Test.get_model_param_training()
+        str_data_param = ""
+        str_model_param = ""
     else:
         raise NotImplementedError("No dataset specified.")
+
+    if paraman["tucker"]:
+        str_method = "tucker"
+    elif paraman["tensortrain"]:
+        str_method = f"tensortrain-{int(paraman['--order'])}-{int(paraman['--rank-value'])}"
+    else:
+        raise ValueError("Unknown compression method")
+
+    params_optimizer = param_train_dataset.params_optimizer
+
+    str_keep_first = "-keep_first" if paraman["--keep-first-layer"] else ""
+    str_config_for_lr = f"{str_data_param}-{str_model_param}-{str_method}" + str_keep_first
 
     params_optimizer = param_train_dataset.params_optimizer
     params_optimizer["lr"] = paraman["--lr"] if paraman["--lr"] is not None else params_optimizer["lr"]
@@ -390,7 +439,7 @@ def get_or_load_new_model(model_compilation_params, x_test, y_test):
 def define_callbacks(param_train_dataset, x_train):
     call_backs = []
 
-    model_checkpoint_callback = keras.callbacks.ModelCheckpoint(str(paraman["output_file_modelprinter"]), monitor='val_loss', verbose=0, save_best_only=False,
+    model_checkpoint_callback = SafeModelCheckpoint(str(paraman["output_file_modelprinter"]), monitor='val_loss', verbose=0, save_best_only=False,
                                                                 save_weights_only=False, mode='auto', period=1)
     call_backs.append(model_checkpoint_callback)
 
