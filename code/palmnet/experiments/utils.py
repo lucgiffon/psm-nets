@@ -94,6 +94,8 @@ class ParameterManager(dict):
             return Cifar100.load_model("cifar100-resnet20")
         elif self["--cifar100-resnet50-new"]:
             return Cifar100.load_model("cifar100-resnet50-new")
+        elif self["--cifar100-resnet20-new"]:
+            return Cifar100.load_model("cifar100-resnet20-new")
         else:
             raise NotImplementedError("No dataset specified.")
 

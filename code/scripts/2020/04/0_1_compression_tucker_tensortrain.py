@@ -80,7 +80,7 @@ lst_results_header = [
     "test_loss_base_model",
     "test_loss_compressed_model",
     "test_loss_finetuned_model",
-    "base_model_nb_param,"
+    "base_model_nb_param",
     "new_model_nb_param"
 ]
 
@@ -141,7 +141,7 @@ def get_params_optimizer():
  '--cifar10---cifar10-vgg19-tensortrain-4-2': 0.001,
  '--cifar10---cifar10-vgg19-tensortrain-4-2-keep_first': 0.001,
  '--cifar10---cifar10-vgg19-tensortrain-4-6': 0.0001,
- '--cifar10---cifar10-vgg19-tensortrain-4-6-keep_first': 1e-06,
+ '--cifar10---cifar10-vgg19-tensortrain-4-6-keep_first': 1e-06,  # todo change that
  '--cifar100---cifar100-resnet20-tensortrain-4-10': 0.001,
  '--cifar100---cifar100-resnet20-tensortrain-4-10-keep_first': 0.001,
  '--cifar100---cifar100-resnet20-tensortrain-4-12': 0.001,
@@ -179,7 +179,7 @@ def get_params_optimizer():
  '--mnist---mnist-lenet-tensortrain-4-6': 1e-05,
  '--mnist---mnist-lenet-tensortrain-4-6-keep_first': 1e-05,
  '--svhn---svhn-vgg19-tensortrain-4-10': 0.1,
- '--svhn---svhn-vgg19-tensortrain-4-10-keep_first': 1e-05,
+ '--svhn---svhn-vgg19-tensortrain-4-10-keep_first': 1e-05,  # todo change that
  '--svhn---svhn-vgg19-tensortrain-4-12': 1e-05,
  '--svhn---svhn-vgg19-tensortrain-4-12-keep_first': 0.0001,
  '--svhn---svhn-vgg19-tensortrain-4-14': 0.0001,

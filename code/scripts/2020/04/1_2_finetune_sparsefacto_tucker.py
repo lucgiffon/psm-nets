@@ -96,7 +96,7 @@ lst_results_header = [
     "actual-nb-epochs",
     "actual-min-lr",
     "actual-max-lr",
-    "base_model_nb_param,"
+    "base_model_nb_param",
     "new_model_nb_param"
 ]
 
@@ -143,7 +143,6 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
             '-v',
             '--help',
             '--input-dir',
-            "output_file_layerbylayer"
         ]
         keys_expe = sorted(self.keys())
         any(keys_expe.remove(item) for item in lst_elem_to_remove_for_hash)
@@ -289,17 +288,22 @@ def count_models_parameters(base_model, new_model, dct_name_compression):
             dct_results_matrices["nb-non-zero-compressed"].append(nb_weights_compressed_layer)
             dct_results_matrices["nb-non-zero-compression-rate"].append(nb_weights_base_layer / nb_weights_compressed_layer)
 
-            sparse_factorization = dct_name_compression.get(base_layer.name, None)
-            scaling = sparse_factorization[0]
-            factors = Faustizer.get_factors_from_op_sparsefacto(sparse_factorization[1])
+            if not paraman["--tucker"]:
+                sparse_factorization = dct_name_compression.get(base_layer.name, None)
+                if type(sparse_factorization) == tuple:
+                    scaling = sparse_factorization[0]
+                    factors = Faustizer.get_factors_from_op_sparsefacto(sparse_factorization[1])
+                else:
+                    scaling = sparse_factorization["lambda"]
+                    factors = Faustizer.get_factors_from_op_sparsefacto(sparse_factorization["sparse_factors"])
 
-            # rebuild full matrix to allow comparisons
-            reconstructed_matrix = np.linalg.multi_dot(factors) * scaling
-            base_matrix = np.reshape(base_layer.get_weights()[0], reconstructed_matrix.shape)
+                # rebuild full matrix to allow comparisons
+                reconstructed_matrix = np.linalg.multi_dot(factors) * scaling
+                base_matrix = np.reshape(base_layer.get_weights()[0], reconstructed_matrix.shape)
 
-            # normalized approximation errors
-            diff = np.linalg.norm(base_matrix - reconstructed_matrix) / np.linalg.norm(base_matrix)
-            dct_results_matrices["diff-approx"].append(diff)
+                # normalized approximation errors
+                diff = np.linalg.norm(base_matrix - reconstructed_matrix) / np.linalg.norm(base_matrix)
+                dct_results_matrices["diff-approx"].append(diff)
 
     df_results_layers = pd.DataFrame.from_dict(dct_results_matrices)
     df_results_layers.to_csv(paraman["output_file_layerbylayer"])

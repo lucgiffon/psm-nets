@@ -1,0 +1,8 @@
+ --sparsity-factor 2 -v --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 2 -v --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 2 -v --nb-factor 2 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 2 -v --nb-factor 3 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v --nb-factor 2 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v --nb-factor 3 --cifar100 --cifar100-resnet20-new

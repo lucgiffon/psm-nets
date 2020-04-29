@@ -41,7 +41,11 @@ if __name__ == "__main__":
             if not path_not_finished.exists():
                 continue  # then the job has properly finished
 
+            for col in df_results.columns:
+                print(str(col), df_results[col].values[0])
+            print(path_not_finished)
             OAR_identifier = df_results["identifier"].values[0]
+            print("OAR_identifier", OAR_identifier)
             stderr_name = f"OAR.{OAR_identifier}.stderr"
             path_stderr = root_path / stderr_name
             assert path_stderr.exists(), "no OAR stderr file exists for that experiment"
