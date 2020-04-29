@@ -7,7 +7,7 @@ all:
 base:
   verbosity: ["-v"]
   keep_first: ["--keep-first-layer", ""]
-  low_rank_dense: {"--rank-percentage-dense": [0.01, 0.005]}
+  low_rank_dense: {"--rank-percentage-dense": [0.01]}
 
 cifar100:
   base:
