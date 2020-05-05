@@ -2,6 +2,8 @@ import keras
 import numpy as np
 import keras.backend as K
 import scipy.stats
+from keras import initializers, activations
+
 from skluc.utils.datautils import build_hadamard, dimensionality_constraints
 import tensorflow as tf
 
@@ -89,14 +91,21 @@ def S_variable(shape, G_norms, trainable=False):
 
 
 class FastFoodLayer(keras.layers.Layer):
-    def __init__(self, sigma, nbr_stack, trainable=True, **kwargs):
+    def __init__(self, nbr_stack, use_bias=True, activation=None, bias_initializer="zeros", sigma=1., cos_sin_act=False, trainable=True, **kwargs):
         super().__init__(**kwargs)
         self.__sigma = sigma
         self.__nbr_stack = nbr_stack
         self.__trainable = trainable
+        self.__cos_sin_act = cos_sin_act
+
+        self.use_bias = use_bias
+        self.activation = activations.get(activation)
+        self.bias_initializer = initializers.get(bias_initializer)
 
         self.__init_dim = None
         self.__final_dim = None
+
+        super().__init__(**kwargs)
 
     def build(self, input_shape):
         with K.name_scope("fastfood" + "_sigma-" + str(self.__sigma)):
@@ -146,6 +155,12 @@ class FastFoodLayer(keras.layers.Layer):
 
         self.num_outputs = self.__final_dim * self.__nbr_stack
 
+        if self.use_bias:
+            self.bias = self.add_weight(name="bias", shape=(self.num_outputs,), initializer=self.bias_initializer, trainable=True)
+
+
+        super().build(input_shape)
+
     def call(self, input, **kwargs):
         padding = self.__final_dim - self.__init_dim
         conv_out2 = K.reshape(input, [-1, self.__init_dim])
@@ -162,10 +177,36 @@ class FastFoodLayer(keras.layers.Layer):
         h_ff5 = K.dot(h_ff4, self.__H)
 
         h_ff6 = (1 / (self.__sigma * np.sqrt(self.__final_dim))) * K.reshape(h_ff5, (-1, self.__final_dim * self.__nbr_stack)) * K.reshape(self.__S, (-1, self.__final_dim * self.__nbr_stack))
-        h_ff7_1 = K.cos(h_ff6)
-        h_ff7_2 = K.sin(h_ff6)
-        h_ff7 = np.sqrt(float(1 / self.__final_dim)) * K.concatenate([h_ff7_1, h_ff7_2], axis=1)
-        return h_ff7
+        if self.__cos_sin_act:
+            h_ff7_1 = K.cos(h_ff6)
+            h_ff7_2 = K.sin(h_ff6)
+            h_ff7 = np.sqrt(float(1 / self.__final_dim)) * K.concatenate([h_ff7_1, h_ff7_2], axis=1)
+
+        if self.use_bias:
+            out = h_ff7 + self.bias
+        else:
+            out = h_ff7
+
+        if self.activation is not None:
+            out = self.activation(out)
+
+        return out
 
     def compute_output_shape(self, input_shape):
-        return (input_shape[0], 2 * input_shape[1] * self.__nbr_stack)
+        if self.__cos_sin_act:
+            return (input_shape[0], 2 * self.__final_dim * self.__nbr_stack)
+        else:
+            return (input_shape[0], self.__final_dim * self.__nbr_stack)
+
+    def get_config(self):
+        base_config = super().get_config()
+        base_config.update({
+            "use_bias": self.use_bias,
+            "nbr_stack": self.__nbr_stack,
+            'trainable': self.__trainable,
+            'activation': activations.serialize(self.activation),
+            'bias_initializer': initializers.serialize(self.bias_initializer),
+            'sigma': self.__sigma,
+            "cos_sin_act": self.__cos_sin_act
+        })
+        return base_config

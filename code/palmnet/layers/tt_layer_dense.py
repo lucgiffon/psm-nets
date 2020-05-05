@@ -106,5 +106,9 @@ class TTLayerDense(Layer):
             "out_modes": self.out_modes,
             "mat_ranks": self.mat_ranks,
             "mode": self.mode,
+            'bias_initializer': initializers.serialize(self.bias_initializer),
+            'kernel_initializer': initializers.serialize(self.kernel_initializer),
+            'use_bias': self.use_bias,
+            'activation': activations.serialize(self.activation),
         })
         return super_config
