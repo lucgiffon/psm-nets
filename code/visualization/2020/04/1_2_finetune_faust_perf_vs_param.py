@@ -52,20 +52,13 @@ scale_tasks = {
     "param-compression-rate-total": "linear"
 }
 
-if __name__ == "__main__":
-    root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/processed")
 
+def get_palm_results():
     results_path = "2020/03/9_10_finetune_palminized_no_useless"
     results_path_2 = "2020/04/9_10_finetune_palminized_no_useless"
-    results_path_tucker = "2020/04/0_1_compression_tucker_tensortrain"
 
     src_results_path = root_source_dir / results_path / "results.csv"
     src_results_path_2 = root_source_dir / results_path_2 / "results.csv"
-    src_results_path_tucker = root_source_dir / results_path_tucker / "results.csv"
-
-    root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
-    output_dir = root_output_dir / results_path / "histogrammes"
-    output_dir.mkdir(parents=True, exist_ok=True)
 
     df = pd.read_csv(src_results_path, header=0)
     df_2 = pd.read_csv(src_results_path_2, header=0)
@@ -76,10 +69,45 @@ if __name__ == "__main__":
     df = df[df["keep-last-layer"] == 0]
     df = df[df["use-clr"] == 1]
 
+    return df
+
+def get_faust_results():
+    results_path = "2020/04/1_2_finetune_faust_no_hierarchical"
+
+    src_results_path = root_source_dir / results_path / "results.csv"
+
+    df = pd.read_csv(src_results_path, header=0)
+    df = df.fillna("None")
+    df = df[df["hierarchical"] == False]
+    df = df.drop(columns=["Unnamed: 0", "idx-expe"]).drop_duplicates()
+
+    df = df[df["keep-last-layer"] == 0]
+    return df
+
+def get_tucker_results():
+    results_path_tucker = "2020/04/0_1_compression_tucker_tensortrain"
+    src_results_path_tucker = root_source_dir / results_path_tucker / "results.csv"
+
     df_tucker_tt = pd.read_csv(src_results_path_tucker, header=0)
     df_tucker_tt = df_tucker_tt.fillna("None")
+
+    return df_tucker_tt
+if __name__ == "__main__":
+    root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/processed")
+
+    results_path = "2020/04/1_2_finetune_faust_no_hierarchical"
+
+    df_faust = get_faust_results()
+    df_palm = get_palm_results()
+    df_tucker_tt = get_tucker_results()
+
+
+    root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
+    output_dir = root_output_dir / results_path / "histogrammes"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     # sparsity_factors = sorted(set(df_palminized["--sparsity-factor"]))
-    nb_factors = set(df["nb-factor"].values)
+    nb_factors = set(df_faust["nb-factor"].values)
 
     hue_by_sparsity= {
         2: 10,
@@ -108,10 +136,14 @@ if __name__ == "__main__":
     }
 
     dct_symbol = {
-        "PALM Q=2": "square",
-        "PALM Q=3": "diamond",
-        "PALM Q=None": "square-x",
-        "PALM Q=None H": "star-square",
+        "FAUST Q=2": "square",
+        "FAUST Q=3": "diamond",
+        "FAUST Q=None": "square-x",
+        "FAUST Q=None H": "star-square",
+        "PYQALM Q=2": "square-open",
+        "PYQALM Q=3": "diamond-open",
+        "PYQALM Q=None": "square-x-open",
+        "PYQALM Q=None H": "star-square-open",
         "Base": "x",
         "Tucker": "circle",
         "Tucker -1": "circle-dot",
@@ -123,6 +155,8 @@ if __name__ == "__main__":
         "PALM K=2": "dodgerblue",
         "PALM K=3": "darkorchid",
         "PALM K=4": "green",
+        "PALM K=6": "aqua",
+        "PALM K=8": "cadetblue",
         "TT R=2": "orange",
         "TT R=6": "gold",
         "TT R=10": "red",
@@ -138,14 +172,16 @@ if __name__ == "__main__":
     SIZE_MARKERS = 15
     WIDTH_MARKER_LINES = 2
 
-    datasets = set(df["dataset"].values)
+    datasets = set(df_faust["dataset"].values)
     for dataname in datasets:
-        df_data = df[df["dataset"] == dataname]
+        df_data_faust = df_faust[df_faust["dataset"] == dataname]
+        df_data_palm = df_palm[df_palm["dataset"] == dataname]
         df_tucker_tt_data =  df_tucker_tt[df_tucker_tt["dataset"] == dataname]
-        df_model_values = set(df_data["model"].values)
+        df_model_values = set(df_data_faust["model"].values)
 
         for modelname in df_model_values:
-            df_model = df_data[df_data["model"] == modelname]
+            df_model_faust = df_data_faust[df_data_faust["model"] == modelname]
+            df_model_palm = df_data_palm[df_data_palm["model"] == modelname]
             df_tucker_tt_model = df_tucker_tt_data[df_tucker_tt_data["model"] == modelname]
 
             fig = go.Figure()
@@ -153,47 +189,56 @@ if __name__ == "__main__":
             base_score = None
             base_nb_param = None
 
-            for idx_row, row in df_model.iterrows():
-                hierarchical_value = row["hierarchical"]
-                str_hierarchical = ' H' if hierarchical_value is True else ''
-                try:
-                    nb_factor = int(row["nb-factor"])
-                except:
-                    nb_factor = None
-                sparsity_factor = int(row["sparsity-factor"])
+            for idx_pal_algo, df_model in enumerate([df_model_faust, df_model_palm]):
+                if idx_pal_algo == 0:
+                    palm_algo = "FAUST"
+                else:
+                    palm_algo = "PYQALM"
 
-                name_trace = f"PALM Q={nb_factor} K={sparsity_factor}{str_hierarchical}"
+                for idx_row, row in df_model.iterrows():
+                    hierarchical_value = row["hierarchical"]
+                    str_hierarchical = ' H' if hierarchical_value is True else ''
+                    try:
+                        nb_factor = int(row["nb-factor"])
+                    except:
+                        nb_factor = None
+                    sparsity_factor = int(row["sparsity-factor"])
 
-                finetuned_score = row["finetuned-score"]
-                nb_param = row["nb-param-compressed-total"]
+                    name_trace = f"{palm_algo} Q={nb_factor} K={sparsity_factor}{str_hierarchical}"
 
-                base_score_tmp = row["base-model-score"]
-                assert base_score == base_score_tmp or base_score is None
-                base_nb_param_tmp = row["nb-param-base-total"]
-                assert base_nb_param == base_nb_param_tmp or base_nb_param is None
-                base_score = base_score_tmp
-                base_nb_param = base_nb_param_tmp
+                    finetuned_score = row["finetuned-score"]
+                    nb_param = row["nb-param-compressed-total"]
 
-                fig.add_trace(
-                    go.Scatter(
-                        x=[nb_param],
-                        y=[finetuned_score],
-                        mode='markers',
-                        name=name_trace,
-                        hovertext=name_trace,
-                        legendgroup=f"PALM K={sparsity_factor}",
-                        marker=dict(
-                                    color=dct_colors[f"PALM K={sparsity_factor}"],
-                                    symbol=dct_symbol[f"PALM Q={nb_factor}{str_hierarchical}"],
-                                    size=SIZE_MARKERS,
-                                    line=dict(
-                                        color='Black',
-                                        width=WIDTH_MARKER_LINES
+                    base_score_tmp = row["base-model-score"]
+                    assert base_score == base_score_tmp or base_score is None
+                    base_nb_param_tmp = row["nb-param-base-total"]
+                    assert base_nb_param == base_nb_param_tmp or base_nb_param is None
+                    base_score = base_score_tmp
+                    base_nb_param = base_nb_param_tmp
+
+                    fig.add_trace(
+                        go.Scatter(
+                            x=[nb_param],
+                            y=[finetuned_score],
+                            mode='markers',
+                            name=name_trace,
+                            hovertext=name_trace,
+                            legendgroup=f"PALM K={sparsity_factor}",
+                            marker=dict(
+                                        color=dct_colors[f"PALM K={sparsity_factor}"],
+                                        symbol=dct_symbol[f"{palm_algo} Q={nb_factor}{str_hierarchical}"],
+                                        size=SIZE_MARKERS,
+                                        line=dict(
+                                            color='Black',
+                                            width=WIDTH_MARKER_LINES
+                                        )
                                     )
-                                )
 
-                    ))
+                        ))
 
+            #############
+            # base data #
+            #############
             fig.add_trace(
                 go.Scatter(
                     x=[base_nb_param],
@@ -214,6 +259,9 @@ if __name__ == "__main__":
 
                 ))
 
+            ###############
+            # tucker data #
+            ###############
             df_tucker = df_tucker_tt_model[df_tucker_tt_model["compression"] == "tucker"]
             for idx_row, row in df_tucker.iterrows():
                 keep_first = row["keep-first-layer"]
@@ -256,7 +304,9 @@ if __name__ == "__main__":
 
                     ))
 
-
+            ####################
+            # tensortrain data #
+            ####################
             df_tt = df_tucker_tt_model[df_tucker_tt_model["compression"] == "tensortrain"]
             for idx_row, row in df_tt.iterrows():
                 keep_first = row["keep-first-layer"]

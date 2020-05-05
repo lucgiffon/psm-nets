@@ -75,6 +75,7 @@ from palmnet.experiments.utils import ResultPrinter, ParameterManagerPalminize, 
 # from palmnet.layers.sparse_tensor import SparseFactorisationDense#, SparseFactorisationConv2DDensify
 from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
 from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
+from palmnet.layers.tucker_layer import TuckerLayerConv
 from palmnet.layers.tucker_layer_sparse_facto import TuckerSparseFactoLayerConv
 from palmnet.utils import CSVLoggerByBatch, get_nb_learnable_weights, get_nb_learnable_weights_from_model, get_sparsity_pattern, SafeModelCheckpoint
 from palmnet.utils import CyclicLR
@@ -266,20 +267,25 @@ def get_params_optimizer():
     else:
         raise NotImplementedError("No dataset specified.")
 
-    if paraman["tucker"]:
-        str_method = "tucker"
-    elif paraman["tensortrain"]:
-        str_method = f"tensortrain-{int(paraman['--order'])}-{int(paraman['--rank-value'])}"
+    if paraman["--tucker"]:
+        str_method = "tucker_sparse_facto"
     else:
-        raise ValueError("Unknown compression method")
+        str_method = "sparse_facto"
+
+    sparsity = int(paraman['--sparsity-factor'])
+    try:
+        nb_fac = int(paraman["--nb-factor"])
+    except:
+        nb_fac = None
+    hierarchical = paraman["--hierarchical"]
+    str_hierarchical = " H" if hierarchical else ""
+    str_config_for_lr = f"{str_method}-{str_data_param}-{str_model_param}-Q={nb_fac}-K={sparsity}{str_hierarchical}"
 
     params_optimizer = param_train_dataset.params_optimizer
-
-    str_keep_first = "-keep_first" if paraman["--keep-first-layer"] else ""
-    str_config_for_lr = f"{str_data_param}-{str_model_param}-{str_method}" + str_keep_first
-
-    params_optimizer = param_train_dataset.params_optimizer
-    params_optimizer["lr"] = paraman["--lr"] if paraman["--lr"] is not None else params_optimizer["lr"]
+    if str_config_for_lr in dct_config_lr:
+        params_optimizer["lr"] = paraman["--lr"] if paraman["--lr"] is not None else dct_config_lr[str_config_for_lr]
+    else:
+        params_optimizer["lr"] = paraman["--lr"] if paraman["--lr"] is not None else params_optimizer["lr"]
 
     model_compilation_params = {
         "loss": param_train_dataset.loss,
@@ -423,7 +429,8 @@ def get_or_load_new_model(model_compilation_params, x_test, y_test):
 
         new_model = keras.models.load_model(paraman["output_file_modelprinter"], custom_objects={'SparseFactorisationConv2D': SparseFactorisationConv2D,
                                                                                                  "SparseFactorisationDense": SparseFactorisationDense,
-                                                                                                 'TuckerSparseFactoLayerConv': TuckerSparseFactoLayerConv})
+                                                                                                 'TuckerSparseFactoLayerConv': TuckerSparseFactoLayerConv,
+                                                                                                 "TuckerLayerConv": TuckerLayerConv})
     else:
         # Base Model #
         base_model = get_and_evaluate_base_model(model_compilation_params, x_test, y_test)

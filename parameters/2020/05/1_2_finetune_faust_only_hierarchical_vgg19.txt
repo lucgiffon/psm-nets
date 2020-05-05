@@ -1,0 +1,9 @@
+--svhn --svhn-vgg19 --sparsity-factor 2 -v faust --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/04/0_1_compression_faust_hierarchical_vgg19 --nb-iteration-palm 150
+--svhn --svhn-vgg19 --sparsity-factor 3 -v faust --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/04/0_1_compression_faust_hierarchical_vgg19 --nb-iteration-palm 150
+--svhn --svhn-vgg19 --sparsity-factor 4 -v faust --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/04/0_1_compression_faust_hierarchical_vgg19 --nb-iteration-palm 150
+--cifar10 --cifar10-vgg19 --sparsity-factor 2 -v faust --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/04/0_1_compression_faust_hierarchical_vgg19 --nb-iteration-palm 150
+--cifar10 --cifar10-vgg19 --sparsity-factor 3 -v faust --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/04/0_1_compression_faust_hierarchical_vgg19 --nb-iteration-palm 150
+--cifar10 --cifar10-vgg19 --sparsity-factor 4 -v faust --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/04/0_1_compression_faust_hierarchical_vgg19 --nb-iteration-palm 150
+--cifar100 --sparsity-factor 2 -v faust --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/04/0_1_compression_faust_hierarchical_vgg19 --nb-iteration-palm 150 --cifar100-vgg19
+--cifar100 --sparsity-factor 3 -v faust --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/04/0_1_compression_faust_hierarchical_vgg19 --nb-iteration-palm 150 --cifar100-vgg19
+--cifar100 --sparsity-factor 4 -v faust --hierarchical --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/04/0_1_compression_faust_hierarchical_vgg19 --nb-iteration-palm 150 --cifar100-vgg19

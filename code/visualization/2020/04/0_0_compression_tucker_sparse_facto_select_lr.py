@@ -58,7 +58,6 @@ def show_for_tucker():
                 lr_rolling_mean_2x = pd.Series(lr_rolling_mean).rolling(window=win_size).mean().iloc[win_size - 1:].values
                 lr_rolling_mean_2x_exp = 10 ** lr_rolling_mean_2x
 
-
                 # fig.add_trace(go.Scatter(x=lr_rolling_mean_exp, y=loss_rolling_mean, name="sp_fac {} - hiearchical {}".format(row["--sparsity-factor"], row["--hierarchical"])))
                 fig.add_trace(go.Scatter(x=lr_rolling_mean_2x_exp[:-1], y=delta_loss_rolling_mean, name=""))
 

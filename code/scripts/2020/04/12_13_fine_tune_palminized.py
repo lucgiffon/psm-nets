@@ -2,7 +2,7 @@
 This script finds a palminized model with given arguments then finetune it.
 
 Usage:
-    script.py --input-dir path [-h] [-v|-vv] [--seed int] [--train-val-split float] [--keep-last-layer] [--lr float] [--use-clr policy] [--min-lr float --max-lr float] [--epoch-step-size int] [--nb-epoch int] [--only-mask] [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
+    script.py --input-dir path [-h] [-v|-vv] [--seed int] [--train-val-split float] [--keep-last-layer] [--lr float] [--use-clr policy] [--logrange-clr] [--min-lr float --max-lr float] [--epoch-step-size int] [--nb-epoch int] [--only-mask] [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
 
 Options:
   -h --help                             Show this screen.
@@ -17,6 +17,7 @@ Options:
   --nb-epoch int                        Number of epochs of training (Overide everything else).
   --epoch-step-size int                 Number of epochs for an half cycle of CLR.
   --use-clr policy                      Tell to use clr. Policy can be "triangular" or "triangular2" (see Cyclical learning rate)
+  --logrange-clr                        Use logrange in cycle of learning rate instead of linear.
   --keep-last-layer                     Do not compress classification layer.
   --train-val-split float               Tells the proportion of validation data. If not specified, validation data is test data.
 
@@ -62,7 +63,7 @@ from keras.engine import Model, InputLayer
 import signal
 import docopt
 from scipy.sparse import coo_matrix
-from palmnet.utils import CyclicLR
+from palmnet.utils import CyclicLR, SafeModelCheckpoint
 
 from palmnet.core.palminizer import Palminizer
 from palmnet.core.palminizable import Palminizable
@@ -475,7 +476,11 @@ def main():
 
     call_backs = []
 
-    model_checkpoint_callback = keras.callbacks.ModelCheckpoint(str(paraman["output_file_modelprinter"]),
+    # model_checkpoint_callback = keras.callbacks.ModelCheckpoint(str(paraman["output_file_modelprinter"]),
+    #                                                             monitor='val_loss',
+    #                                                             verbose=0, save_best_only=False,
+    #                                                             save_weights_only=False, mode='auto', period=1)
+    model_checkpoint_callback = SafeModelCheckpoint(str(paraman["output_file_modelprinter"]),
                                                                 monitor='val_loss',
                                                                 verbose=0, save_best_only=False,
                                                                 save_weights_only=False, mode='auto', period=1)
@@ -490,14 +495,14 @@ def main():
         clr_cb = CyclicLR(base_lr=actual_min_lr,
                           max_lr=actual_max_lr,
                           step_size=(paraman["--epoch-step-size"]*(x_train.shape[0] // param_train_dataset.batch_size)),
-                          logrange=True,
+                          logrange=paraman["--logrange-clr"],
                           mode=paraman["--use-clr"])
         call_backs.append(clr_cb)
 
     csvcallback = CSVLoggerByBatch(str(paraman["output_file_csvcbprinter"]), n_batch_between_display=100, separator=',', append=True)
     call_backs.append(csvcallback)
 
-    csvepochcallback = CSVLogger(filename=paraman["output_file_csvcbprinter_epoch"])
+    csvepochcallback = CSVLogger(filename=paraman["output_file_csvcbprinter_epoch"], append=True)
     call_backs.append(csvepochcallback)
 
     finetuned_score = None

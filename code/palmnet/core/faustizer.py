@@ -58,16 +58,17 @@ class Faustizer(SparseFactorizer):
         :param N_fac:
         :return:
         """
+        assert right_dim >= left_dim
+
         if not hierarchical or N_fac==1: # if N_fac ==1 then hierarchical is equivalent to not hierarchical. (and hierarchical would crash)
-            assert left_dim >= right_dim
 
             stop = StoppingCriterion(tol=tol, maxiter=nb_iter)
 
             lst_constraints = [splincol((left_dim, right_dim), sparsity).constraint] + [splincol((right_dim, right_dim), sparsity).constraint for _ in range(N_fac - 1)]
             cons = ConstraintList(*lst_constraints)
-            param = ParamsPalm4MSA(cons, stop)
+            param = ParamsPalm4MSA(cons, stop, is_update_way_R2L=True)
+            param.init_facts = [np.eye(left_dim, left_dim) for _ in range(N_fac-1)] + [np.zeros((left_dim, right_dim))]
         else:
-            assert right_dim >= left_dim
             param = Faustizer.create_param_hierarchical_rect_control_stop_criter(left_dim, right_dim, N_fac, sparsity, tol, nb_iter)
 
         return param
@@ -83,10 +84,11 @@ class Faustizer(SparseFactorizer):
         """
         transposed = False
 
-        not_H_bad_shape = (not self.hierarchical and matrix.shape[0] < matrix.shape[1]) # we want the bigger dimension to be on left because error is lower as R2L doesn't work
-        H_bad_shape = (self.hierarchical and matrix.shape[0] > matrix.shape[1]) # R2L work in that case
+        # not_H_bad_shape = (not self.hierarchical and matrix.shape[0] < matrix.shape[1]) # we want the bigger dimension to be on left because error is lower as R2L doesn't work
+        # H_bad_shape = (self.hierarchical and matrix.shape[0] > matrix.shape[1]) # R2L work in that case
 
-        if not_H_bad_shape or H_bad_shape:
+        if matrix.shape[0] > matrix.shape[1]:
+        # if not_H_bad_shape or H_bad_shape:
             matrix = matrix.T
             transposed = True
 
@@ -102,16 +104,16 @@ class Faustizer(SparseFactorizer):
         if nb_factors == 0:
             nb_factors = 1
 
-        if nb_factors == 1 and self.hierarchical:
-            # because in that case, it is actually not the hierarchical palm that will be used
-            # but the standard PALM instead because hierarchical is non-sense in that degenerate case
-            # and would crash
-
-            # as it was supposed to be run in herarchical mode the matrix is supposed to be in the bad shape
-            # to be run in not hierarchical mode.
-            matrix = matrix.T
-            transposed = not transposed
-            left_dim, right_dim = matrix.shape
+        # if nb_factors == 1 and self.hierarchical:
+        #     # because in that case, it is actually not the hierarchical palm that will be used
+        #     # but the standard PALM instead because hierarchical is non-sense in that degenerate case
+        #     # and would crash
+        #
+        #     # as it was supposed to be run in herarchical mode the matrix is supposed to be in the bad shape
+        #     # to be run in not hierarchical mode.
+        #     matrix = matrix.T
+        #     transposed = not transposed
+        #     left_dim, right_dim = matrix.shape
 
         constraints = self.build_constraints_faust(left_dim, right_dim, sparsity=self.sparsity_fac, N_fac=nb_factors,
                                                    hierarchical=self.hierarchical, tol=self.tol, nb_iter=self.nb_iter)
@@ -125,9 +127,8 @@ class Faustizer(SparseFactorizer):
             logging.info("Applying faust palm4msa to matrix with shape {}".format(matrix.shape))
             faust, final_lambda = palm4msa(matrix, constraints, ret_lambda=True)
 
-        faust /= final_lambda
-
         final_X = np.array(faust.todense())
+        faust /= final_lambda
 
         if transposed:
             return final_lambda, faust.T, final_X.T

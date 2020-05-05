@@ -67,8 +67,10 @@ class LayerReplacerTucker(LayerReplacer):
             weight_matrix, bias = layer.get_weights()
             U, S, V = np.linalg.svd(weight_matrix)
             if 0 < rank_dense < 1:
-                rank = int(rank_dense * len(S))
+                rank = int(np.ceil(rank_dense * len(S)))
+                assert rank >= 1, f"{rank}"
             else:  # type int
+                assert type(rank_dense)==int
                 rank = rank_dense
             U = U[:, :rank]
             S = S[:rank]
