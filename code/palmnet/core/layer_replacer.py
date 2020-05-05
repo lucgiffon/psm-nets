@@ -141,10 +141,32 @@ class LayerReplacer(metaclass=ABCMeta):
 
     @abstractmethod
     def _replace_conv2D(self, layer, dct_compression):
+        """
+        Implementation of this method should return the triplet:
+
+        replacing_weights: list of np.ndarray
+        replacing_layer: keras.layers.Layer
+        bool_replaced: tells if the layer should be replaced
+
+        :param layer:
+        :param dct_compression:
+        :return:
+        """
         pass
 
     @abstractmethod
     def _replace_dense(self, layer, dct_compression):
+        """
+        Implementation of this method should return the triplet:
+
+        replacing_weights: list of np.ndarray
+        replacing_layer: keras.layers.Layer
+        bool_replaced: tells if the layer should be replaced
+
+        :param layer:
+        :param dct_compression:
+        :return:
+        """
         pass
 
     @abstractmethod
