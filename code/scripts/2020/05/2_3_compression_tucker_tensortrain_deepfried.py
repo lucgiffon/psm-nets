@@ -2,8 +2,9 @@
 This script is for running compression of convolutional networks using tucker decomposition.
 
 Usage:
-    script.py tucker [-h] [-v|-vv] [--rank-percentage-dense float] [--rank-percentage-conv float] [--rank-percentage float] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
-    script.py tensortrain [-h] [-v|-vv] [--rank-value int] [--order int] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py tucker [-h] [-v|-vv] [--only-dense] [--rank-percentage-dense float] [--rank-percentage-conv float] [--rank-percentage float] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py tensortrain [-h] [-v|-vv] [--only-dense] [--rank-value int] [--order int] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py deepfried [-h] [-v|-vv] [--only-dense] [--keep-last-layer] [--nb-stack int] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
 
 Options:
   -h --help                             Show this screen.
@@ -31,6 +32,7 @@ Model:
 Compression specific options:
     --keep-first-layer                  Tell the replacer to keep the first layer of the network
     --keep-last-layer                   Tell the replacer to keep the last layer (classification) of the network
+    --only-dense                        Tell the replacer to replace only dense layers.
 
 Tucker specific option:
     --rank-percentage-dense float       Tell tucker to replace Dense layers by low rank decomposition with rank equal percentage of base rank
@@ -40,6 +42,9 @@ Tucker specific option:
 Tensortrain specific option:
     --rank-value int                    The values for r0, r1 r... rk (exemple: 2, 4, 6)
     --order int                         The value for k (number of cores)
+
+DeepFried specific option:
+    --nb-stack int                      The values for r0, r1 r... rk (exemple: 2, 4, 6)
 
 Finetuning options:
     --lr float                          Overide learning rate for optimization
@@ -65,6 +70,7 @@ from keras.models import Model
 import zlib
 
 from palmnet.core.layer_replacer_TT import LayerReplacerTT
+from palmnet.core.layer_replacer_deepfried import LayerReplacerDeepFried
 from palmnet.core.layer_replacer_tucker import LayerReplacerTucker
 from palmnet.data import Mnist, Cifar10, Cifar100, Svhn, Test
 from palmnet.experiments.utils import ResultPrinter, ParameterManager
@@ -72,7 +78,7 @@ from palmnet.layers.low_rank_dense_layer import LowRankDense
 from palmnet.layers.tt_layer_conv import TTLayerConv
 from palmnet.layers.tt_layer_dense import TTLayerDense
 from palmnet.layers.tucker_layer import TuckerLayerConv
-from palmnet.utils import CyclicLR, CSVLoggerByBatch, get_nb_learnable_weights_from_model, get_nb_learnable_weights
+from palmnet.utils import CyclicLR, CSVLoggerByBatch, get_nb_learnable_weights_from_model, get_nb_learnable_weights, SafeModelCheckpoint
 from skluc.utils import logger, log_memory_usage
 
 lst_results_header = [
@@ -114,6 +120,8 @@ class ParameterManagerTensotrainAndTuckerDecomposition(ParameterManager):
         else:
             self["actual-rank-percentage-dense"] = self["--rank-percentage-dense"]
             self["actual-rank-percentage-conv"] = self["--rank-percentage-conv"]
+
+        self["--nb-stack"] = int(self["--nb-stack"]) if self["--nb-stack"] is not None else None
 
 
         self.__init_hash_expe()
@@ -255,6 +263,8 @@ def get_params_optimizer():
         str_method = "tucker"
     elif paraman["tensortrain"]:
         str_method = f"tensortrain-{int(paraman['--order'])}-{int(paraman['--rank-value'])}"
+    elif paraman["deepfried"]:
+        str_method = "deepfried"
     else:
         raise ValueError("Unknown compression method")
 
@@ -285,8 +295,8 @@ def get_dataset():
 def define_callbacks(param_train_dataset, x_train):
     call_backs = []
 
-    model_checkpoint_callback = keras.callbacks.ModelCheckpoint(str(paraman["output_file_modelprinter"]), monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, mode='auto',
-                                                                period=1)
+    model_checkpoint_callback = SafeModelCheckpoint(str(paraman["output_file_modelprinter"]), monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, mode='auto',
+                                                    period=1)
     call_backs.append(model_checkpoint_callback)
 
     if paraman["--use-clr"]:
@@ -317,11 +327,13 @@ def get_and_evaluate_base_model(model_compilation_params, x_test, y_test):
 
 def compress_and_evaluate_model(base_model, model_compilation_params, x_test, y_test):
     if paraman["tucker"]:
-        layer_replacer = LayerReplacerTucker(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"],
+        layer_replacer = LayerReplacerTucker(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"], only_dense=paraman["--only-dense"],
                                              rank_percentage_dense=paraman["actual-rank-percentage-dense"], rank_percentage_conv=paraman["actual-rank-percentage-conv"])
     elif paraman["tensortrain"]:
-        layer_replacer = LayerReplacerTT(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"],
+        layer_replacer = LayerReplacerTT(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"], only_dense=paraman["--only-dense"],
                                          rank_value=paraman["--rank-value"], order=paraman["--order"])
+    elif paraman["deepfried"]:
+        layer_replacer = LayerReplacerDeepFried(keep_last_layer=paraman["--keep-last-layer"], nb_stack=paraman["--nb-stack"], only_dense=paraman["--only-dense"])
     else:
         raise ValueError("Unknown compression method.")
     start_replace = time.time()
