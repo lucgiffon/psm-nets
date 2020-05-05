@@ -13,7 +13,7 @@ from palmnet.utils import build_dct_tt_ranks
 
 
 class LayerReplacerDeepFried(LayerReplacer):
-    def __init__(self, nb_stack, *args, **kwargs):
+    def __init__(self, nb_stack=None, *args, **kwargs):
         self.nb_stack = nb_stack
         super().__init__(*args, **kwargs)
 

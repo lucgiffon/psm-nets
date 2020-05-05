@@ -11,9 +11,10 @@ import pathlib
 
 
 class LayerReplacer(metaclass=ABCMeta):
-    def __init__(self, keep_last_layer=False, keep_first_layer=False, dct_name_compression=None, path_checkpoint_file=None):
+    def __init__(self, keep_last_layer=False, keep_first_layer=False, dct_name_compression=None, path_checkpoint_file=None, only_dense=False):
         self.keep_last_layer = keep_last_layer
         self.keep_first_layer = keep_first_layer
+        self.only_dense = only_dense
         self.dct_name_compression = dct_name_compression if dct_name_compression is not None else dict()
         self.path_checkpoint_file = path_checkpoint_file  # type: pathlib.Path
         self.dct_bool_replaced_layers = defaultdict(lambda: False)
@@ -91,7 +92,10 @@ class LayerReplacer(metaclass=ABCMeta):
             # adapted to the palminized case... not very clean but OK
             bool_find_modif = (sparse_factorization != None and sparse_factorization != (None, None))
             logger.info('Prepare layer {}'.format(layer.name))
-            keep_this_layer = (i == idx_last_dense_layer and self.keep_last_layer) or (i == idx_first_conv_layer and self.keep_first_layer)
+            bool_only_dense = not isinstance(layer, Dense) and self.only_dense
+            bool_last_layer = i == idx_last_dense_layer and self.keep_last_layer
+            bool_first_layer = i == idx_first_conv_layer and self.keep_first_layer
+            keep_this_layer = bool_only_dense or bool_last_layer or bool_first_layer
             if bool_find_modif and not keep_this_layer:
                 # if there is a replacement available and not (it is the last layer and we want to keep it as is)
                 # create new layer
