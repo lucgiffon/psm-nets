@@ -638,7 +638,7 @@ def get_facto_for_channel_and_order(channel, order, dct_predefined_facto=None):
         predef_facto = dct_predefined_facto[channel]
         missing_elm = order - len(predef_facto)
         facto = [1]*missing_elm + predef_facto
-        return facto
+        return np.array(facto)
     elif int(np.log2(channel)) != np.log2(channel):
         raise ValueError("Channel must be a power of two. {}".format(channel))
     else:

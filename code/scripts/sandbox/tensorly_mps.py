@@ -12,3 +12,6 @@ for i in range(len(in_mods)):
     l.append([out_mods[i] * ranks[i + 1], ranks[i] * in_mods[i]])
 
 res = matrix_product_state(a_, ranks)
+
+for idx_core, shape_core in enumerate(l):
+    res[idx_core] = np.reshape(res[idx_core], tuple(shape_core))
