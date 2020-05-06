@@ -89,7 +89,7 @@ lst_results_header = [
     "test_loss_base_model",
     "test_loss_compressed_model",
     "test_loss_finetuned_model",
-    "base_model_nb_param,"
+    "base_model_nb_param",
     "new_model_nb_param"
 ]
 
