@@ -1,0 +1,30 @@
+tucker -v --only-dense --svhn --svhn-vgg19
+tucker -v --only-dense --mnist --mnist-lenet
+tucker -v --only-dense --cifar10 --cifar10-vgg19
+tucker -v --only-dense --cifar100 --cifar100-resnet20
+tucker -v --only-dense --cifar100 --cifar100-resnet50
+tucker -v --only-dense --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 2 -v --only-dense --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 6 -v --only-dense --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 10 -v --only-dense --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 14 -v --only-dense --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 2 -v --only-dense --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 6 -v --only-dense --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 10 -v --only-dense --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 14 -v --only-dense --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 2 -v --only-dense --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 6 -v --only-dense --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 10 -v --only-dense --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 14 -v --only-dense --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 2 -v --only-dense --cifar100 --cifar100-resnet20
+tensortrain --order 4 --rank-value 2 -v --only-dense --cifar100 --cifar100-resnet50
+tensortrain --order 4 --rank-value 2 -v --only-dense --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 6 -v --only-dense --cifar100 --cifar100-resnet20
+tensortrain --order 4 --rank-value 6 -v --only-dense --cifar100 --cifar100-resnet50
+tensortrain --order 4 --rank-value 6 -v --only-dense --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 10 -v --only-dense --cifar100 --cifar100-resnet20
+tensortrain --order 4 --rank-value 10 -v --only-dense --cifar100 --cifar100-resnet50
+tensortrain --order 4 --rank-value 10 -v --only-dense --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 14 -v --only-dense --cifar100 --cifar100-resnet20
+tensortrain --order 4 --rank-value 14 -v --only-dense --cifar100 --cifar100-resnet50
+tensortrain --order 4 --rank-value 14 -v --only-dense --cifar100 --cifar100-vgg19

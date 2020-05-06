@@ -22,8 +22,8 @@ class TTLayerConv(Conv2DCustom):
         mat_ranks(list): [r_0, r_1, r_2, ..., r_k, 1]
 
     '''
-    def __init__(self, mat_ranks, inp_modes=None, out_modes=None, mode='auto',  **kwargs):
-        super(TTLayerConv, self).__init__(**kwargs)
+    def __init__(self, mat_ranks, inp_modes=None, out_modes=None, mode='auto',  kernel_initializer='glorot_normal', **kwargs):
+        super(TTLayerConv, self).__init__(kernel_initializer=kernel_initializer, **kwargs)
 
         self.padding = self.padding.upper() if type(self.padding) == str else self.padding
 
