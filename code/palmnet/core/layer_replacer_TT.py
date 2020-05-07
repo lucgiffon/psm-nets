@@ -1,5 +1,6 @@
 from abc import abstractmethod, ABCMeta
 import numpy as np
+from skluc.utils import logger
 from tensorly.decomposition import matrix_product_state
 
 from palmnet.core.layer_replacer import LayerReplacer
@@ -9,7 +10,7 @@ from palmnet.layers.tt_layer_dense import TTLayerDense
 from collections import defaultdict
 from keras.layers import Dense, Conv2D
 
-from palmnet.utils import build_dct_tt_ranks, get_facto_for_channel_and_order, DCT_CHANNEL_PREDEFINED_FACTORIZATIONS
+from palmnet.utils import build_dct_tt_ranks, get_facto_for_channel_and_order, DCT_CHANNEL_PREDEFINED_FACTORIZATIONS, TensortrainBadRankException
 
 
 class LayerReplacerTT(LayerReplacer):
@@ -47,20 +48,27 @@ class LayerReplacerTT(LayerReplacer):
 
         in_out_mod_products = tuple(inp_modes[i]*out_modes[i] for i in range(len(out_modes)))
 
-        lst_shapes = list()
-        for i in range(len(inp_modes)):
-            lst_shapes.append([out_modes[i] * tt_ranks[i + 1], tt_ranks[i] * inp_modes[i]])
 
         matrix_layer_tensor_form = np.reshape(matrix_layer, in_out_mod_products)
         res = matrix_product_state(matrix_layer_tensor_form, tt_ranks)
+
+        if not all((core.shape[0] == tt_ranks[idx_core] and  core.shape[-1] == tt_ranks[idx_core+1]) for idx_core, core in enumerate(res)):
+            obtained_ranks = tuple([core.shape[0] for core in res] + [res[-1].shape[-1]])
+            logger.warning(TensortrainBadRankException(expected_ranks=tt_ranks, obtained_ranks=obtained_ranks))
+            tt_ranks = obtained_ranks
+
+        lst_shapes = list()
+        for i in range(len(inp_modes)):
+            lst_shapes.append(tuple([out_modes[i] * tt_ranks[i + 1], tt_ranks[i] * inp_modes[i]]))
 
         for idx_core, shape_core in enumerate(lst_shapes):
             res[idx_core] = np.reshape(res[idx_core], tuple(shape_core))
 
         if isinstance(layer, Conv2D):
             res[0] = np.reshape(res[0], (*layer.kernel_size, 1, tt_ranks[1]))
+            tt_ranks = tt_ranks[1:]
 
-        return inp_modes_tmp, out_modes_tmp, res
+        return inp_modes_tmp, out_modes_tmp, tt_ranks, res
 
 
     ##################################
@@ -70,18 +78,22 @@ class LayerReplacerTT(LayerReplacer):
         dct_replacement = dict()
         if isinstance(layer, Conv2D):
             if self.use_pretrained:
-                inp_modes, out_modes, res = self.get_mps_decompostion(layer)
+                inp_modes, out_modes, tt_ranks, res = self.get_mps_decompostion(layer)
                 dct_replacement["lst_weights_cores"] = res
                 dct_replacement["inp_modes"] = inp_modes
                 dct_replacement["out_modes"] = out_modes
-            dct_replacement["tt_ranks"] = self.tt_ranks_conv
+            else:
+                tt_ranks = self.tt_ranks_conv
+            dct_replacement["tt_ranks"] = tt_ranks
         elif isinstance(layer, Dense):
             if self.use_pretrained:
-                inp_modes, out_modes, res = self.get_mps_decompostion(layer)
+                inp_modes, out_modes, tt_ranks, res = self.get_mps_decompostion(layer)
                 dct_replacement["lst_weights_cores"] = res
                 dct_replacement["inp_modes"] = inp_modes
                 dct_replacement["out_modes"] = out_modes
-            dct_replacement["tt_ranks"] = self.tt_ranks_dense
+            else:
+                tt_ranks = self.tt_ranks_dense
+            dct_replacement["tt_ranks"] = tt_ranks
         else:
             dct_replacement = None
 

@@ -710,3 +710,12 @@ def get_nb_learnable_weights_from_model(model):
     for layer in model.layers:
         count_learnable_weights += get_nb_learnable_weights(layer)
     return count_learnable_weights
+
+class TensortrainBadRankException(Exception):
+    def __init__(self, expected_ranks, obtained_ranks, *args):
+        super().__init__(*args)
+        self.expected_ranks = expected_ranks
+        self.obtained_ranks = obtained_ranks
+
+    def __str__(self):
+        return f"{self.__class__.__name__}: Got rank {self.obtained_ranks} when expected was {self.expected_ranks}"
