@@ -1,0 +1,4 @@
+tensortrain --order 4 --rank-value 2 -v --keep-first-layer --use-pretrained --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --use-pretrained --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --use-pretrained --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --use-pretrained --mnist --mnist-lenet
