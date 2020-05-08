@@ -93,8 +93,8 @@ dct_param_train_model = {
 if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/")
 
-    expe_path_explore_params ="2020/04/12_13_finetune_palminized_explore_param_bis"
-    expe_path_explore_params_errors ="2020/04/12_13_finetune_palminized_explore_param_bis_errors"
+    expe_path_explore_params ="2020/05/12_13_finetune_palminized_explore_param_bis_bis"
+    expe_path_explore_params_errors ="2020/05/12_13_finetune_palminized_explore_param_bis_bis_errors"
 
     src_results_dir_explore_params = root_source_dir / expe_path_explore_params
     src_results_dir_explore_params_errors = root_source_dir / expe_path_explore_params_errors
@@ -212,7 +212,7 @@ if __name__ == "__main__":
         dct_attributes["base-model-score"].append(float(row["base_score"]))
         dct_attributes["before-finetune-score"].append(float(row["before_finetuned_score"]))
         dct_attributes["finetuned-score"].append(float(row["finetuned_score"]))
-
+        dct_attributes["logrange"].append(bool(row["--logrange-clr"]))
         # store path informations
         dct_attributes["path-learning-history"].append(pathlib.Path(row["results_dir"]) / row["output_file_csvcbprinter"])
         dct_attributes["path-learning-history-epoch"].append(pathlib.Path(row["results_dir"]) / row["output_file_csvcbprinter_epoch"])

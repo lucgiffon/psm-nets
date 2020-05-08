@@ -53,7 +53,7 @@ scale_tasks = {
 if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/processed")
 
-    results_path = "2020/04/12_13_finetune_palminized_explore_param_bis"
+    results_path = "2020/05/12_13_finetune_palminized_explore_param_bis_bis"
 
     src_results_path = root_source_dir / results_path / "results.csv"
 
@@ -103,6 +103,7 @@ if __name__ == "__main__":
                     fig = go.Figure()
                     for idx_row, row in df_sparsity.iterrows():
                         clr_value = row["use-clr"]
+                        logrange_clr = row["logrange"]
                         idx_xp = str(row["idx-expe"])
                         path_history = row["path-learning-history-epoch"]
                         epoch_step_size = row["epoch-step-size"]
@@ -119,8 +120,9 @@ if __name__ == "__main__":
 
                         hls_str = "hsl({}, {}%, 50%)".format(hue_by_epoch_step_size[epoch_step_size], lum_by_clr[clr_value])
 
-
-                        fig.add_trace(go.Scatter(name=f'Palm {clr_value} {epoch_step_size}',
+                        txt_name = f'Palm {clr_value} {epoch_step_size} log {logrange_clr}'
+                        group = f"log {clr_value} {logrange_clr}"
+                        fig.add_trace(go.Scatter(name=txt_name, hovertext=txt_name, legendgroup=group,
                                              x=np.arange(len(loss_values)), y=loss_values,
                                              marker_color=hls_str))
 
