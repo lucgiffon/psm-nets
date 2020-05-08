@@ -685,6 +685,7 @@ def get_nb_learnable_weights(layer):
     from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
     from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
     from palmnet.layers.tucker_layer_sparse_facto import TuckerSparseFactoLayerConv
+    from palmnet.layers.fastfood_layer import FastFoodLayer
 
     if isinstance(layer, SparseFactorisationConv2D) or isinstance(layer, SparseFactorisationDense):
         sp_patterns = layer.sparsity_patterns
@@ -699,9 +700,16 @@ def get_nb_learnable_weights(layer):
         else:
             count_scaling = 0
         return count_sparsity_patterns + count_bias + count_scaling
-    if isinstance(layer, TuckerSparseFactoLayerConv):
+    elif isinstance(layer, TuckerSparseFactoLayerConv):
         # reuse code above
         return get_nb_learnable_weights(layer.in_factor) + get_nb_learnable_weights(layer.core) + get_nb_learnable_weights(layer.out_factor)
+
+    # elif isinstance(layer, FastFoodLayer):  # this is not necessary because the Hadamard matrix isn't a weight but a constant
+    #     total_nb_weights = get_cumsum_size_weights(layer.get_weights())
+    #     hadamard_weights = layer.final_dim ** 2
+    #     actual_nb_weights = total_nb_weights - hadamard_weights
+    #     return actual_nb_weights
+
     else:
         return get_cumsum_size_weights(layer.get_weights())
 
