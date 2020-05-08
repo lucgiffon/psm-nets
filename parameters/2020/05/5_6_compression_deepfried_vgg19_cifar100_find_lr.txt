@@ -1,0 +1,5 @@
+deepfried -v --only-dense --lr 0.0001 --nb-epoch 10 --cifar100 --cifar100-vgg19
+deepfried -v --only-dense --lr 0.001 --nb-epoch 10 --cifar100 --cifar100-vgg19
+deepfried -v --only-dense --lr 0.00001 --nb-epoch 10 --cifar100 --cifar100-vgg19
+deepfried -v --only-dense --lr 0.01 --nb-epoch 10 --cifar100 --cifar100-vgg19
+deepfried -v --only-dense --lr 0.00001 --nb-epoch 10 --cifar100 --cifar100-vgg19
