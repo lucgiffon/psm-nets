@@ -64,10 +64,15 @@ if __name__ == "__main__":
     df = pd.read_csv(src_results_path, header=0)
     df = df.fillna("None")
 
+    df = df[df["actual-nb-epochs"] == 1000]
+
 
     hue_by_epoch_step_size= {
         2: 10,
         10: 40,
+        100:30,
+        200: 50,
+        300: 60,
         400: 70,
         "None": 100
     }

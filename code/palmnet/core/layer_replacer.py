@@ -3,6 +3,8 @@ import pickle
 
 from keras.models import Model
 from keras.layers import InputLayer
+
+from palmnet.core.palminizable import Palminizable
 from palmnet.utils import get_idx_last_layer_of_class, get_idx_first_layer_of_class
 from skluc.utils import log_memory_usage, logger
 from collections import defaultdict
@@ -35,6 +37,9 @@ class LayerReplacer(metaclass=ABCMeta):
     def load_dct_name_compression(self):
         with open(str(self.path_checkpoint_file), 'rb') as rb_file:
             self.dct_name_compression = pickle.load(rb_file)
+
+        if type(self.dct_name_compression) == Palminizable:
+            self.dct_name_compression = self.dct_name_compression.sparsely_factorized_layers
 
     def save_dct_name_compression(self):
         if self.path_checkpoint_file is None:

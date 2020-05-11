@@ -96,14 +96,25 @@ if __name__ == "__main__":
     expe_path_explore_params ="2020/05/12_13_finetune_palminized_explore_param_bis_bis"
     expe_path_explore_params_errors ="2020/05/12_13_finetune_palminized_explore_param_bis_bis_errors"
 
-    src_results_dir_explore_params = root_source_dir / expe_path_explore_params
-    src_results_dir_explore_params_errors = root_source_dir / expe_path_explore_params_errors
+    lst_expe_path = [
+        "2020/05/12_13_finetune_palminized_explore_param_bis_bis",
+        "2020/05/12_13_finetune_palminized_explore_param_bis_bis_errors",
+        "2020/05/12_13_finetune_palminized_explore_param_triangular2",
+        "2020/05/12_13_finetune_palminized_explore_param_triangular2_more_epochs"
+    ]
 
-    df_explore_params = get_df(src_results_dir_explore_params)
-    df_explore_params = df_explore_params.assign(results_dir=[str(src_results_dir_explore_params.absolute())] * len(df_explore_params))
-    df_explore_params_errors = get_df(src_results_dir_explore_params_errors)
-    df_explore_params_errors = df_explore_params_errors.assign(results_dir=[str(src_results_dir_explore_params_errors.absolute())] * len(df_explore_params_errors))
-    df_explore_params = pd.concat([df_explore_params, df_explore_params_errors])
+    # src_results_dir_explore_params = root_source_dir / expe_path_explore_params
+    # src_results_dir_explore_params_errors = root_source_dir / expe_path_explore_params_errors
+
+    get_results_from_path = lambda x: get_df(root_source_dir / x).assign(results_dir=root_source_dir / x)
+
+    df_explore_params = pd.concat(list(map(get_results_from_path, lst_expe_path)))
+
+    # df_explore_params = get_df(src_results_dir_explore_params)
+    # df_explore_params = df_explore_params.assign(results_dir=[str(src_results_dir_explore_params.absolute())] * len(df_explore_params))
+    # df_explore_params_errors = get_df(src_results_dir_explore_params_errors)
+    # df_explore_params_errors = df_explore_params_errors.assign(results_dir=[str(src_results_dir_explore_params_errors.absolute())] * len(df_explore_params_errors))
+    # df_explore_params = pd.concat([df_explore_params, df_explore_params_errors])
 
     df_explore_params = df_explore_params.dropna(subset=["failure"])
     df_explore_params = df_explore_params[df_explore_params["failure"] == False]
