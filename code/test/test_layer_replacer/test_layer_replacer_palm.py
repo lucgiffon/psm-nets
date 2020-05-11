@@ -40,7 +40,8 @@ class TestLayerReplacerPalm(unittest.TestCase):
             for only_mask in [True, False]:
                 dct_name_facto = self.dct_sparsely_factorized_layers
 
-                model_transformer = LayerReplacerPalm(keep_last_layer=keep_last_layer, only_mask=only_mask, dct_name_compression=dct_name_facto)
+                model_transformer = LayerReplacerPalm(keep_last_layer=keep_last_layer, only_mask=only_mask, dct_name_compression=dct_name_facto,
+                                                      sparse_factorizer=Palminizer())
                 new_model = model_transformer.transform(self.base_model)
 
                 idx_last_dense = get_idx_last_layer_of_class(new_model)

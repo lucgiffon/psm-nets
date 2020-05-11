@@ -6,7 +6,7 @@ from palmnet.core.palminizer import Palminizer
 from palmnet.data import Cifar100
 from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
 from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
-from palmnet.utils import get_sparsity_pattern
+from palmnet.utils import get_sparsity_pattern, NAME_INIT_SPARSE_FACTO
 from skluc.utils import logger
 
 
@@ -52,7 +52,7 @@ class LayerReplacerSparseFacto(LayerReplacer):
             regularizer = layer.kernel_regularizer
             replacing_layer = SparseFactorisationConv2D(use_scaling=not self.only_mask, strides=strides, filters=nb_filters, kernel_size=kernel_size,
                                                         sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias, activation=activation, padding=padding,
-                                                        kernel_regularizer=regularizer)
+                                                        kernel_regularizer=regularizer, kernel_initializer=NAME_INIT_SPARSE_FACTO)
             replacing_weights = scaling + factor_data + [layer.get_weights()[-1]] if layer.use_bias else []
 
         return replacing_layer, replacing_weights, less_values_than_base
@@ -72,7 +72,7 @@ class LayerReplacerSparseFacto(LayerReplacer):
             activation = layer.activation
             regularizer = layer.kernel_regularizer
             replacing_layer = SparseFactorisationDense(use_scaling=use_scaling, units=hidden_layer_dim, sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias,
-                                                       activation=activation, kernel_regularizer=regularizer, intertwine_batchnorm=itnertwine_batchnorm)
+                                                       activation=activation, kernel_regularizer=regularizer, intertwine_batchnorm=itnertwine_batchnorm, kernel_initializer=NAME_INIT_SPARSE_FACTO)
             replacing_weights = scaling + factor_data + [layer.get_weights()[-1]] if layer.use_bias else []
 
         return replacing_layer, replacing_weights, less_values_than_base

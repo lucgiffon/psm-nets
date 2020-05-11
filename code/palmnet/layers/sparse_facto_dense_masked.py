@@ -2,7 +2,7 @@ from keras import activations, initializers, regularizers, constraints, backend 
 from keras.engine import Layer
 from keras.layers import BatchNormalization
 
-from palmnet.utils import cast_sparsity_pattern
+from palmnet.utils import cast_sparsity_pattern, NAME_INIT_SPARSE_FACTO, sparse_facto_init
 
 
 class SparseFactorisationDense(Layer):
@@ -60,8 +60,14 @@ class SparseFactorisationDense(Layer):
         self.activation = activations.get(activation)
         self.use_bias = use_bias
         self.use_scaling = use_scaling
-        # todo faire un initialiseur particulier (type glorot) qui prend en compte la sparsité
-        self.kernel_initializer = initializers.get(kernel_initializer)
+
+        if kernel_initializer != NAME_INIT_SPARSE_FACTO:
+            self.kernel_initializer = initializers.get(kernel_initializer)
+            self.__kernel_initializer = self.kernel_initializer
+        else:
+            self.kernel_initializer = lambda *args, **kwargs: None
+            self.__kernel_initializer = kernel_initializer
+
         self.bias_initializer = initializers.get(bias_initializer)
         self.kernel_regularizer = regularizers.get(kernel_regularizer)
         self.bias_regularizer = regularizers.get(bias_regularizer)
@@ -81,7 +87,7 @@ class SparseFactorisationDense(Layer):
             'activation': activations.serialize(self.activation),
             'use_bias': self.use_bias,
             'use_scaling': self.use_scaling,
-            'kernel_initializer': initializers.serialize(self.kernel_initializer),
+            'kernel_initializer': initializers.serialize(self.kernel_initializer) if self.__kernel_initializer != NAME_INIT_SPARSE_FACTO else NAME_INIT_SPARSE_FACTO,
             'bias_initializer': initializers.serialize(self.bias_initializer),
             'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
             'bias_regularizer': regularizers.serialize(self.bias_regularizer),
@@ -122,8 +128,14 @@ class SparseFactorisationDense(Layer):
             input_dim, output_dim = self.sparsity_patterns[i].shape
             trainable = self.factors_trainable[i] if self.factors_trainable is not None else True
 
+            if self.__kernel_initializer == NAME_INIT_SPARSE_FACTO:
+                # matrix will be applied on right
+                kernel_init = sparse_facto_init((input_dim, output_dim), i, self.sparsity_patterns[i], multiply_left=False)
+            else:
+                kernel_init = self.kernel_initializer
+
             self.kernels.append(self.add_weight(shape=(input_dim, output_dim),
-                                                initializer=self.kernel_initializer,
+                                                initializer=kernel_init,
                                                 name='kernel_{}'.format(i),
                                                 regularizer=self.kernel_regularizer,
                                                 constraint=self.kernel_constraint,

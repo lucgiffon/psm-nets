@@ -2,7 +2,8 @@ import tensorflow as tf
 from keras import initializers, regularizers, constraints, backend as K
 
 from palmnet.layers import Conv2DCustom
-from palmnet.utils import cast_sparsity_pattern
+from palmnet.utils import cast_sparsity_pattern, sparse_facto_init, NAME_INIT_SPARSE_FACTO
+import numpy as np
 
 
 class SparseFactorisationConv2D(Conv2DCustom):
@@ -14,6 +15,7 @@ class SparseFactorisationConv2D(Conv2DCustom):
 
     def __init__(self, sparsity_patterns,
                  use_scaling=True,
+                 kernel_initializer="glorot_uniform",
                  scaler_initializer='glorot_uniform',
                  scaler_regularizer=None,
                  scaler_constraint=None,
@@ -28,8 +30,12 @@ class SparseFactorisationConv2D(Conv2DCustom):
         :param args:
         :param kwargs:
         """
-
-        super(SparseFactorisationConv2D, self).__init__(*args, **kwargs)
+        if kernel_initializer != NAME_INIT_SPARSE_FACTO:
+            super(SparseFactorisationConv2D, self).__init__(kernel_initializer=kernel_initializer, *args, **kwargs)
+            self.__kernel_initializer = kernel_initializer
+        else:
+            super(SparseFactorisationConv2D, self).__init__(kernel_initializer=lambda *args, **kwargs: None, *args, **kwargs)
+            self.__kernel_initializer = kernel_initializer
 
         if sparsity_patterns is not None:
             self.sparsity_patterns = [cast_sparsity_pattern(s) for s in sparsity_patterns]
@@ -56,6 +62,8 @@ class SparseFactorisationConv2D(Conv2DCustom):
         config["scaler_regularizer"] = self.scaler_regularizer
         config["scaler_constraint"] = self.scaler_constraint
         config['use_scaling'] = self.use_scaling
+        if self.__kernel_initializer == NAME_INIT_SPARSE_FACTO:
+            config['kernel_initializer'] = NAME_INIT_SPARSE_FACTO
         return config
 
     def build(self, input_shape):
@@ -90,8 +98,14 @@ class SparseFactorisationConv2D(Conv2DCustom):
         for i in range(self.nb_factor):
             input_dim, output_dim = self.sparsity_patterns[i].shape
 
+            if self.__kernel_initializer == NAME_INIT_SPARSE_FACTO:
+                # matrix will be applied on right
+                kernel_init = sparse_facto_init((input_dim, output_dim), i, self.sparsity_patterns[i], multiply_left=False)
+            else:
+                kernel_init = self.kernel_initializer
+
             kernel = self.add_weight(shape=(input_dim, output_dim),
-                                     initializer=self.kernel_initializer,
+                                     initializer=kernel_init,
                                      name='kernel_{}'.format(i),
                                      regularizer=self.kernel_regularizer,
                                      constraint=self.kernel_constraint)

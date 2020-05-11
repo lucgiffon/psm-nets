@@ -1,0 +1,12 @@
+ --sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch palm --keep-first-layer --only-mask --mnist --mnist-lenet
+ --sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch palm --keep-first-layer --only-mask --mnist --mnist-lenet
+ --sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch palm --keep-first-layer --only-mask --nb-factor 2 --mnist --mnist-lenet
+ --sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch palm --keep-first-layer --only-mask --nb-factor 3 --mnist --mnist-lenet
+ --sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch palm --keep-first-layer --only-mask --nb-factor 2 --mnist --mnist-lenet
+ --sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch palm --keep-first-layer --only-mask --nb-factor 3 --mnist --mnist-lenet
+ --sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch palm --keep-first-layer --only-mask --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch palm --keep-first-layer --only-mask --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch palm --keep-first-layer --only-mask --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch palm --keep-first-layer --only-mask --nb-factor 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch palm --keep-first-layer --only-mask --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch palm --keep-first-layer --only-mask --nb-factor 3 --cifar10 --cifar10-vgg19

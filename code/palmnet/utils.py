@@ -727,3 +727,16 @@ class TensortrainBadRankException(Exception):
 
     def __str__(self):
         return f"{self.__class__.__name__}: Got rank {self.obtained_ranks} when expected was {self.expected_ranks}"
+
+def sparse_facto_init(shape, idx_fac, sparsity_pattern, multiply_left=False):
+    if idx_fac == 0:
+        # sum of sparsity_pattern[i] is norm zero of sparsity pattern
+        # we use 2 on the numerator because the input has gone through relu and then is not 0 mean -> he initialisation
+        kernel_init = lambda *args, **kwargs: np.random.randn(*shape) * np.sqrt(2 / np.sum(sparsity_pattern, axis=int(multiply_left))) * sparsity_pattern
+    else:
+        # we use 1 on the numerator because between factor the "activations" (linear) are expected to have 0 mean -> xavier initialisation
+        kernel_init = lambda *args, **kwargs: np.random.randn(*shape) * np.sqrt(1 / np.sum(sparsity_pattern, axis=int(multiply_left))) * sparsity_pattern
+
+    return kernel_init
+
+NAME_INIT_SPARSE_FACTO = "sparse_facto_var_1"

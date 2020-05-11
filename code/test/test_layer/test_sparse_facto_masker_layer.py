@@ -8,7 +8,7 @@ from keras.layers import Conv2D, GlobalAveragePooling2D, Dense
 
 from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
 from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
-from palmnet.utils import get_nb_learnable_weights, create_sparse_factorization_pattern
+from palmnet.utils import get_nb_learnable_weights, create_sparse_factorization_pattern, NAME_INIT_SPARSE_FACTO
 
 
 class TestSparseFactoLayers(unittest.TestCase):
@@ -23,11 +23,13 @@ class TestSparseFactoLayers(unittest.TestCase):
         model = Sequential()
 
         model.add(Conv2D(512, (3, 3), padding='same', input_shape=input_shape, name="conv2D_1"))
-        model.add(SparseFactorisationConv2D(kernel_size=[kernel_size, kernel_size], sparsity_patterns=sparse_pattern_conv, filters=filters, name="sparsefactoconv1", padding="same"))
+        model.add(SparseFactorisationConv2D(kernel_size=[kernel_size, kernel_size], sparsity_patterns=sparse_pattern_conv, filters=filters, name="sparsefactoconv1", padding="same",
+                                            kernel_initializer=NAME_INIT_SPARSE_FACTO))
         model.add(Conv2D(512, (3, 3), padding='same', input_shape=input_shape, name="conv2D_2"))
         model.add(GlobalAveragePooling2D())
         model.add(Dense(512, name="dense1", use_bias=False))
-        model.add(SparseFactorisationDense(units=filters,sparsity_patterns=sparse_pattern_dense, use_scaling=False, use_bias=False, name="sparsefactodense1"))
+        model.add(SparseFactorisationDense(units=filters,sparsity_patterns=sparse_pattern_dense, use_scaling=False, use_bias=False, name="sparsefactodense1",
+                                            kernel_initializer=NAME_INIT_SPARSE_FACTO))
         model.add(Dense(512, name="dense2"))
         return model
 
@@ -62,3 +64,11 @@ class TestSparseFactoLayers(unittest.TestCase):
             expected = dct_layer_name_expected_nb_weights[layer.name]
             print(found, expected)
             assert found  == expected, f"not good {found}!={expected} {layer.name} {found + filters}"
+
+            if isinstance(layer, SparseFactorisationConv2D):
+                assert (layer.get_weights()[1].astype(bool) == sparse_pattern_conv[0].astype(bool)).all()
+                assert (layer.get_weights()[2].astype(bool) == sparse_pattern_conv[1].astype(bool)).all()
+            if isinstance(layer, SparseFactorisationDense):
+                assert (layer.get_weights()[0].astype(bool) == sparse_pattern_dense[0].astype(bool)).all()
+                assert (layer.get_weights()[1].astype(bool) == sparse_pattern_dense[1].astype(bool)).all()
+                assert (layer.get_weights()[2].astype(bool) == sparse_pattern_dense[2].astype(bool)).all()
