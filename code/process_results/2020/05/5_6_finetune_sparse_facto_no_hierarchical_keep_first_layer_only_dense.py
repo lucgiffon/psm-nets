@@ -69,15 +69,17 @@ if __name__ == "__main__":
     expe_path = "2020/05/5_6_finetune_sparse_facto_no_hierarchical_keep_first_layer_only_dense"
 
     lst_path_finetune = [
-        "2020/05/5_6_finetune_sparse_facto_no_hierarchical_keep_first_layer_only_dense"
+        "2020/05/5_6_finetune_sparse_facto_no_hierarchical_keep_first_layer_only_dense",
+        "2020/05/5_6_finetune_sparse_facto_no_hierarchical_keep_first_layer_only_dense_others",
+        "2020/05/6_7_finetune_sparse_facto_only_mask_mnist_cifar10"
     ]
 
     lst_path_compression = [
         "2020/03/2_3_palminize_from_scratch"
     ]
 
-    # df_finetune = pd.concat(list(map(get_df_from_expe_path, lst_path_finetune)))
-    df_finetune = get_df_from_expe_path(lst_path_finetune[0])
+    df_finetune = pd.concat(list(map(get_df_from_expe_path, lst_path_finetune)))
+    # df_finetune = get_df_from_expe_path(lst_path_finetune[0])
     df_finetune = df_finetune.dropna(subset=["failure"])
     df_finetune = df_finetune[df_finetune["failure"] == False]
     df_finetune = df_finetune.drop(columns="oar_id").drop_duplicates()

@@ -53,39 +53,6 @@ scale_tasks = {
 }
 
 
-def get_palm_results():
-    results_path = "2020/03/9_10_finetune_palminized_no_useless"
-    results_path_2 = "2020/04/9_10_finetune_palminized_no_useless"
-
-    src_results_path = root_source_dir / results_path / "results.csv"
-    src_results_path_2 = root_source_dir / results_path_2 / "results.csv"
-
-    df = pd.read_csv(src_results_path, header=0)
-    df_2 = pd.read_csv(src_results_path_2, header=0)
-    df = pd.concat([df, df_2])
-    df = df.fillna("None")
-    df = df.drop(columns=["Unnamed: 0", "idx-expe"]).drop_duplicates()
-
-    df = df[df["keep-last-layer"] == 0]
-    df = df[df["use-clr"] == 1]
-
-    df = df.assign(**{"only-dense": False, "keep-first-layer": False})
-
-    return df
-
-def get_faust_results():
-    results_path = "2020/05/3_4_finetune_faust_no_hierarchical_only_cifar_mnist"
-
-    src_results_path = root_source_dir / results_path / "results.csv"
-
-    df = pd.read_csv(src_results_path, header=0)
-    df = df.fillna("None")
-    df = df[df["hierarchical"] == False]
-    df = df.drop(columns=["Unnamed: 0", "idx-expe"]).drop_duplicates()
-
-    df = df[df["keep-last-layer"] == 0]
-    df = df.assign(**{"only-dense": False, "keep-first-layer": False})
-    return df
 
 def get_tucker_results():
     results_path_tucker = "2020/04/0_1_compression_tucker_tensortrain"
@@ -93,10 +60,21 @@ def get_tucker_results():
 
     df_tucker_tt = pd.read_csv(src_results_path_tucker, header=0)
     df_tucker_tt = df_tucker_tt.fillna("None")
-
     df_tucker_tt = df_tucker_tt.assign(**{"only-dense": False, "use-pretrained": False})
 
     df_tucker_tt = df_tucker_tt[df_tucker_tt["compression"] == "tucker"]
+    return df_tucker_tt
+
+def get_deepfried_results():
+    results_path_tucker = "2020/05/4_5_compression_deepfried"
+    src_results_path_tucker = root_source_dir / results_path_tucker / "results.csv"
+
+    df_tucker_tt = pd.read_csv(src_results_path_tucker, header=0)
+    df_tucker_tt = df_tucker_tt.fillna("None")
+
+    df_tucker_tt = df_tucker_tt.assign(**{"only-dense": True, "use-pretrained": False})
+
+    df_tucker_tt = df_tucker_tt[df_tucker_tt["compression"] == "deepfried"]
     return df_tucker_tt
 
 def get_tensortrain_results():
@@ -141,18 +119,15 @@ if __name__ == "__main__":
 
     results_path = "2020/05/5_6_finetune_sparse_facto_perf_vs_param"
 
-    df_faust = get_faust_results()
-
     df_tucker = get_tucker_results()
     df_tt = get_tensortrain_results()
+    df_deepfried = get_deepfried_results()
     df_tucker_tt_only_dense = get_tucker_tensortrain_only_denseresults()
-    df_tucker_tt = pd.concat([df_tucker, df_tt, df_tucker_tt_only_dense])
+    df_tucker_tt = pd.concat([df_tucker, df_tt, df_tucker_tt_only_dense, df_deepfried])
 
-    df_palm = get_palm_results()
-    df_palm_bis = get_palm_results_only_dense_keep_first()
-    df_palm = pd.concat([df_palm, df_palm_bis])
+    df_palm = get_palm_results_only_dense_keep_first()
 
-    ONLY_DENSE = False
+    ONLY_DENSE = True
     df_tucker_tt = df_tucker_tt[df_tucker_tt["only-dense"] == ONLY_DENSE]
     df_palm = df_palm[df_palm["only-dense"] == ONLY_DENSE]
 
@@ -162,7 +137,6 @@ if __name__ == "__main__":
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # sparsity_factors = sorted(set(df_palminized["--sparsity-factor"]))
-    nb_factors = set(df_faust["nb-factor"].values)
 
     hue_by_sparsity= {
         2: 10,
@@ -209,6 +183,7 @@ if __name__ == "__main__":
         "TT": "triangle-up",
         "TT -1": "triangle-up-dot",
         "TT -1 pretrained": "triangle-up-open-dot",
+        "Deepfried": "hexagram"
     }
 
     dct_colors = {
@@ -226,7 +201,8 @@ if __name__ == "__main__":
         "Tucker": "pink",
         "Tucker 10%": "orange",
         "Tucker 20%": "gold",
-        "Tucker 30%": "red"
+        "Tucker 30%": "red",
+        "Deepfried": "blueviolet"
     }
 
     SIZE_MARKERS = 15
@@ -234,13 +210,11 @@ if __name__ == "__main__":
 
     datasets = set(df_palm["dataset"].values)
     for dataname in datasets:
-        df_data_faust = df_faust[df_faust["dataset"] == dataname]
         df_data_palm = df_palm[df_palm["dataset"] == dataname]
         df_tucker_tt_data =  df_tucker_tt[df_tucker_tt["dataset"] == dataname]
-        df_model_values = set(df_data_faust["model"].values)
+        df_model_values = set(df_data_palm["model"].values)
 
         for modelname in df_model_values:
-            df_model_faust = df_data_faust[df_data_faust["model"] == modelname]
             df_model_palm = df_data_palm[df_data_palm["model"] == modelname]
             df_tucker_tt_model = df_tucker_tt_data[df_tucker_tt_data["model"] == modelname]
 
@@ -249,55 +223,51 @@ if __name__ == "__main__":
             base_score = None
             base_nb_param = None
 
-            for idx_pal_algo, df_model in enumerate([df_model_faust, df_model_palm]):
-                if idx_pal_algo == 0:
-                    palm_algo = "FAUST"
-                else:
-                    palm_algo = "PYQALM"
+            palm_algo = "PYQALM"
 
-                for idx_row, row in df_model.iterrows():
-                    hierarchical_value = row["hierarchical"]
-                    str_hierarchical = ' H' if hierarchical_value is True else ''
-                    try:
-                        nb_factor = int(row["nb-factor"])
-                    except:
-                        nb_factor = None
-                    sparsity_factor = int(row["sparsity-factor"])
+            for idx_row, row in df_model_palm.iterrows():
+                hierarchical_value = row["hierarchical"]
+                str_hierarchical = ' H' if hierarchical_value is True else ''
+                try:
+                    nb_factor = int(row["nb-factor"])
+                except:
+                    nb_factor = None
+                sparsity_factor = int(row["sparsity-factor"])
 
-                    keep_first = row["keep-first-layer"]
-                    str_keep_first = ' -1' if keep_first is True else ''
+                keep_first = row["keep-first-layer"]
+                str_keep_first = ' -1' if keep_first is True else ''
 
-                    name_trace = f"{palm_algo} Q={nb_factor} K={sparsity_factor}{str_hierarchical}{str_keep_first}"
+                name_trace = f"{palm_algo} Q={nb_factor} K={sparsity_factor}{str_hierarchical}{str_keep_first}"
 
-                    finetuned_score = row["finetuned-score"]
-                    nb_param = row["nb-param-compressed-total"]
+                finetuned_score = row["finetuned-score"]
+                nb_param = row["nb-param-compressed-total"]
 
-                    base_score_tmp = row["base-model-score"]
-                    assert base_score == base_score_tmp or base_score is None
-                    base_nb_param_tmp = row["nb-param-base-total"]
-                    assert base_nb_param == base_nb_param_tmp or base_nb_param is None
-                    base_score = base_score_tmp
-                    base_nb_param = base_nb_param_tmp
+                base_score_tmp = row["base-model-score"]
+                assert base_score == base_score_tmp or base_score is None
+                base_nb_param_tmp = row["nb-param-base-total"]
+                assert base_nb_param == base_nb_param_tmp or base_nb_param is None
+                base_score = base_score_tmp
+                base_nb_param = base_nb_param_tmp
 
-                    fig.add_trace(
-                        go.Scatter(
-                            x=[nb_param],
-                            y=[finetuned_score],
-                            mode='markers',
-                            name=name_trace,
-                            hovertext=name_trace,
-                            legendgroup=f"PALM K={sparsity_factor}",
-                            marker=dict(
-                                        color=dct_colors[f"PALM K={sparsity_factor}"],
-                                        symbol=dct_symbol[f"{palm_algo} Q={nb_factor}{str_hierarchical}{str_keep_first}"],
-                                        size=SIZE_MARKERS,
-                                        line=dict(
-                                            color='Black',
-                                            width=WIDTH_MARKER_LINES
-                                        )
+                fig.add_trace(
+                    go.Scatter(
+                        x=[nb_param],
+                        y=[finetuned_score],
+                        mode='markers',
+                        name=name_trace,
+                        hovertext=name_trace,
+                        legendgroup=f"PALM K={sparsity_factor}",
+                        marker=dict(
+                                    color=dct_colors[f"PALM K={sparsity_factor}"],
+                                    symbol=dct_symbol[f"{palm_algo} Q={nb_factor}{str_hierarchical}{str_keep_first}"],
+                                    size=SIZE_MARKERS,
+                                    line=dict(
+                                        color='Black',
+                                        width=WIDTH_MARKER_LINES
                                     )
+                                )
 
-                        ))
+                    ))
 
             #############
             # base data #
@@ -331,7 +301,7 @@ if __name__ == "__main__":
                 str_keep_first = ' -1' if keep_first is True else ''
 
                 try:
-                    rank_percentage = int(float(row["rank-percentage-dense"]) * 100)
+                    rank_percentage = int(float(row["rank-percentage"]) * 100)
                 except:
                     rank_percentage = None
 
@@ -358,6 +328,41 @@ if __name__ == "__main__":
                         marker=dict(
                                     color=dct_colors[f"Tucker{str_percentage}"],
                                     symbol=dct_symbol[f"Tucker{str_keep_first}"],
+                                    size=SIZE_MARKERS,
+                                    line=dict(
+                                        color='Black',
+                                        width=WIDTH_MARKER_LINES
+                                    )
+                                )
+
+                    ))
+
+            ##################
+            # deepfried data #
+            ##################
+            df_deepfried = df_tucker_tt_model[df_tucker_tt_model["compression"] == "deepfried"]
+            for idx_row, row in df_deepfried.iterrows():
+                name_trace = f"Deepfried"
+
+                finetuned_score = row["finetuned-score"]
+                nb_param = row["nb-param-compressed-total"]
+
+                base_score_tmp = row["base-model-score"]
+                assert base_score == base_score_tmp or base_score is None
+                base_nb_param_tmp = row["nb-param-base-total"]
+                assert base_nb_param == base_nb_param_tmp or base_nb_param is None
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=[nb_param],
+                        y=[finetuned_score],
+                        mode='markers',
+                        name=name_trace,
+                        hovertext=name_trace,
+                        legendgroup=f"Deepfried",
+                        marker=dict(
+                                    color=dct_colors[f"Deepfried"],
+                                    symbol=dct_symbol[f"Deepfried"],
                                     size=SIZE_MARKERS,
                                     line=dict(
                                         color='Black',
