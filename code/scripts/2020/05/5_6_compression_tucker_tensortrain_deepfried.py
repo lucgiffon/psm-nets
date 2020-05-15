@@ -360,7 +360,8 @@ def compress_and_evaluate_model(base_model, model_compilation_params, x_test, y_
         layer_replacer = LayerReplacerTT(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"], only_dense=paraman["--only-dense"],
                                          rank_value=paraman["--rank-value"], order=paraman["--order"], use_pretrained=paraman["--use-pretrained"])
     elif paraman["deepfried"]:
-        layer_replacer = LayerReplacerDeepFried(keep_last_layer=paraman["--keep-last-layer"], nb_stack=paraman["--nb-stack"], only_dense=paraman["--only-dense"])
+        layer_replacer = LayerReplacerDeepFried(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"],
+                                                nb_stack=paraman["--nb-stack"], only_dense=paraman["--only-dense"])
     else:
         raise ValueError("Unknown compression method.")
 

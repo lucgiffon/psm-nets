@@ -16,7 +16,7 @@ class TestLayerReplacerTucker(unittest.TestCase):
         self.base_model = Mnist.load_model("mnist_lenet")
 
     def test_simple(self):
-        model_transformer = LayerReplacerDeepFried(only_dense=True)
+        model_transformer = LayerReplacerDeepFried()
         new_model = model_transformer.fit_transform(deepcopy(self.base_model))
         print(new_model)
 

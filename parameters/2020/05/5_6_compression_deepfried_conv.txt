@@ -1,0 +1,12 @@
+deepfried -v --keep-first-layer --svhn --svhn-vgg19
+deepfried -v --svhn --svhn-vgg19
+deepfried -v --keep-first-layer --mnist --mnist-lenet
+deepfried -v --mnist --mnist-lenet
+deepfried -v --keep-first-layer --cifar10 --cifar10-vgg19
+deepfried -v --cifar10 --cifar10-vgg19
+deepfried -v --keep-first-layer --cifar100 --cifar100-resnet20
+deepfried -v --keep-first-layer --cifar100 --cifar100-resnet50
+deepfried -v --keep-first-layer --cifar100 --cifar100-vgg19
+deepfried -v --cifar100 --cifar100-resnet20
+deepfried -v --cifar100 --cifar100-resnet50
+deepfried -v --cifar100 --cifar100-vgg19
