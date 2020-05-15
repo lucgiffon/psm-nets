@@ -75,7 +75,7 @@ from palmnet.core.layer_replacer_deepfried import LayerReplacerDeepFried
 from palmnet.core.layer_replacer_tucker import LayerReplacerTucker
 from palmnet.data import Mnist, Cifar10, Cifar100, Svhn, Test
 from palmnet.experiments.utils import ResultPrinter, ParameterManager
-from palmnet.layers.fastfood_layer import FastFoodLayer
+from palmnet.layers.fastfood_layer_dense import FastFoodLayerDense
 from palmnet.layers.low_rank_dense_layer import LowRankDense
 from palmnet.layers.tt_layer_conv import TTLayerConv
 from palmnet.layers.tt_layer_dense import TTLayerDense
@@ -443,7 +443,7 @@ def get_or_load_new_model(model_compilation_params, x_test, y_test):
             'LowRankDense': LowRankDense,
             'TTLayerConv': TTLayerConv,
             "TTLayerDense": TTLayerDense,
-            'FastFoodLayer': FastFoodLayer
+            'FastFoodLayer': FastFoodLayerDense
         })
         # if paraman["tucker"]:
         #     new_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={'TuckerLayerConv': TuckerLayerConv, 'LowRankDense': LowRankDense})

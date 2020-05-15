@@ -3,7 +3,7 @@ import numpy as np
 
 from palmnet.core.layer_replacer import LayerReplacer
 from palmnet.data import Cifar100
-from palmnet.layers.fastfood_layer import FastFoodLayer
+from palmnet.layers.fastfood_layer_dense import FastFoodLayerDense
 from palmnet.layers.tt_layer_conv import TTLayerConv
 from palmnet.layers.tt_layer_dense import TTLayerDense
 from collections import defaultdict
@@ -38,7 +38,7 @@ class LayerReplacerDeepFried(LayerReplacer):
         use_bias = layer.use_bias
         nb_stack = dct_compression["nb_stack"]
 
-        replacing_layer = FastFoodLayer(nbr_stack=nb_stack, nb_units=hidden_layer_dim, use_bias=use_bias, activation=activation)
+        replacing_layer = FastFoodLayerDense(nbr_stack=nb_stack, nb_units=hidden_layer_dim, use_bias=use_bias, activation=activation)
         replacing_weights = None
 
         return replacing_layer, replacing_weights, True

@@ -685,7 +685,7 @@ def get_nb_learnable_weights(layer):
     from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
     from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
     from palmnet.layers.tucker_layer_sparse_facto import TuckerSparseFactoLayerConv
-    from palmnet.layers.fastfood_layer import FastFoodLayer
+    from palmnet.layers.fastfood_layer_dense import FastFoodLayerDense
 
     if isinstance(layer, SparseFactorisationConv2D) or isinstance(layer, SparseFactorisationDense):
         sp_patterns = layer.sparsity_patterns

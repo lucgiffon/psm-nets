@@ -3,7 +3,7 @@ import unittest
 from keras.optimizers import Adam
 from keras.datasets import cifar10
 
-from palmnet.layers.fastfood_layer import FastFoodLayer
+from palmnet.layers.fastfood_layer_dense import FastFoodLayerDense
 from palmnet.layers.low_rank_dense_layer import LowRankDense
 from palmnet.layers.tt_layer_conv import TTLayerConv
 from palmnet.layers.tt_layer_dense import TTLayerDense
@@ -24,11 +24,11 @@ class TestFastFoodLayers(unittest.TestCase):
         model = Sequential()
         input_shape = (8, 8, 1)
         model.add(Flatten(input_shape=input_shape))
-        model.add(FastFoodLayer(nbr_stack=2))
-        model.add(FastFoodLayer(nb_units=128))
-        model.add(FastFoodLayer(nb_units=512))
-        model.add(FastFoodLayer(nb_units=10))
-        model.add(FastFoodLayer(nb_units=34))
+        model.add(FastFoodLayerDense(nbr_stack=2))
+        model.add(FastFoodLayerDense(nb_units=128))
+        model.add(FastFoodLayerDense(nb_units=512))
+        model.add(FastFoodLayerDense(nb_units=10))
+        model.add(FastFoodLayerDense(nb_units=34))
         return model
 
     def test_low_rank_layers_fine(self):
