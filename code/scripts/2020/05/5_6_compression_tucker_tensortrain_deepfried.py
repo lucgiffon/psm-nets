@@ -234,7 +234,7 @@ def get_params_optimizer():
                      # '--cifar10---cifar10-vgg19-deepfried': 1e-06,
                      '--cifar100---cifar100-resnet20-deepfried': 0.0001,
                      '--cifar100---cifar100-resnet50-deepfried': 0.0001,
-                     # '--cifar100---cifar100-vgg19-deepfried': 0.1,
+                     '--cifar100---cifar100-vgg19-deepfried': 1e-5,  # grid search lr
                      # '--mnist---mnist-lenet-deepfried': 1e-05,
                      # '--svhn---svhn-vgg19-deepfried': 1e-06
                      }

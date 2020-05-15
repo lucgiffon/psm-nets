@@ -361,7 +361,10 @@ def count_models_parameters(base_model, new_model, dct_name_compression):
                     factors = Palminizer.get_factors_from_op_sparsefacto(sparse_factorization[1])
                 else:
                     scaling = sparse_factorization["lambda"]
-                    factors = Faustizer.get_factors_from_op_sparsefacto(sparse_factorization["sparse_factors"])
+                    if paraman["faust"]:
+                        factors = Faustizer.get_factors_from_op_sparsefacto(sparse_factorization["sparse_factors"])
+                    else:
+                        factors = Palminizer.get_factors_from_op_sparsefacto(sparse_factorization["sparse_factors"])
 
                 # rebuild full matrix to allow comparisons
                 reconstructed_matrix = np.linalg.multi_dot(factors) * scaling

@@ -1,0 +1,18 @@
+ --sparsity-factor 6 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --keep-first-layer --cifar10 --cifar10-vgg19
+ --sparsity-factor 6 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --only-dense --cifar10 --cifar10-vgg19
+ --sparsity-factor 6 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --keep-first-layer --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --only-dense --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --cifar10 --cifar10-vgg19
+ --sparsity-factor 6 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --keep-first-layer --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 6 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --keep-first-layer --nb-factor 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 6 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --only-dense --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 6 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --only-dense --nb-factor 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 6 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 6 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --nb-factor 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --keep-first-layer --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --keep-first-layer --nb-factor 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --only-dense --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --only-dense --nb-factor 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_hier_high_sp_bis palm --nb-factor 3 --cifar10 --cifar10-vgg19
