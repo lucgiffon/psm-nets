@@ -1,19 +1,20 @@
 from abc import abstractmethod, ABCMeta
 import pickle
-
-from keras.models import Model
-from keras.layers import InputLayer
+import keras
+# from self.keras_module.models import Model
+# from self.keras_module.layers import InputLayer
+# from self.keras_module.layers import Dense, Conv2D
 
 from palmnet.core.palminizable import Palminizable
 from palmnet.utils import get_idx_last_layer_of_class, get_idx_first_layer_of_class
 from skluc.utils import log_memory_usage, logger
 from collections import defaultdict
-from keras.layers import Dense, Conv2D
 import pathlib
 
 
 class LayerReplacer(metaclass=ABCMeta):
-    def __init__(self, keep_last_layer=False, keep_first_layer=False, dct_name_compression=None, path_checkpoint_file=None, only_dense=False):
+    def __init__(self, keep_last_layer=False, keep_first_layer=False, dct_name_compression=None, path_checkpoint_file=None, only_dense=False, keras_module=keras):
+        self.keras_module = keras_module
         self.keep_last_layer = keep_last_layer
         self.keep_first_layer = keep_first_layer
         self.only_dense = only_dense
@@ -64,8 +65,8 @@ class LayerReplacer(metaclass=ABCMeta):
 
     def transform(self, model):
 
-        if not isinstance(model.layers[0], InputLayer):
-            model = Model(input=model.input, output=model.output)
+        if not isinstance(model.layers[0], self.keras_module.layers.InputLayer):
+            model = self.keras_module.models.Model(input=model.input, output=model.output)
 
         network_dict = {'input_layers_of': defaultdict(lambda: []), 'new_output_tensor_of': defaultdict(lambda: [])}
 
@@ -80,9 +81,9 @@ class LayerReplacer(metaclass=ABCMeta):
                 outbound_layer_name = node.outbound_layer.name
                 network_dict['input_layers_of'][outbound_layer_name].append(layer.name)
 
-        idx_last_dense_layer = get_idx_last_layer_of_class(model, Dense) if self.keep_last_layer else -1
+        idx_last_dense_layer = get_idx_last_layer_of_class(model, self.keras_module.layers.Dense) if self.keep_last_layer else -1
         idx_last_dense_layer -= 1
-        idx_first_conv_layer = get_idx_first_layer_of_class(model, Conv2D) if self.keep_first_layer else -1
+        idx_first_conv_layer = get_idx_first_layer_of_class(model, self.keras_module.layers.Conv2D) if self.keep_first_layer else -1
         idx_first_conv_layer -= 1
 
         for i, layer in enumerate(model.layers[1:]):
@@ -97,24 +98,28 @@ class LayerReplacer(metaclass=ABCMeta):
             # adapted to the palminized case... not very clean but OK
             bool_find_modif = (sparse_factorization != None and sparse_factorization != (None, None))
             logger.info('Prepare layer {}'.format(layer.name))
-            bool_only_dense = not isinstance(layer, Dense) and self.only_dense
+            bool_only_dense = not isinstance(layer, self.keras_module.layers.Dense) and self.only_dense
             bool_last_layer = i == idx_last_dense_layer and self.keep_last_layer
             bool_first_layer = i == idx_first_conv_layer and self.keep_first_layer
             keep_this_layer = bool_only_dense or bool_last_layer or bool_first_layer
             if bool_find_modif and not keep_this_layer:
                 # if there is a replacement available and not (it is the last layer and we want to keep it as is)
                 # create new layer
-                if isinstance(layer, Dense):
+                if isinstance(layer, self.keras_module.layers.Dense):
                     logger.debug("Dense layer treatment")
                     replacing_layer, replacing_weights, bool_modified = self._replace_dense(layer, sparse_factorization)
-                elif isinstance(layer, Conv2D):
+                elif isinstance(layer, self.keras_module.layers.Conv2D):
                     logger.debug("Conv2D layer treatment")
                     replacing_layer, replacing_weights, bool_modified = self._replace_conv2D(layer, sparse_factorization)
                 else:
                     raise ValueError("Unsupported layer class")
 
                 if bool_modified: # then replace layer with compressed layer
-                    replacing_layer.name = '{}_-_{}'.format(layer.name, replacing_layer.name)
+                    try:
+                        replacing_layer.name = '{}_-_{}'.format(layer.name, replacing_layer.name)
+                    except AttributeError:
+                        logger.warning("Found layer with property name unsettable. try _name instead.")
+                        replacing_layer._name = '{}_-_{}'.format(layer.name, replacing_layer.name)
 
                     x = replacing_layer(layer_inputs)
 
@@ -135,7 +140,7 @@ class LayerReplacer(metaclass=ABCMeta):
 
             network_dict['new_output_tensor_of'].update({layer.name: x})
 
-        model = Model(inputs=model.inputs, outputs=x)
+        model = self.keras_module.models.Model(inputs=model.inputs, outputs=x)
 
         return model
 
@@ -154,7 +159,7 @@ class LayerReplacer(metaclass=ABCMeta):
         Implementation of this method should return the triplet:
 
         replacing_weights: list of np.ndarray
-        replacing_layer: keras.layers.Layer
+        replacing_layer: self.keras_module.layers.Layer
         bool_replaced: tells if the layer should be replaced
 
         :param layer:
@@ -169,7 +174,7 @@ class LayerReplacer(metaclass=ABCMeta):
         Implementation of this method should return the triplet:
 
         replacing_weights: list of np.ndarray
-        replacing_layer: keras.layers.Layer
+        replacing_layer: self.keras_module.layers.Layer
         bool_replaced: tells if the layer should be replaced
 
         :param layer:

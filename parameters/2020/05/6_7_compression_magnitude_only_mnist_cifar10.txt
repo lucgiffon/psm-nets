@@ -1,0 +1,18 @@
+magnitude -v --keep-first-layer --final-sparsity 0.5 --mnist --mnist-lenet
+magnitude -v --keep-first-layer --final-sparsity 0.7 --mnist --mnist-lenet
+magnitude -v --keep-first-layer --final-sparsity 0.9 --mnist --mnist-lenet
+magnitude -v --final-sparsity 0.5 --mnist --mnist-lenet
+magnitude -v --final-sparsity 0.7 --mnist --mnist-lenet
+magnitude -v --final-sparsity 0.9 --mnist --mnist-lenet
+magnitude -v --only-dense --final-sparsity 0.5 --mnist --mnist-lenet
+magnitude -v --only-dense --final-sparsity 0.7 --mnist --mnist-lenet
+magnitude -v --only-dense --final-sparsity 0.9 --mnist --mnist-lenet
+magnitude -v --keep-first-layer --final-sparsity 0.5 --cifar10 --cifar10-vgg19
+magnitude -v --keep-first-layer --final-sparsity 0.7 --cifar10 --cifar10-vgg19
+magnitude -v --keep-first-layer --final-sparsity 0.9 --cifar10 --cifar10-vgg19
+magnitude -v --final-sparsity 0.5 --cifar10 --cifar10-vgg19
+magnitude -v --final-sparsity 0.7 --cifar10 --cifar10-vgg19
+magnitude -v --final-sparsity 0.9 --cifar10 --cifar10-vgg19
+magnitude -v --only-dense --final-sparsity 0.5 --cifar10 --cifar10-vgg19
+magnitude -v --only-dense --final-sparsity 0.7 --cifar10 --cifar10-vgg19
+magnitude -v --only-dense --final-sparsity 0.9 --cifar10 --cifar10-vgg19

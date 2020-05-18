@@ -4,7 +4,8 @@ This script is for running compression of convolutional networks using tucker de
 Usage:
     script.py tucker [-h] [-v|-vv] [--only-dense] [--rank-percentage-dense float] [--rank-percentage-conv float] [--rank-percentage float] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
     script.py tensortrain [-h] [-v|-vv] [--only-dense] [--use-pretrained] [--rank-value int] [--order int] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
-    script.py deepfried [-h] [-v|-vv] [--only-dense] [--keep-last-layer] [--keep-first-layer]  [--nb-stack int] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py deepfried [-h] [-v|-vv] [--only-dense] [--keep-last-layer] [--keep-first-layer] [--nb-stack int] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py magnitude [-h] [-v|-vv] --final-sparsity float [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
 
 Options:
   -h --help                             Show this screen.
@@ -47,6 +48,9 @@ Tensortrain specific option:
 DeepFried specific option:
     --nb-stack int                      The values for r0, r1 r... rk (exemple: 2, 4, 6)
 
+Magnitude pruning specific option:
+    --final-sparsity float              The final sparsity ratio: proportion of zero parameters.
+
 Finetuning options:
     --lr float                          Overide learning rate for optimization
 
@@ -61,7 +65,7 @@ import logging
 import sys
 import time
 import numpy as np
-import keras
+import keras as base_keras
 import docopt
 import os
 from collections import defaultdict
@@ -69,21 +73,26 @@ import pandas as pd
 from pathlib import Path
 from keras.models import Model
 import zlib
+import tensorflow as tf
+from tensorflow_model_optimization.python.core.sparsity.keras.pruning_wrapper import PruneLowMagnitude
 
 from palmnet.core.layer_replacer_TT import LayerReplacerTT
 from palmnet.core.layer_replacer_deepfried import LayerReplacerDeepFried
+from palmnet.core.layer_replacer_magnitude_pruning import LayerReplacerMagnitudePruning
 from palmnet.core.layer_replacer_tucker import LayerReplacerTucker
 from palmnet.data import Mnist, Cifar10, Cifar100, Svhn, Test
 from palmnet.experiments.utils import ResultPrinter, ParameterManager
-from palmnet.layers.fastfood_layer_conv import FastFoodLayerConv
 from palmnet.layers.fastfood_layer_dense import FastFoodLayerDense
 from palmnet.layers.low_rank_dense_layer import LowRankDense
 from palmnet.layers.tt_layer_conv import TTLayerConv
 from palmnet.layers.tt_layer_dense import TTLayerDense
 from palmnet.layers.tucker_layer import TuckerLayerConv
-from palmnet.utils import CyclicLR, CSVLoggerByBatch, get_nb_learnable_weights_from_model, get_nb_learnable_weights, SafeModelCheckpoint
+from palmnet.utils import CyclicLR, CSVLoggerByBatch, get_nb_learnable_weights_from_model, get_nb_learnable_weights, SafeModelCheckpoint, translate_keras_to_tf_model, DummyWith
 from skluc.utils import logger, log_memory_usage
 import keras.backend as K
+from tensorflow_model_optimization.sparsity import keras as sparsity
+# from tensorflow_model_optimization.python.core.api.sparsity import keras
+
 
 lst_results_header = [
     "decomposition_time",
@@ -132,6 +141,7 @@ class ParameterManagerTensotrainAndTuckerDecomposition(ParameterManager):
 
         self["--nb-stack"] = int(self["--nb-stack"]) if self["--nb-stack"] is not None else None
 
+        self["--final-sparsity"] = float(self["--final-sparsity"]) if self["--final-sparsity"] is not None else None
 
         self.__init_hash_expe()
         self.__init_output_file()
@@ -281,6 +291,8 @@ def get_params_optimizer():
         str_method = f"tensortrain-{int(paraman['--order'])}-{int(paraman['--rank-value'])}"
     elif paraman["deepfried"]:
         str_method = "deepfried"
+    elif paraman["magnitude"]:
+        str_method = "magnitude"
     else:
         raise ValueError("Unknown compression method")
 
@@ -293,9 +305,17 @@ def get_params_optimizer():
         params_optimizer["lr"] = paraman["--lr"] if paraman["--lr"] is not None else dct_config_lr[str_config_for_lr]
     else:
         params_optimizer["lr"] = paraman["--lr"] if paraman["--lr"] is not None else params_optimizer["lr"]
+
+    dct_optimizer = {
+        "RMSProp": keras.optimizers.RMSprop,
+        "RMSprop": keras.optimizers.RMSprop,
+        "Adam": keras.optimizers.Adam,
+        "SGD": keras.optimizers.SGD
+    }
+
     model_compilation_params = {
         "loss": param_train_dataset.loss,
-        "optimizer": param_train_dataset.optimizer(**params_optimizer),
+        "optimizer": dct_optimizer[param_train_dataset.optimizer.__name__](**params_optimizer),
         "metrics": ['categorical_accuracy']
     }
     return model_compilation_params, param_train_dataset
@@ -328,6 +348,9 @@ def define_callbacks(param_train_dataset, x_train):
     csvcallback = CSVLoggerByBatch(str(paraman["output_file_csvcbprinter"]), n_batch_between_display=100, separator=',', append=True)
     call_backs.append(csvcallback)
 
+    if paraman["magnitude"]:
+        call_backs.append(sparsity.UpdatePruningStep())
+
     dct_results = {
         "actual-batch-size": param_train_dataset.batch_size,
         "actual-nb-epochs": param_train_dataset.epochs if paraman["--nb-epoch"] is None else paraman["--nb-epoch"],
@@ -341,6 +364,8 @@ def define_callbacks(param_train_dataset, x_train):
 
 def get_and_evaluate_base_model(model_compilation_params, x_test, y_test):
     base_model = paraman.get_model()
+    if paraman["magnitude"]:
+        base_model = translate_keras_to_tf_model(base_model)
     base_model.compile(**model_compilation_params)
 
     score_base, acc_base = base_model.evaluate(x_test, y_test, verbose=0)
@@ -353,7 +378,7 @@ def get_and_evaluate_base_model(model_compilation_params, x_test, y_test):
 
     return base_model
 
-def compress_and_evaluate_model(base_model, model_compilation_params, x_test, y_test):
+def compress_and_evaluate_model(base_model, model_compilation_params, param_train_dataset, x_train, x_test, y_test):
     if paraman["tucker"]:
         layer_replacer = LayerReplacerTucker(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"], only_dense=paraman["--only-dense"],
                                              rank_percentage_dense=paraman["actual-rank-percentage-dense"], rank_percentage_conv=paraman["actual-rank-percentage-conv"])
@@ -363,6 +388,13 @@ def compress_and_evaluate_model(base_model, model_compilation_params, x_test, y_
     elif paraman["deepfried"]:
         layer_replacer = LayerReplacerDeepFried(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"],
                                                 nb_stack=paraman["--nb-stack"], only_dense=paraman["--only-dense"])
+    elif paraman["magnitude"]:
+        # base_model = translate_keras_to_tf_model(base_model)
+        epochs = param_train_dataset.epochs if paraman["--nb-epoch"] is None else paraman["--nb-epoch"]
+        end_step = np.ceil(1.0 * x_train.shape[0] / param_train_dataset.batch_size).astype(np.int32) * epochs
+        layer_replacer = LayerReplacerMagnitudePruning(final_sparsity=paraman["--final-sparsity"], end_step=end_step,
+                                                       keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"],
+                                                       keras_module=tf.keras, only_dense=paraman["--only-dense"])
     else:
         raise ValueError("Unknown compression method.")
 
@@ -384,39 +416,57 @@ def compress_and_evaluate_model(base_model, model_compilation_params, x_test, y_
     return new_model
 
 
-def count_models_parameters(base_model, new_model):
-    base_model_nb_param = get_nb_learnable_weights_from_model(base_model)
-    new_model_nb_param = get_nb_learnable_weights_from_model(new_model)
+def count_models_parameters(new_model, base_model=None):
+    if base_model is None:
+        df_layerby_layer = pd.read_csv(paraman["output_file_layerbylayer"])
+        new_model_nb_param = get_nb_learnable_weights_from_model(new_model, nnz=True)
+        dct_results_param = {
+            "new_model_nb_param": new_model_nb_param
+        }
+        resprinter.add(dct_results_param)
+    else:
+        df_layerby_layer = None
+        new_model_nb_param = get_nb_learnable_weights_from_model(new_model, nnz=True)
+        base_model_nb_param = get_nb_learnable_weights_from_model(base_model, nnz=True)
+        dct_results_param = {
+            "base_model_nb_param": base_model_nb_param,
+            "new_model_nb_param": new_model_nb_param
+        }
+        resprinter.add(dct_results_param)
 
-    dct_results_param = {
-        "base_model_nb_param": base_model_nb_param,
-        "new_model_nb_param": new_model_nb_param
-    }
-
-    resprinter.add(dct_results_param)
-
-    if len(base_model.layers) < len(new_model.layers):
-        base_model = Model(inputs=base_model.inputs, outputs=base_model.outputs)
+        if len(base_model.layers) < len(new_model.layers):
+            base_model = Model(inputs=base_model.inputs, outputs=base_model.outputs)
 
     dct_results_matrices = defaultdict(lambda: [])
 
     for idx_layer, compressed_layer in enumerate(new_model.layers):
-        if any(isinstance(compressed_layer, _class) for _class in (TuckerLayerConv, TTLayerConv, TTLayerDense, LowRankDense, FastFoodLayerDense, FastFoodLayerConv)):
-            base_layer = base_model.layers[idx_layer]
+
+        if any(isinstance(compressed_layer, _class) for _class in (PruneLowMagnitude, TuckerLayerConv, TTLayerConv, TTLayerDense, LowRankDense)):
+            if df_layerby_layer is None:
+                base_layer = base_model.layers[idx_layer]
+                row_layer = None
+            else:
+                base_layer = None
+                row_layer = df_layerby_layer[df_layerby_layer["idx-layer"] == idx_layer]
             log_memory_usage("Start secondary loop")
 
             # get informations to identify the layer (and do cross references)
             dct_results_matrices["idx-expe"].append(paraman["identifier"])
             dct_results_matrices["hash"].append(paraman["hash"])
             dct_results_matrices["layer-name-compressed"].append(compressed_layer.name)
-            dct_results_matrices["layer-name-base"].append(base_layer.name)
+            dct_results_matrices["layer-name-base"].append(base_layer.name if base_layer is not None else row_layer["layer-name-base"].values[0])
             dct_results_matrices["idx-layer"].append(idx_layer)
 
             # complexity analysis #
             # get nb val base layer and comrpessed layer
-            nb_weights_base_layer = get_nb_learnable_weights(base_layer)
+            if base_layer is not None:
+                nb_weights_base_layer = get_nb_learnable_weights(base_layer, nnz=True)
+            else:
+                nb_weights_base_layer = row_layer["nb-non-zero-base"].values[0]
+
             dct_results_matrices["nb-non-zero-base"].append(nb_weights_base_layer)
-            nb_weights_compressed_layer = get_nb_learnable_weights(compressed_layer)
+
+            nb_weights_compressed_layer = get_nb_learnable_weights(compressed_layer, nnz=True)
             dct_results_matrices["nb-non-zero-compressed"].append(nb_weights_compressed_layer)
             dct_results_matrices["nb-non-zero-compression-rate"].append(nb_weights_base_layer / nb_weights_compressed_layer)
 
@@ -424,7 +474,7 @@ def count_models_parameters(base_model, new_model):
     df_results_layers.to_csv(paraman["output_file_layerbylayer"])
 
 
-def get_or_load_new_model(model_compilation_params, x_test, y_test):
+def get_or_load_new_model(model_compilation_params, param_train_dataset, x_train, x_test, y_test):
     if os.path.exists(paraman["output_file_notfinishedprinter"]):
         df_history = pd.read_csv(paraman["output_file_csvcbprinter"])
         init_nb_epoch = df_history["epoch"].max() - 1
@@ -440,14 +490,20 @@ def get_or_load_new_model(model_compilation_params, x_test, y_test):
             dct_results[header] = df[header].values[0]
         resprinter.add(dct_results)
 
-        new_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={
-            'TuckerLayerConv': TuckerLayerConv,
-            'LowRankDense': LowRankDense,
-            'TTLayerConv': TTLayerConv,
-            "TTLayerDense": TTLayerDense,
-            'FastFoodLayer': FastFoodLayerDense,
-            'FastFoodLayerConv': FastFoodLayerConv
-        })
+        if paraman["magnitude"]:
+            with_obj = sparsity.prune_scope
+        else:
+            with_obj = DummyWith
+
+        with with_obj():
+            new_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={
+                'TuckerLayerConv': TuckerLayerConv,
+                'LowRankDense': LowRankDense,
+                'TTLayerConv': TTLayerConv,
+                "TTLayerDense": TTLayerDense,
+                'FastFoodLayer': FastFoodLayerDense
+                })
+
         # if paraman["tucker"]:
         #     new_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={'TuckerLayerConv': TuckerLayerConv, 'LowRankDense': LowRankDense})
         # elif paraman["tensortrain"]:
@@ -459,10 +515,10 @@ def get_or_load_new_model(model_compilation_params, x_test, y_test):
         base_model = get_and_evaluate_base_model(model_compilation_params, x_test, y_test)
 
         # New model compression #
-        new_model = compress_and_evaluate_model(base_model, model_compilation_params, x_test, y_test)
+        new_model = compress_and_evaluate_model(base_model, model_compilation_params, param_train_dataset, x_train, x_test, y_test)
 
         # count the number of parameter
-        count_models_parameters(base_model, new_model)
+        count_models_parameters(new_model, base_model)
 
         del base_model
         init_nb_epoch = 0
@@ -473,12 +529,17 @@ def get_or_load_new_model(model_compilation_params, x_test, y_test):
 def fit_new_model(new_model, param_train_dataset, init_nb_epoch, call_backs, x_train, y_train, x_test, y_test):
     open(paraman["output_file_notfinishedprinter"], 'w').close()
 
-    new_model.fit(param_train_dataset.image_data_generator.flow(x_train, y_train, batch_size=param_train_dataset.batch_size),
-         epochs=(param_train_dataset.epochs if paraman["--nb-epoch"] is None else paraman["--nb-epoch"]) - init_nb_epoch,
-         # epochs=2 - init_nb_epoch,
-         verbose=2,
-         # validation_data=(x_test, y_test),
-         callbacks=param_train_dataset.callbacks + call_backs)
+    new_model.fit(param_train_dataset.image_data_generator.flow(x_train, y_train,
+                                                                batch_size=param_train_dataset.batch_size),
+                  epochs=(param_train_dataset.epochs if paraman["--nb-epoch"] is None else paraman["--nb-epoch"]) - init_nb_epoch,
+                  # epochs=2 - init_nb_epoch,
+                  verbose=2,
+                  # validation_data=(x_test, y_test),
+                  callbacks=param_train_dataset.callbacks + call_backs)
+
+    if paraman["magnitude"]:
+        count_models_parameters(new_model)
+        # new_model = sparsity.strip_pruning(new_model)
 
     score_finetuned, acc_finetuned = new_model.evaluate(x_test, y_test, verbose=0)
 
@@ -499,7 +560,7 @@ def main():
     # Dataset #
     (x_train, y_train), (x_test, y_test) = get_dataset()
     # Do compression or load #
-    new_model, init_nb_epoch = get_or_load_new_model(model_compilation_params, x_test, y_test)
+    new_model, init_nb_epoch = get_or_load_new_model(model_compilation_params, param_train_dataset, x_train, x_test, y_test)
     # Write results before finetuning #
     resprinter.print()
     # Callbacks definition #
@@ -514,6 +575,11 @@ if __name__ == "__main__":
     arguments = docopt.docopt(__doc__)
     paraman = ParameterManagerTensotrainAndTuckerDecomposition(arguments)
     initialized_results = dict((v, None) for v in lst_results_header)
+    if paraman["magnitude"]:
+        keras = tf.keras
+    else:
+        keras = base_keras
+
     resprinter = ResultPrinter(output_file=paraman["output_file_resprinter"])
     resprinter.add(initialized_results)
     resprinter.add(paraman)

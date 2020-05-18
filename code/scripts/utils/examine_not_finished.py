@@ -2,10 +2,11 @@
 Find jobs which have a .notfinished file still existing and get their associated parameter line.
 
 Usage:
-    examine_not_finished.py --input-dir path [--output-dir path]
+    examine_not_finished.py --input-dir path [--output-dir path] [--name str]
 
 Options:
   -h --help                             Show this screen.
+  --name str                            Name of the experiment.
   --input-dir path                      Set the input dir to look experiments from.
   --output-dir path                     Set the output dir to save the experiments to if specified. Doesn't write anything by default.
 """
@@ -46,7 +47,7 @@ if __name__ == "__main__":
             print(path_not_finished)
             OAR_identifier = df_results["identifier"].values[0]
             print("OAR_identifier", OAR_identifier)
-            stderr_name = f"OAR.{OAR_identifier}.stderr"
+            stderr_name = f"OAR.{paraman['--name']}.{OAR_identifier}.stderr"
             path_stderr = root_path / stderr_name
             assert path_stderr.exists(), "no OAR stderr file exists for that experiment"
 

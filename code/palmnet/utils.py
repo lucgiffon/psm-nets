@@ -10,12 +10,13 @@ import six
 import os
 from keras.callbacks import Callback
 from keras.engine import InputLayer
-from keras.layers import Dense, Conv2D
+from keras.layers import Dense, Conv2D, MaxPooling2D, BatchNormalization, Flatten, Add, Activation, Dropout
 from keras.models import Model
 from pathlib import Path
 import numpy as np
 import keras.backend as K
 from collections import defaultdict
+import tensorflow as tf
 
 from skluc.utils import logger
 import scipy
@@ -675,13 +676,16 @@ def get_nb_non_zero_values(lst_weights):
         count += np.sum(w.astype(bool))
     return count
 
-def get_cumsum_size_weights(lst_weights):
-    count = 0
-    for w in lst_weights:
-        count += w.size
-    return count
+def get_cumsum_size_weights(lst_weights, nnz=False):
+    if not nnz:
+        count = 0
+        for w in lst_weights:
+                count += w.size
+        return count
+    else:
+        return get_nb_non_zero_values(lst_weights)
 
-def get_nb_learnable_weights(layer):
+def get_nb_learnable_weights(layer, nnz=False):
     from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
     from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
     from palmnet.layers.tucker_layer_sparse_facto import TuckerSparseFactoLayerConv
@@ -702,7 +706,7 @@ def get_nb_learnable_weights(layer):
         return count_sparsity_patterns + count_bias + count_scaling
     elif isinstance(layer, TuckerSparseFactoLayerConv):
         # reuse code above
-        return get_nb_learnable_weights(layer.in_factor) + get_nb_learnable_weights(layer.core) + get_nb_learnable_weights(layer.out_factor)
+        return get_nb_learnable_weights(layer.in_factor, nnz) + get_nb_learnable_weights(layer.core, nnz) + get_nb_learnable_weights(layer.out_factor, nnz)
 
     # elif isinstance(layer, FastFoodLayer):  # this is not necessary because the Hadamard matrix isn't a weight but a constant
     #     total_nb_weights = get_cumsum_size_weights(layer.get_weights())
@@ -711,12 +715,12 @@ def get_nb_learnable_weights(layer):
     #     return actual_nb_weights
 
     else:
-        return get_cumsum_size_weights(layer.get_weights())
+        return get_cumsum_size_weights(layer.get_weights(), nnz)
 
-def get_nb_learnable_weights_from_model(model):
+def get_nb_learnable_weights_from_model(model, nnz=False):
     count_learnable_weights = 0
     for layer in model.layers:
-        count_learnable_weights += get_nb_learnable_weights(layer)
+        count_learnable_weights += get_nb_learnable_weights(layer, nnz)
     return count_learnable_weights
 
 class TensortrainBadRankException(Exception):
@@ -740,3 +744,65 @@ def sparse_facto_init(shape, idx_fac, sparsity_pattern, multiply_left=False):
     return kernel_init
 
 NAME_INIT_SPARSE_FACTO = "sparse_facto_var_1"
+
+def translate_keras_to_tf_model(model):
+    """
+    Convert keras model into tf.keras model. It works only with networks that have only one input
+
+    :param model:
+    :return:
+    """
+    dct_keras_tf_layer = {
+        Conv2D.__name__: tf.keras.layers.Conv2D,
+        Dense.__name__: tf.keras.layers.Dense,
+        MaxPooling2D.__name__: tf.keras.layers.MaxPooling2D,
+        BatchNormalization.__name__: tf.keras.layers.BatchNormalization,
+        Add.__name__: tf.keras.layers.Add,
+        Flatten.__name__: tf.keras.layers.Flatten,
+        Activation.__name__: tf.keras.layers.Activation,
+        Dropout.__name__: tf.keras.layers.Dropout
+    }
+
+    if not isinstance(model.layers[0], InputLayer):
+        model = Model(input=model.input, output=model.output)
+
+    network_dict = {'input_layers_of': defaultdict(lambda: []), 'new_output_tensor_of': defaultdict(lambda: [])}
+
+    tf_equivalent_input_layer = tf.keras.layers.InputLayer(**model.layers[0].get_config())
+
+    # Set the output tensor of the input layer
+    network_dict['new_output_tensor_of'].update(
+        {model.layers[0].name: tf_equivalent_input_layer.input})
+
+    for i, layer in enumerate(model.layers):
+        # each layer is set as `input` layer of all its outbound layers
+        for node in layer._outbound_nodes:
+            outbound_layer_name = node.outbound_layer.name
+            network_dict['input_layers_of'][outbound_layer_name].append(layer.name)
+
+
+    for i, layer in enumerate(model.layers[1:]):
+
+        # get all layers input
+        layer_inputs = [network_dict['new_output_tensor_of'][curr_layer_input] for curr_layer_input in network_dict['input_layers_of'][layer.name]]
+        if len(layer_inputs) == 1:
+            layer_inputs = layer_inputs[0]
+
+        replacing_layer = dct_keras_tf_layer[layer.__class__.__name__](**layer.get_config())
+        replacing_weights = layer.get_weights()
+
+        x = replacing_layer(layer_inputs)
+        replacing_layer.set_weights(replacing_weights)
+
+        network_dict['new_output_tensor_of'].update({layer.name: x})
+
+    model = tf.keras.models.Model(inputs=tf_equivalent_input_layer.input, outputs=x)
+
+    return model
+
+class DummyWith:
+    def __enter__(self):
+        return None
+
+    def __exit__(self):
+        return None
