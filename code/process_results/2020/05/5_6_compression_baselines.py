@@ -121,11 +121,12 @@ def cast_to_num(df):
 
 if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/")
-    experiment_name = "2020/05/2_3_compression_tucker_tensortrain_only_dense"
+    experiment_name = "2020/05/5_6_compression_baselines"
 
     lst_paths_finetune = [
         "2020/05/2_3_compression_tucker_tensortrain_only_dense",
         "2020/05/5_6_compression_tucker_only_dense_percentage",
+        "2020/05/4_5_compression_deepfried"
     ]
 
     df_tucker_tt = pd.concat(list(map(get_df_from_expe_path, lst_paths_finetune)))
@@ -148,6 +149,8 @@ if __name__ == "__main__":
         if row["tucker"] is True:
             dct_attributes["compression"].append("tucker")
             # continue
+        elif row["deepfried"] is True:
+            dct_attributes["compression"].append("deepfried")
         else:
             dct_attributes["compression"].append("tensortrain")
 
@@ -206,6 +209,10 @@ if __name__ == "__main__":
         dct_attributes["rank-percentage-dense"].append(float(row["--rank-percentage-dense"]) if not np.isnan(row["--rank-percentage-dense"]) else np.nan)
         dct_attributes["rank-percentage-conv"].append(float(row["--rank-percentage-conv"]) if not np.isnan(row["--rank-percentage-conv"]) else np.nan)
         dct_attributes["rank-percentage"].append(float(row["--rank-percentage"]) if not np.isnan(row["--rank-percentage"]) else np.nan)
+
+        # deepfried informations
+        dct_attributes["nb-stack"].append(int(row["--nb-stack"]) if not np.isnan(row["--nb-stack"]) else np.nan)
+
 
         # score informations
         dct_attributes["base-model-score"].append(float(row["test_accuracy_base_model"]))

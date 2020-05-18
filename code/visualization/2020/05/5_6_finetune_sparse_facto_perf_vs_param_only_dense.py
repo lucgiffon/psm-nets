@@ -66,7 +66,7 @@ def get_tucker_results():
     return df_tucker_tt
 
 def get_deepfried_results():
-    results_path_tucker = "2020/05/4_5_compression_deepfried"
+    results_path_tucker = "2020/05/5_6_compression_baselines"
     src_results_path_tucker = root_source_dir / results_path_tucker / "results.csv"
 
     df_tucker_tt = pd.read_csv(src_results_path_tucker, header=0)
@@ -240,14 +240,16 @@ if __name__ == "__main__":
                 name_trace = f"{palm_algo} Q={nb_factor} K={sparsity_factor}{str_hierarchical}{str_keep_first}"
 
                 finetuned_score = row["finetuned-score"]
-                nb_param = row["nb-param-compressed-total"]
+                nb_param = row["nb-param-compressed-dense"]
 
                 base_score_tmp = row["base-model-score"]
                 assert base_score == base_score_tmp or base_score is None
-                base_nb_param_tmp = row["nb-param-base-total"]
+                base_nb_param_tmp = row["nb-param-base-dense"]
                 assert base_nb_param == base_nb_param_tmp or base_nb_param is None
                 base_score = base_score_tmp
                 base_nb_param = base_nb_param_tmp
+
+                base_nb_param_conv = row["nb-param-base-total"] - row["nb-param-base-dense"]
 
                 fig.add_trace(
                     go.Scatter(
@@ -310,12 +312,12 @@ if __name__ == "__main__":
                 name_trace = f"Tucker{str_keep_first}{str_percentage}"
 
                 finetuned_score = row["finetuned-score"]
-                nb_param = row["nb-param-compressed-total"]
+                nb_param = row["nb-param-compressed-dense"]
 
                 base_score_tmp = row["base-model-score"]
                 assert base_score == base_score_tmp or base_score is None
-                base_nb_param_tmp = row["nb-param-base-total"]
-                assert base_nb_param == base_nb_param_tmp or base_nb_param is None
+                base_nb_param_tmp = row["nb-param-base-dense"]
+                assert base_nb_param == base_nb_param_tmp or base_nb_param is None or base_nb_param_tmp == 0, f"{base_nb_param}!={base_nb_param_tmp}"
 
                 fig.add_trace(
                     go.Scatter(
@@ -324,7 +326,7 @@ if __name__ == "__main__":
                         mode='markers',
                         name=name_trace,
                         hovertext=name_trace,
-                        legendgroup=f"Tucker{str_percentage}",
+                        legendgroup=f"Low Rank {str_percentage}",
                         marker=dict(
                                     color=dct_colors[f"Tucker{str_percentage}"],
                                     symbol=dct_symbol[f"Tucker{str_keep_first}"],
@@ -345,12 +347,12 @@ if __name__ == "__main__":
                 name_trace = f"Deepfried"
 
                 finetuned_score = row["finetuned-score"]
-                nb_param = row["nb-param-compressed-total"]
+                nb_param = row["nb-param-compressed-total"] - base_nb_param_conv
 
                 base_score_tmp = row["base-model-score"]
                 assert base_score == base_score_tmp or base_score is None
-                base_nb_param_tmp = row["nb-param-base-total"]
-                assert base_nb_param == base_nb_param_tmp or base_nb_param is None
+                # base_nb_param_tmp = row["nb-param-base-dense"]
+                # assert base_nb_param == base_nb_param_tmp or base_nb_param is None
 
                 fig.add_trace(
                     go.Scatter(
@@ -392,11 +394,11 @@ if __name__ == "__main__":
                 name_trace = f"Tensortrain{str_keep_first} K={order} R={rank_value}{str_pretrained}"
 
                 finetuned_score = row["finetuned-score"]
-                nb_param = row["nb-param-compressed-total"]
+                nb_param = row["nb-param-compressed-dense"]
 
                 base_score_tmp = row["base-model-score"]
                 assert base_score == base_score_tmp or base_score is None
-                base_nb_param_tmp = row["nb-param-base-total"]
+                base_nb_param_tmp = row["nb-param-base-dense"]
                 assert base_nb_param == base_nb_param_tmp or base_nb_param is None
 
                 fig.add_trace(
@@ -422,9 +424,9 @@ if __name__ == "__main__":
             title = "Performance = f(# Param); " + dataname + " " + modelname
 
             fig.update_layout(title=title,
-                              xaxis_title="# Parameter",
-                              yaxis_title="Performance",
+                              xaxis_title="# Parameter in Dense Layers",
+                              yaxis_title="Accuracy (%)",
                               xaxis_type="log",
                               )
             fig.show()
-            # fig.write_image(str((output_dir / title).absolute()) + ".png")
+            fig.write_image(str((output_dir / title).absolute()) + ".png")

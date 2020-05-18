@@ -82,6 +82,7 @@ from palmnet.core.layer_replacer_magnitude_pruning import LayerReplacerMagnitude
 from palmnet.core.layer_replacer_tucker import LayerReplacerTucker
 from palmnet.data import Mnist, Cifar10, Cifar100, Svhn, Test
 from palmnet.experiments.utils import ResultPrinter, ParameterManager
+from palmnet.layers.fastfood_layer_conv import FastFoodLayerConv
 from palmnet.layers.fastfood_layer_dense import FastFoodLayerDense
 from palmnet.layers.low_rank_dense_layer import LowRankDense
 from palmnet.layers.tt_layer_conv import TTLayerConv
@@ -441,7 +442,7 @@ def count_models_parameters(new_model, base_model=None):
 
     for idx_layer, compressed_layer in enumerate(new_model.layers):
 
-        if any(isinstance(compressed_layer, _class) for _class in (PruneLowMagnitude, TuckerLayerConv, TTLayerConv, TTLayerDense, LowRankDense)):
+        if any(isinstance(compressed_layer, _class) for _class in (PruneLowMagnitude, TuckerLayerConv, TTLayerConv, TTLayerDense, LowRankDense, FastFoodLayerDense, FastFoodLayerConv)):
             if df_layerby_layer is None:
                 base_layer = base_model.layers[idx_layer]
                 row_layer = None
@@ -501,7 +502,8 @@ def get_or_load_new_model(model_compilation_params, param_train_dataset, x_train
                 'LowRankDense': LowRankDense,
                 'TTLayerConv': TTLayerConv,
                 "TTLayerDense": TTLayerDense,
-                'FastFoodLayer': FastFoodLayerDense
+                'FastFoodLayerDense': FastFoodLayerDense,
+                'FastFoodLayerConv': FastFoodLayerConv
                 })
 
         # if paraman["tucker"]:

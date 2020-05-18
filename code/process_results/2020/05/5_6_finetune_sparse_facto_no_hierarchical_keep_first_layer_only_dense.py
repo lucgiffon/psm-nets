@@ -207,6 +207,11 @@ if __name__ == "__main__":
         # Layer by Layer information #
         ##############################
 
+        nb_param_dense_base = 0
+        nb_param_dense_compressed = 0
+        nb_param_conv_base = 0
+        nb_param_conv_compressed = 0
+
         if type(row["output_file_layerbylayer"]) == str:
             dct_attributes["nb-param-base-total"].append(int(row["base_model_nb_param"]))
             dct_attributes["nb-param-compressed-total"].append(int(row["new_model_nb_param"]))
@@ -218,6 +223,8 @@ if __name__ == "__main__":
             for idx_row_layer, row_layer in df_csv_layerbylayer.iterrows():
                 dct_results_matrices["idx-expe"].append(idx)
                 dct_results_matrices["model"].append(dct_attributes["model"][-1])
+                layer_name_compressed = row_layer["layer-name-compressed"]
+                is_dense = "sparse_factorisation_dense" in layer_name_compressed
                 dct_results_matrices["layer-name-base"].append(row_layer["layer-name-base"])
                 dct_results_matrices["layer-name-compressed"].append(row_layer["layer-name-compressed"])
                 dct_results_matrices["idx-layer"].append(row_layer["idx-layer"])
@@ -231,6 +238,12 @@ if __name__ == "__main__":
                 dct_results_matrices["nb-non-zero-base"].append(row_layer["nb-non-zero-base"])
                 dct_results_matrices["nb-non-zero-compressed"].append(row_layer["nb-non-zero-compressed"])
                 dct_results_matrices["nb-non-zero-compression-rate"].append(row_layer["nb-non-zero-compression-rate"])
+                if is_dense:
+                    nb_param_dense_base += row_layer["nb-non-zero-base"]
+                    nb_param_dense_compressed += row_layer["nb-non-zero-compressed"]
+                else:
+                    nb_param_conv_base += row_layer["nb-non-zero-base"]
+                    nb_param_conv_compressed += row_layer["nb-non-zero-compressed"]
 
                 # get palm setting options
                 dct_results_matrices["nb-factor-param"].append(dct_attributes["nb-factor"][-1])
@@ -279,6 +292,8 @@ if __name__ == "__main__":
                     dct_results_matrices["idx-expe"].append(idx)
                     dct_results_matrices["model"].append(dct_attributes["model"][-1])
                     dct_results_matrices["layer-name-base"].append(base_layer.name)
+                    layer_name_compressed = compressed_layer.name
+                    is_dense = "sparse_factorisation_dense" in layer_name_compressed
                     dct_results_matrices["layer-name-compressed"].append(compressed_layer.name)
                     dct_results_matrices["idx-layer"].append(idx_layer)
                     dct_results_matrices["data"].append(dct_attributes["dataset"][-1])
@@ -325,7 +340,12 @@ if __name__ == "__main__":
                     nb_weights_compressed_layer = get_nb_learnable_weights(compressed_layer)
                     dct_results_matrices["nb-non-zero-compressed"].append(nb_weights_compressed_layer)
                     dct_results_matrices["nb-non-zero-compression-rate"].append(nb_weights_base_layer/nb_weights_compressed_layer)
-
+                    if is_dense:
+                        nb_param_dense_base += nb_weights_base_layer
+                        nb_param_dense_compressed += nb_weights_compressed_layer
+                    else:
+                        nb_param_conv_base += nb_weights_base_layer
+                        nb_param_conv_compressed += nb_weights_compressed_layer
                     # get palm setting options
                     dct_results_matrices["nb-factor-param"].append(dct_attributes["nb-factor"][-1])
                     # dct_results_matrices["nb-factor-actual"].append(len(sparsity_patterns))
@@ -347,6 +367,16 @@ if __name__ == "__main__":
             log_memory_usage("After dels")
             palmnet.hunt.show_most_common_types(limit=20)
 
+        dct_attributes["nb-param-base-dense"].append(int(nb_param_dense_base))
+        dct_attributes["nb-param-base-conv"].append(int(nb_param_conv_base))
+        dct_attributes["nb-param-compressed-dense"].append(int(nb_param_dense_compressed))
+        dct_attributes["nb-param-compressed-conv"].append(int(nb_param_conv_compressed))
+
+        dct_attributes["nb-param-compression-rate-dense"].append(dct_attributes["nb-param-base-dense"][-1] / dct_attributes["nb-param-compressed-dense"][-1])
+        try:
+            dct_attributes["nb-param-compression-rate-conv"].append(dct_attributes["nb-param-base-conv"][-1] / dct_attributes["nb-param-compressed-conv"][-1])
+        except ZeroDivisionError:
+            dct_attributes["nb-param-compression-rate-conv"].append(np.nan)
     df_results = pd.DataFrame.from_dict(dct_attributes)
     # if df_results_tmp is not None:
     #     df_results = pd.concat([df_results, df_results_tmp])

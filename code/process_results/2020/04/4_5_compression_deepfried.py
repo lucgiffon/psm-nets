@@ -206,7 +206,7 @@ if __name__ == "__main__":
         # tucker informations
         dct_attributes["rank-percentage-dense"].append(float(row["--rank-percentage-dense"]) if not np.isnan(row["--rank-percentage-dense"]) else np.nan)
 
-        # tucker informations
+        # deepfried informations
         dct_attributes["nb-stack"].append(int(row["--nb-stack"]) if not np.isnan(row["--nb-stack"]) else np.nan)
 
         # score informations
