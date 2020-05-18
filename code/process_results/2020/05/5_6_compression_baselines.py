@@ -126,7 +126,8 @@ if __name__ == "__main__":
     lst_paths_finetune = [
         "2020/05/2_3_compression_tucker_tensortrain_only_dense",
         "2020/05/5_6_compression_tucker_only_dense_percentage",
-        "2020/05/4_5_compression_deepfried"
+        "2020/05/4_5_compression_deepfried",
+        "2020/05/5_6_compression_deepfried_vgg19_cifar100"
     ]
 
     df_tucker_tt = pd.concat(list(map(get_df_from_expe_path, lst_paths_finetune)))
