@@ -6,7 +6,7 @@ Usage:
     script.py tensortrain [-h] [-v|-vv] [--only-dense] [--use-pretrained] [--rank-value int] [--order int] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
     script.py deepfried [-h] [-v|-vv] [--only-dense] [--keep-last-layer] [--keep-first-layer] [--nb-stack int] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
     script.py magnitude [-h] [-v|-vv] --final-sparsity float [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
-    script.py random [-h] [-v|-vv] --sparsity-factor int [--nb-factor int] float [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py random [-h] [-v|-vv] --sparsity-factor int [--nb-factor int] [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
 
 Options:
   -h --help                             Show this screen.
@@ -53,8 +53,8 @@ Magnitude pruning specific option:
     --final-sparsity float              The final sparsity ratio: proportion of zero parameters.
 
 Random Sparse Facto options:
-    --sparsity-factor=int                 Integer coefficient from which is computed the number of value in each factor.
-    --nb-factor=int                       Tells the number of sparse factor for palm
+    --sparsity-factor int                 Integer coefficient from which is computed the number of value in each factor.
+    --nb-factor int                       Tells the number of sparse factor for palm
 
 Finetuning options:
     --lr float                          Overide learning rate for optimization
@@ -151,8 +151,8 @@ class ParameterManagerTensotrainAndTuckerDecomposition(ParameterManager):
 
         self["--final-sparsity"] = float(self["--final-sparsity"]) if self["--final-sparsity"] is not None else None
 
-        self["--sparsity-factor"] = float(self["--sparsity-factor"]) if self["--sparsity-factor"] is not None else None
-        self["--nb-factor"] = float(self["--nb-factor"]) if self["--nb-factor"] is not None else None
+        self["--sparsity-factor"] = int(self["--sparsity-factor"]) if self["--sparsity-factor"] is not None else None
+        self["--nb-factor"] = int(self["--nb-factor"]) if self["--nb-factor"] is not None else None
 
         self.__init_hash_expe()
         self.__init_output_file()
@@ -304,6 +304,8 @@ def get_params_optimizer():
         str_method = "deepfried"
     elif paraman["magnitude"]:
         str_method = "magnitude"
+    elif paraman["random"]:
+        str_method = "random"
     else:
         raise ValueError("Unknown compression method")
 

@@ -1,0 +1,36 @@
+random -v --keep-first-layer --sparsity-factor 2 --nb-factor 2 --mnist --mnist-lenet
+random -v --keep-first-layer --sparsity-factor 2 --nb-factor 3 --mnist --mnist-lenet
+random -v --keep-first-layer --sparsity-factor 3 --nb-factor 2 --mnist --mnist-lenet
+random -v --keep-first-layer --sparsity-factor 3 --nb-factor 3 --mnist --mnist-lenet
+random -v --keep-first-layer --sparsity-factor 4 --nb-factor 2 --mnist --mnist-lenet
+random -v --keep-first-layer --sparsity-factor 4 --nb-factor 3 --mnist --mnist-lenet
+random -v --sparsity-factor 2 --nb-factor 2 --mnist --mnist-lenet
+random -v --sparsity-factor 2 --nb-factor 3 --mnist --mnist-lenet
+random -v --sparsity-factor 3 --nb-factor 2 --mnist --mnist-lenet
+random -v --sparsity-factor 3 --nb-factor 3 --mnist --mnist-lenet
+random -v --sparsity-factor 4 --nb-factor 2 --mnist --mnist-lenet
+random -v --sparsity-factor 4 --nb-factor 3 --mnist --mnist-lenet
+random -v --only-dense --sparsity-factor 2 --nb-factor 2 --mnist --mnist-lenet
+random -v --only-dense --sparsity-factor 2 --nb-factor 3 --mnist --mnist-lenet
+random -v --only-dense --sparsity-factor 3 --nb-factor 2 --mnist --mnist-lenet
+random -v --only-dense --sparsity-factor 3 --nb-factor 3 --mnist --mnist-lenet
+random -v --only-dense --sparsity-factor 4 --nb-factor 2 --mnist --mnist-lenet
+random -v --only-dense --sparsity-factor 4 --nb-factor 3 --mnist --mnist-lenet
+random -v --keep-first-layer --sparsity-factor 2 --nb-factor 2 --cifar10 --cifar10-vgg19
+random -v --keep-first-layer --sparsity-factor 2 --nb-factor 3 --cifar10 --cifar10-vgg19
+random -v --keep-first-layer --sparsity-factor 3 --nb-factor 2 --cifar10 --cifar10-vgg19
+random -v --keep-first-layer --sparsity-factor 3 --nb-factor 3 --cifar10 --cifar10-vgg19
+random -v --keep-first-layer --sparsity-factor 4 --nb-factor 2 --cifar10 --cifar10-vgg19
+random -v --keep-first-layer --sparsity-factor 4 --nb-factor 3 --cifar10 --cifar10-vgg19
+random -v --sparsity-factor 2 --nb-factor 2 --cifar10 --cifar10-vgg19
+random -v --sparsity-factor 2 --nb-factor 3 --cifar10 --cifar10-vgg19
+random -v --sparsity-factor 3 --nb-factor 2 --cifar10 --cifar10-vgg19
+random -v --sparsity-factor 3 --nb-factor 3 --cifar10 --cifar10-vgg19
+random -v --sparsity-factor 4 --nb-factor 2 --cifar10 --cifar10-vgg19
+random -v --sparsity-factor 4 --nb-factor 3 --cifar10 --cifar10-vgg19
+random -v --only-dense --sparsity-factor 2 --nb-factor 2 --cifar10 --cifar10-vgg19
+random -v --only-dense --sparsity-factor 2 --nb-factor 3 --cifar10 --cifar10-vgg19
+random -v --only-dense --sparsity-factor 3 --nb-factor 2 --cifar10 --cifar10-vgg19
+random -v --only-dense --sparsity-factor 3 --nb-factor 3 --cifar10 --cifar10-vgg19
+random -v --only-dense --sparsity-factor 4 --nb-factor 2 --cifar10 --cifar10-vgg19
+random -v --only-dense --sparsity-factor 4 --nb-factor 3 --cifar10 --cifar10-vgg19

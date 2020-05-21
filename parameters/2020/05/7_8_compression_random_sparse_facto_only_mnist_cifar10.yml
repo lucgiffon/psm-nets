@@ -1,0 +1,52 @@
+all:
+#  random_svhn:
+  random_mnist:
+  random_cifar10:
+#  random_cifar100:
+
+base:
+  verbosity: ["-v"]
+  keep_first: ["--keep-first-layer", "", "--only-dense"]
+  
+  sparsity_factor: {"--sparsity-factor": [2, 3, 4]}
+  nb_fac: {"--nb-factor": [2, 3]}
+
+#  only_dense: ["--only-dense"]
+#  min_lr: {"--min-lr": [0.000001]}
+#  max_lr: {"--max-lr": [0.1]}
+#  nb_epoch: {"--nb-epoch": [10]}
+#  nb_sepoch_step_size: {"--epoch-step-size": [10]}
+#  use_clr: ["--use-clr"]
+
+cifar100:
+  base:
+  cifar100: ["--cifar100"]
+  cifar100_model: ["--cifar100-resnet20", "--cifar100-resnet50", "--cifar100-vgg19"]
+
+cifar10:
+  base:
+  cifar100: ["--cifar10"]
+  cifar100_model: ["--cifar10-vgg19"]
+
+mnist:
+  base:
+  mnist: ["--mnist"]
+  mnist_model: ["--mnist-lenet"]
+
+svhn:
+  base:
+  svhn: ["--svhn"]
+  svhn_model: ["--svhn-vgg19"]
+  
+random_cifar100:
+  random: ["random"]
+  cifar100:
+random_cifar10:
+  random: ["random"]
+  cifar10:
+random_mnist:
+  random: ["random"]
+  mnist:
+random_svhn:
+  random: ["random"]
+  svhn:
