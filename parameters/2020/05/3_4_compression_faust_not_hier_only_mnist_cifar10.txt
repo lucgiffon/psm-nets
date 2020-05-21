@@ -1,0 +1,18 @@
+ --sparsity-factor 2 -v faust --mnist --mnist-lenet
+ --sparsity-factor 3 -v faust --mnist --mnist-lenet
+ --sparsity-factor 4 -v faust --mnist --mnist-lenet
+ --sparsity-factor 2 -v faust --nb-factor 2 --mnist --mnist-lenet
+ --sparsity-factor 2 -v faust --nb-factor 3 --mnist --mnist-lenet
+ --sparsity-factor 3 -v faust --nb-factor 2 --mnist --mnist-lenet
+ --sparsity-factor 3 -v faust --nb-factor 3 --mnist --mnist-lenet
+ --sparsity-factor 4 -v faust --nb-factor 2 --mnist --mnist-lenet
+ --sparsity-factor 4 -v faust --nb-factor 3 --mnist --mnist-lenet
+ --sparsity-factor 2 -v faust --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v faust --cifar10 --cifar10-vgg19
+ --sparsity-factor 4 -v faust --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v faust --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v faust --nb-factor 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v faust --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v faust --nb-factor 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 4 -v faust --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 4 -v faust --nb-factor 3 --cifar10 --cifar10-vgg19
