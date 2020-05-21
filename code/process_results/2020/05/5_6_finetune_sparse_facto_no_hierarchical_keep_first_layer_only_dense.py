@@ -48,6 +48,7 @@ def get_df_from_expe_path(expe_path):
     src_dir = root_source_dir / expe_path
     df = get_df(src_dir)
     df = df.assign(results_dir=[str(src_dir.absolute())] * len(df))
+    df = df.rename(columns={"--tol": "--delta-threshold"})
     return df
 
 
@@ -71,11 +72,14 @@ if __name__ == "__main__":
     lst_path_finetune = [
         "2020/05/5_6_finetune_sparse_facto_no_hierarchical_keep_first_layer_only_dense",
         "2020/05/5_6_finetune_sparse_facto_no_hierarchical_keep_first_layer_only_dense_others",
-        "2020/05/6_7_finetune_sparse_facto_only_mask_mnist_cifar10"
+        "2020/05/6_7_finetune_sparse_facto_only_mask_mnist_cifar10",
+        "2020/05/6_7_finetune_sparse_facto_only_mask_others",
+        "2020/05/6_7_finetune_sparse_facto_no_hierarchical_high_sp_only_cifar10"
     ]
 
     lst_path_compression = [
-        "2020/03/2_3_palminize_from_scratch"
+        "2020/03/2_3_palminize_from_scratch",
+        "2020/05/3_4_compression_palm_not_hier_high_sp_bis"
     ]
 
     df_finetune = pd.concat(list(map(get_df_from_expe_path, lst_path_finetune)))
@@ -86,8 +90,8 @@ if __name__ == "__main__":
     df_finetune = cast_to_num(df_finetune)
     df_finetune = df_finetune[~df_finetune["test_accuracy_finetuned_model"].isnull()]
 
-    # df_compression = pd.concat(list(map(get_df_from_expe_path, lst_path_compression)))
-    df_compression = get_df_from_expe_path(lst_path_compression[0])
+    df_compression = pd.concat(list(map(get_df_from_expe_path, lst_path_compression)))
+    # df_compression = get_df_from_expe_path(lst_path_compression[0])
     df_compression = cast_to_num(df_compression)
 
     root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/processed/")
@@ -131,6 +135,7 @@ if __name__ == "__main__":
                 '--cifar100-resnet50',
                 '--cifar100-resnet20',
             ])
+
         row_before_finetune = get_line_of_interest(df_compression, keys_of_interest, row).iloc[0]
         # this is the row of results for the model before finetuning
 

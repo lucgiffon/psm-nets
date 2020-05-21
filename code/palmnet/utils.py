@@ -733,6 +733,14 @@ class TensortrainBadRankException(Exception):
         return f"{self.__class__.__name__}: Got rank {self.obtained_ranks} when expected was {self.expected_ranks}"
 
 def sparse_facto_init(shape, idx_fac, sparsity_pattern, multiply_left=False):
+    """
+    Multiply left= true means the sparse factorisation will be applied on left: SpFac x vector -> Av
+    :param shape:
+    :param idx_fac:
+    :param sparsity_pattern:
+    :param multiply_left:
+    :return:
+    """
     if idx_fac == 0:
         # sum of sparsity_pattern[i] is norm zero of sparsity pattern
         # we use 2 on the numerator because the input has gone through relu and then is not 0 mean -> he initialisation

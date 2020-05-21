@@ -139,6 +139,11 @@ def get_palm_results_only_dense_keep_first():
 if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/processed")
 
+
+    SHOW_FAUST = False
+    SHOW_KEEP_FIRST_ONLY = True
+    SHOW_PRETRAINED_ONLY = True
+
     results_path = "2020/05/5_6_finetune_sparse_facto_perf_vs_param"
 
     df_faust = get_faust_results()
@@ -228,9 +233,9 @@ if __name__ == "__main__":
         "TT R=14": "indianred",
         "Base": "grey",
         "Tucker": "pink",
-        "Tucker 10%": "orange",
-        "Tucker 20%": "gold",
-        "Tucker 30%": "red"
+        "Tucker + Low Rank 10%": "orange",
+        "Tucker + Low Rank 20%": "gold",
+        "Tucker + Low Rank 30%": "red"
     }
 
     SIZE_MARKERS = 15
@@ -256,6 +261,8 @@ if __name__ == "__main__":
             for idx_pal_algo, df_model in enumerate([df_model_faust, df_model_palm]):
                 if idx_pal_algo == 0:
                     palm_algo = "FAUST"
+                    if not SHOW_FAUST:
+                        continue
                 else:
                     palm_algo = "PYQALM"
 
@@ -270,6 +277,8 @@ if __name__ == "__main__":
 
                     keep_first = row["keep-first-layer"]
                     str_keep_first = ' -1' if keep_first is True else ''
+                    if SHOW_KEEP_FIRST_ONLY and not keep_first:
+                        continue
 
                     only_mask = row["only-mask"]
                     str_only_mask = " M" if only_mask is True else ""
@@ -336,13 +345,14 @@ if __name__ == "__main__":
             for idx_row, row in df_tucker.iterrows():
                 keep_first = row["keep-first-layer"]
                 str_keep_first = ' -1' if keep_first is True else ''
-
+                if SHOW_KEEP_FIRST_ONLY and not keep_first:
+                    continue
                 try:
                     rank_percentage = int(float(row["rank-percentage-dense"]) * 100)
                 except:
                     rank_percentage = None
 
-                str_percentage = f' {rank_percentage}%' if rank_percentage is not None else ''
+                str_percentage = f' + Low Rank {rank_percentage}%' if rank_percentage is not None else ''
 
                 name_trace = f"Tucker{str_keep_first}{str_percentage}"
 
@@ -381,7 +391,8 @@ if __name__ == "__main__":
             for idx_row, row in df_tt.iterrows():
                 keep_first = row["keep-first-layer"]
                 str_keep_first = ' -1' if keep_first is True else ''
-
+                if SHOW_KEEP_FIRST_ONLY and not keep_first:
+                    continue
                 order = int(row["order"])
                 rank_value = int(row["rank-value"])
 
@@ -389,8 +400,11 @@ if __name__ == "__main__":
                     use_petrained = bool(row["use-pretrained"])
                     str_pretrained = " pretrained" if use_petrained else ""
                 else:
+                    use_petrained = False
                     str_pretrained = ""
 
+                if SHOW_PRETRAINED_ONLY and not use_petrained:
+                    continue
                 name_trace = f"Tensortrain{str_keep_first} K={order} R={rank_value}{str_pretrained}"
 
                 finetuned_score = row["finetuned-score"]
@@ -424,9 +438,9 @@ if __name__ == "__main__":
             title = "Performance = f(# Param); " + dataname + " " + modelname
 
             fig.update_layout(title=title,
-                              xaxis_title="# Parameter",
-                              yaxis_title="Performance",
+                              xaxis_title="# Parameter in Dense and Conv Layers",
+                              yaxis_title="Accuracy (%)",
                               xaxis_type="log",
                               )
             fig.show()
-            # fig.write_image(str((output_dir / title).absolute()) + ".png")
+            fig.write_image(str((output_dir / title).absolute()) + ".png")

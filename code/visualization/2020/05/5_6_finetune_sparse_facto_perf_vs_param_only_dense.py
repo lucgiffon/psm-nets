@@ -117,7 +117,7 @@ def get_palm_results_only_dense_keep_first():
 if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/processed")
 
-    results_path = "2020/05/5_6_finetune_sparse_facto_perf_vs_param"
+    results_path = "2020/05/5_6_finetune_sparse_facto_perf_vs_param_only_dense"
 
     df_tucker = get_tucker_results()
     df_tt = get_tensortrain_results()

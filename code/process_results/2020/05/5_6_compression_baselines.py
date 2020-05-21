@@ -127,7 +127,10 @@ if __name__ == "__main__":
         "2020/05/2_3_compression_tucker_tensortrain_only_dense",
         "2020/05/5_6_compression_tucker_only_dense_percentage",
         "2020/05/4_5_compression_deepfried",
-        "2020/05/5_6_compression_deepfried_vgg19_cifar100"
+        "2020/05/5_6_compression_deepfried_vgg19_cifar100",
+        "2020/05/6_7_compression_magnitude_only_mnist_cifar10",
+        "2020/05/6_7_compression_magnitude_only_mnist_cifar10_errors",
+        "2020/05/5_6_compression_deepfried_conv"
     ]
 
     df_tucker_tt = pd.concat(list(map(get_df_from_expe_path, lst_paths_finetune)))
@@ -152,6 +155,8 @@ if __name__ == "__main__":
             # continue
         elif row["deepfried"] is True:
             dct_attributes["compression"].append("deepfried")
+        elif row["magnitude"] is True:
+            dct_attributes["compression"].append("magnitude")
         else:
             dct_attributes["compression"].append("tensortrain")
 
@@ -215,6 +220,10 @@ if __name__ == "__main__":
         dct_attributes["nb-stack"].append(int(row["--nb-stack"]) if not np.isnan(row["--nb-stack"]) else np.nan)
 
 
+        # magnitude informations
+        dct_attributes["final-sparsity"].append(float(row["--final-sparsity"]) if not np.isnan(row["--final-sparsity"]) else np.nan)
+
+
         # score informations
         dct_attributes["base-model-score"].append(float(row["test_accuracy_base_model"]))
         dct_attributes["before-finetune-score"].append(float(row["test_accuracy_compressed_model"]))
@@ -246,7 +255,7 @@ if __name__ == "__main__":
                 dct_results_matrices["model"].append(dct_attributes["model"][-1])
                 dct_results_matrices["compression"].append(dct_attributes["compression"][-1])
                 layer_name_compressed = row_layer["layer-name-compressed"]
-                is_dense = "dense" in layer_name_compressed
+                is_dense = "dense" in layer_name_compressed or "fc" in layer_name_compressed or "predictions_cifa10"
                 dct_results_matrices["layer-name-compressed"].append(row_layer["layer-name-compressed"])
                 dct_results_matrices["layer-name-base"].append(row_layer["layer-name-base"])
                 dct_results_matrices["idx-layer"].append(row_layer["idx-layer"])
