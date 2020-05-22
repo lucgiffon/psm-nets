@@ -2,7 +2,7 @@
 This script finds a palminized model with given arguments then finetune it.
 
 Usage:
-    script.py (faust|palm) [--tucker] --input-dir path [-h] [-v|-vv] [--seed int] [--only-dense] [--logrange-clr] [--train-val-split float] [--batchnorm] [--keep-last-layer] [--keep-first-layer] [--lr float] [--use-clr policy] [--min-lr float --max-lr float] [--epoch-step-size int] [--nb-epoch int] [--only-mask] [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
+    script.py (faust|palm) [--tucker] --input-dir path [-h] [-v|-vv] [--seed int] [--only-dense] [--logrange-clr] [--train-val-split float] [--batchnorm] [--keep-last-layer] [--keep-first-layer] [--lr float] [--use-clr policy] [--min-lr float --max-lr float] [--epoch-step-size int] [--nb-epoch int] [--only-mask] [--tb] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50|--cifar100-resnet20|--cifar100-resnet50-new|--cifar100-resnet20-new|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19] --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float] [--hierarchical] [--nb-factor=int]
 
 Options:
   -h --help                             Show this screen.
@@ -39,6 +39,8 @@ Model:
   --mnist-500                           Use model fc 500 hidden units pretrained on mnist.
   --cifar100-resnet50                   Use model resnet50 pretrained on cifar100.
   --cifar100-resnet20                   Use model resnet20 pretrained on cifar100.
+  --cifar100-resnet50-new               Use model resnet50 pretrained on cifar100.
+  --cifar100-resnet20-new               Use model resnet20 pretrained on cifar100.
 
 Palm-Specifc options:
   faust                                 use faust
@@ -184,14 +186,12 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
                             '--test-data',
                             '--test-model',
                             "--nb-factor",
-                            "--tucker"
+                            "--tucker",
+                            '--cifar100-resnet50',
+                            '--cifar100-resnet20',
+                            '--cifar100-resnet50-new',
+                            '--cifar100-resnet20-new',
                             ]
-
-        if self["--cifar100-resnet50"] or self["--cifar100-resnet20"]:
-            keys_of_interest.extend([
-                '--cifar100-resnet50',
-                '--cifar100-resnet20',
-            ])
 
         # queries = []
         # for k in keys_of_interest:
@@ -262,6 +262,14 @@ def get_params_optimizer():
         param_train_dataset = Cifar100.get_model_param_training("cifar100_resnet")
         str_data_param = "--cifar100"
         str_model_param = "--cifar100-resnet50"
+    elif paraman["--cifar100-resnet20-new"]:
+        param_train_dataset = Cifar100.get_model_param_training("cifar100_resnet")
+        str_data_param = "--cifar100"
+        str_model_param = "--cifar100-resnet20-new"
+    elif paraman["--cifar100-resnet50-new"]:
+        param_train_dataset = Cifar100.get_model_param_training("cifar100_resnet")
+        str_data_param = "--cifar100"
+        str_model_param = "--cifar100-resnet50-new"
     elif paraman["--svhn-vgg19"]:
         param_train_dataset = Svhn.get_model_param_training()
         str_data_param = "--svhn"
