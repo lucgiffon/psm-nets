@@ -1,0 +1,18 @@
+ --sparsity-factor 2 -v palm --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 2 -v palm --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 3 -v palm --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v palm --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 4 -v palm --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 4 -v palm --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 2 -v palm --nb-factor 2 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 2 -v palm --nb-factor 2 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 2 -v palm --nb-factor 3 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 2 -v palm --nb-factor 3 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 3 -v palm --nb-factor 2 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v palm --nb-factor 2 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 3 -v palm --nb-factor 3 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v palm --nb-factor 3 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 4 -v palm --nb-factor 2 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 4 -v palm --nb-factor 2 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 4 -v palm --nb-factor 3 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 4 -v palm --nb-factor 3 --cifar100 --cifar100-resnet50-new
