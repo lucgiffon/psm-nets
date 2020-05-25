@@ -2,11 +2,11 @@
 This script is for running compression of convolutional networks using tucker decomposition.
 
 Usage:
-    script.py tucker [-h] [-v|-vv] [--only-dense] [--rank-percentage-dense float] [--rank-percentage-conv float] [--rank-percentage float] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
-    script.py tensortrain [-h] [-v|-vv] [--only-dense] [--use-pretrained] [--rank-value int] [--order int] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
-    script.py deepfried [-h] [-v|-vv] [--only-dense] [--keep-last-layer] [--keep-first-layer] [--nb-stack int] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
-    script.py magnitude [-h] [-v|-vv] --final-sparsity float [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
-    script.py random [-h] [-v|-vv] --sparsity-factor int [--nb-factor int] [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py tucker [-h] [-v|-vv] [--only-dense] [--rank-percentage-dense float] [--rank-percentage-conv float] [--rank-percentage float] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py tensortrain [-h] [-v|-vv] [--only-dense] [--use-pretrained] [--rank-value int] [--order int] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py deepfried [-h] [-v|-vv] [--only-dense] [--keep-last-layer] [--keep-first-layer] [--nb-stack int] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py magnitude [-h] [-v|-vv] --final-sparsity float [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py random [-h] [-v|-vv] --sparsity-factor int [--nb-factor int] [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
 
 Options:
   -h --help                             Show this screen.
@@ -30,6 +30,7 @@ Model:
   --cifar100-resnet50                   Use model resnet50 pretrained on cifar100.
   --cifar100-resnet50-new               Use model resnet50 pretrained on cifar100.
   --cifar100-resnet20                   Use model resnet20 pretrained on cifar100.
+  --cifar100-resnet20-new               Use model resnet50 pretrained on cifar100.
 
 Compression specific options:
     --keep-first-layer                  Tell the replacer to keep the first layer of the network
@@ -58,15 +59,16 @@ Random Sparse Facto options:
 
 Finetuning options:
     --lr float                          Overide learning rate for optimization
-
     --min-lr float                      Set min lr if use-clr is used learning rate for optimization
     --max-lr float                      Set max lr if use-clr is used learning rate for optimization
     --epoch-step-size int               Number of epoch before an half cycle.
     --use-clr                           Tells to use cyclical learning rate instead of standard learning rate, lr and clr can't be set together
-
     --nb-epoch int                      Overide the number of epochs
 """
 import logging
+mpl_logger = logging.getLogger("matplotlib")
+mpl_logger.setLevel(logging.WARNING)
+
 import sys
 import time
 import numpy as np
@@ -288,6 +290,14 @@ def get_params_optimizer():
         param_train_dataset = Cifar100.get_model_param_training("cifar100_resnet")
         str_data_param = "--cifar100"
         str_model_param = "--cifar100-resnet50"
+    elif paraman["--cifar100-resnet20-new"]:
+        param_train_dataset = Cifar100.get_model_param_training("cifar100_resnet")
+        str_data_param = "--cifar100"
+        str_model_param = "--cifar100-resnet20-new"
+    elif paraman["--cifar100-resnet50-new"]:
+        param_train_dataset = Cifar100.get_model_param_training("cifar100_resnet")
+        str_data_param = "--cifar100"
+        str_model_param = "--cifar100-resnet50-new"
     elif paraman["--svhn-vgg19"]:
         param_train_dataset = Svhn.get_model_param_training()
         str_data_param = "--svhn"
@@ -504,6 +514,27 @@ def count_models_parameters(new_model, base_model=None):
     df_results_layers.to_csv(paraman["output_file_layerbylayer"])
 
 
+def load_model_from_disc():
+    if paraman["magnitude"]:
+        with_obj = sparsity.prune_scope
+    else:
+        with_obj = DummyWith
+
+    with with_obj():
+        new_model = keras.models.load_model(paraman["output_file_modelprinter"], custom_objects={
+            'TuckerLayerConv': TuckerLayerConv,
+            'LowRankDense': LowRankDense,
+            'TTLayerConv': TTLayerConv,
+            "TTLayerDense": TTLayerDense,
+            'FastFoodLayerDense': FastFoodLayerDense,
+            'FastFoodLayerConv': FastFoodLayerConv,
+            "SparseFactorisationDense": SparseFactorisationDense,
+            "SparseFactorisationConv2D": SparseFactorisationConv2D
+        })
+
+    return new_model
+
+
 def get_or_load_new_model(model_compilation_params, param_train_dataset, x_train, x_test, y_test):
     if os.path.exists(paraman["output_file_notfinishedprinter"]):
         df_history = pd.read_csv(paraman["output_file_csvcbprinter"])
@@ -519,21 +550,6 @@ def get_or_load_new_model(model_compilation_params, param_train_dataset, x_train
                 continue
             dct_results[header] = df[header].values[0]
         resprinter.add(dct_results)
-
-        if paraman["magnitude"]:
-            with_obj = sparsity.prune_scope
-        else:
-            with_obj = DummyWith
-
-        with with_obj():
-            new_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={
-                'TuckerLayerConv': TuckerLayerConv,
-                'LowRankDense': LowRankDense,
-                'TTLayerConv': TTLayerConv,
-                "TTLayerDense": TTLayerDense,
-                'FastFoodLayerDense': FastFoodLayerDense,
-                'FastFoodLayerConv': FastFoodLayerConv
-                })
 
         # if paraman["tucker"]:
         #     new_model = keras.models.load_model(paraman["output_file_modelprinter"],custom_objects={'TuckerLayerConv': TuckerLayerConv, 'LowRankDense': LowRankDense})
@@ -551,8 +567,13 @@ def get_or_load_new_model(model_compilation_params, param_train_dataset, x_train
         # count the number of parameter
         count_models_parameters(new_model, base_model)
 
+        new_model.save(str(paraman["output_file_modelprinter"]))
+        del new_model
         del base_model
+        keras.backend.clear_session()
         init_nb_epoch = 0
+
+    new_model = load_model_from_disc()
 
     return new_model, init_nb_epoch
 

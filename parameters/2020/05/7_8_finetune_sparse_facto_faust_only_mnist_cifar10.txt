@@ -1,0 +1,12 @@
+ --sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10 faust --keep-first-layer --mnist --mnist-lenet
+ --sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10 faust --keep-first-layer --mnist --mnist-lenet
+ --sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10 faust --keep-first-layer --nb-factor 2 --mnist --mnist-lenet
+ --sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10 faust --keep-first-layer --nb-factor 3 --mnist --mnist-lenet
+ --sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10 faust --keep-first-layer --nb-factor 2 --mnist --mnist-lenet
+ --sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10 faust --keep-first-layer --nb-factor 3 --mnist --mnist-lenet
+ --sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10 faust --keep-first-layer --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10 faust --keep-first-layer --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10 faust --keep-first-layer --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10 faust --keep-first-layer --nb-factor 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10 faust --keep-first-layer --nb-factor 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10 faust --keep-first-layer --nb-factor 3 --cifar10 --cifar10-vgg19

@@ -1,0 +1,216 @@
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --svhn --svhn-vgg19
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --svhn --svhn-vgg19
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --svhn --svhn-vgg19
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --svhn --svhn-vgg19
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --svhn --svhn-vgg19
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --svhn --svhn-vgg19
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --svhn --svhn-vgg19
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tensortrain --order 4 --rank-value 6 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tensortrain --order 4 --rank-value 10 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-vgg19
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tensortrain --order 4 --rank-value 14 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-vgg19
+deepfried -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --svhn --svhn-vgg19
+deepfried -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --svhn --svhn-vgg19
+deepfried -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --svhn --svhn-vgg19
+deepfried -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+deepfried -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+deepfried -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+deepfried -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+deepfried -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+deepfried -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+deepfried -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+deepfried -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+deepfried -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-vgg19
+deepfried -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+deepfried -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+deepfried -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-vgg19
+deepfried -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+deepfried -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+deepfried -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-vgg19
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --svhn --svhn-vgg19
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --svhn --svhn-vgg19
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --svhn --svhn-vgg19
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --svhn --svhn-vgg19
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --svhn --svhn-vgg19
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --svhn --svhn-vgg19
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --svhn --svhn-vgg19
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --svhn --svhn-vgg19
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --svhn --svhn-vgg19
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --svhn --svhn-vgg19
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --svhn --svhn-vgg19
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --svhn --svhn-vgg19
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-vgg19
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-vgg19
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 3 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-vgg19
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-vgg19
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-vgg19
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 3 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-vgg19
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-vgg19
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-vgg19
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 4 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-vgg19
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-vgg19
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-vgg19
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 4 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-vgg19
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --svhn --svhn-vgg19
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --svhn --svhn-vgg19
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --svhn --svhn-vgg19
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --svhn --svhn-vgg19
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --svhn --svhn-vgg19
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --svhn --svhn-vgg19
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-vgg19
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-vgg19
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-vgg19
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-vgg19
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-vgg19
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-vgg19

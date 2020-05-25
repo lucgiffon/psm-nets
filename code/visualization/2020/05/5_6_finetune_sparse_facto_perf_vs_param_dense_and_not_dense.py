@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
 
     SHOW_FAUST = False
-    SHOW_KEEP_FIRST_ONLY = True
+    SHOW_KEEP_FIRST_ONLY = False
     SHOW_PRETRAINED_ONLY = True
 
     results_path = "2020/05/5_6_finetune_sparse_facto_perf_vs_param"

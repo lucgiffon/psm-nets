@@ -59,7 +59,7 @@ if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/processed")
 
     # results_path = "2020/03/9_10_finetune_palminized_no_useless"
-    results_path_faust = "2020/05/3_4_finetune_faust_no_hierarchical_only_cifar_mnist"
+    results_path_faust = "2020/05/7_8_finetune_sparse_facto_faust_only_mnist_cifar10"
     results_path_pyqalm = "2020/04/9_10_finetune_palminized_no_useless"
     results_path_tucker_tt = "2020/04/0_0_compression_tucker_tensortrain"
 

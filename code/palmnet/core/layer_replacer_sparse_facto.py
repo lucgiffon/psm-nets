@@ -53,7 +53,7 @@ class LayerReplacerSparseFacto(LayerReplacer):
             replacing_layer = SparseFactorisationConv2D(use_scaling=not self.only_mask, strides=strides, filters=nb_filters, kernel_size=kernel_size,
                                                         sparsity_patterns=sparsity_patterns, use_bias=layer.use_bias, activation=activation, padding=padding,
                                                         kernel_regularizer=regularizer, kernel_initializer=NAME_INIT_SPARSE_FACTO)
-            replacing_weights = scaling + factor_data + [layer.get_weights()[-1]] if layer.use_bias else []
+            replacing_weights = scaling + factor_data + ([layer.get_weights()[-1]] if layer.use_bias else [])
 
         return replacing_layer, replacing_weights, less_values_than_base
 

@@ -63,7 +63,6 @@ Finetuning options:
     --max-lr float                      Set max lr if use-clr is used learning rate for optimization
     --epoch-step-size int               Number of epoch before an half cycle.
     --use-clr                           Tells to use cyclical learning rate instead of standard learning rate, lr and clr can't be set together
-
     --nb-epoch int                      Overide the number of epochs
 """
 import logging
@@ -92,6 +91,8 @@ from palmnet.experiments.utils import ResultPrinter, ParameterManager
 from palmnet.layers.fastfood_layer_conv import FastFoodLayerConv
 from palmnet.layers.fastfood_layer_dense import FastFoodLayerDense
 from palmnet.layers.low_rank_dense_layer import LowRankDense
+from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
+from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
 from palmnet.layers.tt_layer_conv import TTLayerConv
 from palmnet.layers.tt_layer_dense import TTLayerDense
 from palmnet.layers.tucker_layer import TuckerLayerConv
@@ -524,7 +525,9 @@ def get_or_load_new_model(model_compilation_params, param_train_dataset, x_train
                 'TTLayerConv': TTLayerConv,
                 "TTLayerDense": TTLayerDense,
                 'FastFoodLayerDense': FastFoodLayerDense,
-                'FastFoodLayerConv': FastFoodLayerConv
+                'FastFoodLayerConv': FastFoodLayerConv,
+                "SparseFactorisationDense": SparseFactorisationDense,
+                "SparseFactorisationConv2D": SparseFactorisationConv2D
                 })
 
         # if paraman["tucker"]:

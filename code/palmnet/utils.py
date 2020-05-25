@@ -10,7 +10,7 @@ import six
 import os
 from keras.callbacks import Callback
 from keras.engine import InputLayer
-from keras.layers import Dense, Conv2D, MaxPooling2D, BatchNormalization, Flatten, Add, Activation, Dropout
+from keras.layers import Dense, Conv2D, MaxPooling2D, BatchNormalization, Flatten, Add, Activation, Dropout, GlobalAveragePooling2D
 from keras.models import Model
 from pathlib import Path
 import numpy as np
@@ -768,7 +768,8 @@ def translate_keras_to_tf_model(model):
         Add.__name__: tf.keras.layers.Add,
         Flatten.__name__: tf.keras.layers.Flatten,
         Activation.__name__: tf.keras.layers.Activation,
-        Dropout.__name__: tf.keras.layers.Dropout
+        Dropout.__name__: tf.keras.layers.Dropout,
+        GlobalAveragePooling2D.__name__: tf.keras.layers.GlobalAveragePooling2D
     }
 
     if not isinstance(model.layers[0], InputLayer):
@@ -812,5 +813,5 @@ class DummyWith:
     def __enter__(self):
         return None
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_value, traceback):
         return None

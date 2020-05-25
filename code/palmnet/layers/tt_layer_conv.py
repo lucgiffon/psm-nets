@@ -107,12 +107,12 @@ class TTLayerConv(Conv2DCustom):
             tmp = tf.reshape(tmp, [self.out_modes[i], -1])
             tmp = tf.transpose(tmp, [1, 0])
 
-        out = tf.reshape(tmp, [-1, h, w, np.prod(self.out_modes)])
+        tmp = tf.reshape(tmp, [-1, h, w, np.prod(self.out_modes)])
 
         if self.use_bias:
-            out = tf.add(out, self.bias, name='out')
+            tmp = tf.add(tmp, self.bias, name='out')
 
-        return out
+        return tmp
 
     def compute_output_shape(self, input_shape):
         return self._compute_output_shape(input_shape, kernel_shape=(*self.kernel_size, input_shape[-1], self.filters),
