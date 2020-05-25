@@ -2,16 +2,17 @@
 This script is for running compression of convolutional networks using tucker decomposition.
 
 Usage:
-    script.py tucker [-h] [-v|-vv] [--only-dense] [--rank-percentage-dense float] [--rank-percentage-conv float] [--rank-percentage float] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
-    script.py tensortrain [-h] [-v|-vv] [--only-dense] [--use-pretrained] [--rank-value int] [--order int] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
-    script.py deepfried [-h] [-v|-vv] [--only-dense] [--keep-last-layer] [--keep-first-layer] [--nb-stack int] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
-    script.py magnitude [-h] [-v|-vv] --final-sparsity float [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
-    script.py random [-h] [-v|-vv] --sparsity-factor int [--nb-factor int] [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py tucker [-h] [-v|-vv] [--only-dense] [--rank-percentage-dense float] [--train-val-split float] [--rank-percentage-conv float] [--rank-percentage float] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py tensortrain [-h] [-v|-vv] [--only-dense] [--use-pretrained] [--train-val-split float] [--rank-value int] [--order int] [--keep-first-layer] [--keep-last-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py deepfried [-h] [-v|-vv] [--only-dense] [--keep-last-layer] [--train-val-split float] [--keep-first-layer] [--nb-stack int] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py magnitude [-h] [-v|-vv] --final-sparsity float [--only-dense] [--train-val-split float] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py random [-h] [-v|-vv] --sparsity-factor int [--nb-factor int] [--train-val-split float] [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
 
 Options:
   -h --help                             Show this screen.
   -vv                                   Set verbosity to debug.
   -v                                    Set verbosity to info.
+  --train-val-split float               Tells the proportion of validation data. If not specified, validation data is test data.
 
 Dataset:
   --mnist                               Use Mnist dataset.
@@ -69,6 +70,8 @@ import logging
 mpl_logger = logging.getLogger("matplotlib")
 mpl_logger.setLevel(logging.WARNING)
 
+from sklearn.model_selection import train_test_split
+
 import sys
 import time
 import numpy as np
@@ -115,6 +118,18 @@ lst_results_header = [
     "test_loss_base_model",
     "test_loss_compressed_model",
     "test_loss_finetuned_model",
+    "val_accuracy_base_model",
+    "val_accuracy_compressed_model",
+    "val_accuracy_finetuned_model",
+    "val_loss_base_model",
+    "val_loss_compressed_model",
+    "val_loss_finetuned_model",
+    "train_accuracy_base_model",
+    "train_accuracy_compressed_model",
+    "train_accuracy_finetuned_model",
+    "train_loss_base_model",
+    "train_loss_compressed_model",
+    "train_loss_finetuned_model",
     "base_model_nb_param",
     "new_model_nb_param",
     "actual-lr",
@@ -158,6 +173,10 @@ class ParameterManagerTensotrainAndTuckerDecomposition(ParameterManager):
 
         self["--sparsity-factor"] = int(self["--sparsity-factor"]) if self["--sparsity-factor"] is not None else None
         self["--nb-factor"] = int(self["--nb-factor"]) if self["--nb-factor"] is not None else None
+
+        if "--train-val-split" in self.keys() and self["--train-val-split"] is not None:
+            self["--train-val-split"] = float(self["--train-val-split"]) if self["--train-val-split"] is not None else None
+            assert 0 <= self["--train-val-split"] <= 1, f"Train-val split should be comprise between 0 and 1. {self['--train-val-split']}"
 
         self.__init_hash_expe()
         self.__init_output_file()
@@ -352,7 +371,12 @@ def get_dataset():
         x_test = np.reshape(x_test, (-1, 784))
         x_train = np.reshape(x_train, (-1, 784))
 
-    return (x_train, y_train), (x_test, y_test)
+    if paraman["--train-val-split"] is not None:
+        x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=paraman["--train-val-split"], random_state=paraman["--seed"])
+    else:
+        x_val, y_val = x_test, y_test
+
+    return (x_train, y_train), (x_val, y_val), (x_test, y_test)
 
 def define_callbacks(param_train_dataset, x_train):
     call_backs = []
@@ -388,23 +412,29 @@ def define_callbacks(param_train_dataset, x_train):
 
     return call_backs
 
-def get_and_evaluate_base_model(model_compilation_params, x_test, y_test):
+def get_and_evaluate_base_model(model_compilation_params, x_train, y_train, x_val, y_val, x_test, y_test):
     base_model = paraman.get_model()
     if paraman["magnitude"]:
         base_model = translate_keras_to_tf_model(base_model)
     base_model.compile(**model_compilation_params)
 
-    score_base, acc_base = base_model.evaluate(x_test, y_test, verbose=0)
+    test_score_base, test_acc_base = base_model.evaluate(x_test, y_test, verbose=0)
+    train_score_base, train_acc_base = base_model.evaluate(x_train, y_train, verbose=0)
+    val_score_base, val_acc_base = base_model.evaluate(x_val, y_val, verbose=0)
 
     dct_results = {
-        "test_accuracy_base_model": acc_base,
-        "test_loss_base_model": score_base,
+        "test_accuracy_base_model": test_acc_base,
+        "test_loss_base_model": test_score_base,
+        "train_accuracy_base_model": train_acc_base,
+        "train_loss_base_model": train_score_base,
+        "val_accuracy_base_model": val_acc_base,
+        "val_loss_base_model": val_score_base,
     }
     resprinter.add(dct_results)
 
     return base_model
 
-def compress_and_evaluate_model(base_model, model_compilation_params, param_train_dataset, x_train, x_test, y_test):
+def compress_and_evaluate_model(base_model, model_compilation_params, param_train_dataset, x_train, y_train, x_val, y_val, x_test, y_test):
     if paraman["tucker"]:
         layer_replacer = LayerReplacerTucker(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"], only_dense=paraman["--only-dense"],
                                              rank_percentage_dense=paraman["actual-rank-percentage-dense"], rank_percentage_conv=paraman["actual-rank-percentage-conv"])
@@ -437,14 +467,20 @@ def compress_and_evaluate_model(base_model, model_compilation_params, param_trai
     new_model = layer_replacer.fit_transform(base_model)
     stop_replace = time.time()
     new_model.compile(**model_compilation_params)
-    score_compressed, acc_compressed = new_model.evaluate(x_test, y_test, verbose=0)
+    test_score_compressed, test_acc_compressed = new_model.evaluate(x_test, y_test, verbose=0)
+    train_score_compressed, train_acc_compressed = new_model.evaluate(x_train, y_train, verbose=0)
+    val_score_compressed, val_acc_compressed = new_model.evaluate(x_val, y_val, verbose=0)
     actual_learning_rate = K.eval(new_model.optimizer.lr)
 
     dct_results = {
         "actual-lr": actual_learning_rate,
         "decomposition_time": stop_replace - start_replace,
-        "test_accuracy_compressed_model": acc_compressed,
-        "test_loss_compressed_model": score_compressed
+        "test_accuracy_compressed_model": test_acc_compressed,
+        "test_loss_compressed_model": test_score_compressed,
+        "train_accuracy_compressed_model": train_acc_compressed,
+        "train_loss_compressed_model": train_score_compressed,
+        "val_accuracy_compressed_model": val_acc_compressed,
+        "val_loss_compressed_model": val_score_compressed,
     }
     resprinter.add(dct_results)
 
@@ -535,7 +571,7 @@ def load_model_from_disc():
     return new_model
 
 
-def get_or_load_new_model(model_compilation_params, param_train_dataset, x_train, x_test, y_test):
+def get_or_load_new_model(model_compilation_params, param_train_dataset, x_train, y_train, x_val, y_val, x_test, y_test):
     if os.path.exists(paraman["output_file_notfinishedprinter"]):
         df_history = pd.read_csv(paraman["output_file_csvcbprinter"])
         init_nb_epoch = df_history["epoch"].max() - 1
@@ -559,10 +595,22 @@ def get_or_load_new_model(model_compilation_params, param_train_dataset, x_train
         #     raise ValueError("Unknown compression.")
     else:
         # Base Model #
-        base_model = get_and_evaluate_base_model(model_compilation_params, x_test, y_test)
+        base_model = get_and_evaluate_base_model(model_compilation_params,
+                                                x_train=x_train,
+                                                y_train=y_train,
+                                                x_val=x_val,
+                                                y_val=y_val,
+                                                x_test=x_test,
+                                                y_test=y_test)
 
         # New model compression #
-        new_model = compress_and_evaluate_model(base_model, model_compilation_params, param_train_dataset, x_train, x_test, y_test)
+        new_model = compress_and_evaluate_model(base_model, model_compilation_params, param_train_dataset,
+                                                x_train=x_train,
+                                                y_train=y_train,
+                                                x_val=x_val,
+                                                y_val=y_val,
+                                                x_test=x_test,
+                                                y_test=y_test)
 
         # count the number of parameter
         count_models_parameters(new_model, base_model)
@@ -578,7 +626,7 @@ def get_or_load_new_model(model_compilation_params, param_train_dataset, x_train
     return new_model, init_nb_epoch
 
 
-def fit_new_model(new_model, param_train_dataset, init_nb_epoch, call_backs, x_train, y_train, x_test, y_test):
+def fit_new_model(new_model, param_train_dataset, init_nb_epoch, call_backs, x_train, y_train, x_test, y_test, x_val, y_val):
     open(paraman["output_file_notfinishedprinter"], 'w').close()
 
     new_model.fit(param_train_dataset.image_data_generator.flow(x_train, y_train,
@@ -593,14 +641,20 @@ def fit_new_model(new_model, param_train_dataset, init_nb_epoch, call_backs, x_t
         count_models_parameters(new_model)
         # new_model = sparsity.strip_pruning(new_model)
 
-    score_finetuned, acc_finetuned = new_model.evaluate(x_test, y_test, verbose=0)
+    test_score_finetuned, test_acc_finetuned = new_model.evaluate(x_test, y_test, verbose=0)
+    train_score_finetuned, train_acc_finetuned = new_model.evaluate(x_train, y_train, verbose=0)
+    val_score_finetuned, val_acc_finetuned = new_model.evaluate(x_val, y_val, verbose=0)
 
     if os.path.exists(paraman["output_file_notfinishedprinter"]):
         os.remove(paraman["output_file_notfinishedprinter"])
 
     dct_results = {
-        "test_accuracy_finetuned_model": acc_finetuned,
-        "test_loss_finetuned_model": score_finetuned
+        "test_accuracy_finetuned_model": test_acc_finetuned,
+        "test_loss_finetuned_model": test_score_finetuned,
+        "train_accuracy_finetuned_model": train_acc_finetuned,
+        "train_loss_finetuned_model": train_score_finetuned,
+        "val_accuracy_finetuned_model": val_acc_finetuned,
+        "val_loss_finetuned_model": val_score_finetuned,
     }
 
     resprinter.add(dct_results)
@@ -610,15 +664,27 @@ def main():
     # Params optimizer #
     model_compilation_params, param_train_dataset = get_params_optimizer()
     # Dataset #
-    (x_train, y_train), (x_test, y_test) = get_dataset()
+    (x_train, y_train), (x_val, y_val), (x_test, y_test) = get_dataset()
     # Do compression or load #
-    new_model, init_nb_epoch = get_or_load_new_model(model_compilation_params, param_train_dataset, x_train, x_test, y_test)
+    new_model, init_nb_epoch = get_or_load_new_model(model_compilation_params, param_train_dataset,
+                                                x_train=x_train,
+                                                y_train=y_train,
+                                                x_val=x_val,
+                                                y_val=y_val,
+                                                x_test=x_test,
+                                                y_test=y_test)
     # Write results before finetuning #
     resprinter.print()
     # Callbacks definition #
     call_backs = define_callbacks(param_train_dataset, x_train)
     # New model Finetuning #
-    fit_new_model(new_model, param_train_dataset, init_nb_epoch, call_backs, x_train, y_train, x_test, y_test)
+    fit_new_model(new_model, param_train_dataset, init_nb_epoch, call_backs,
+                                                x_train=x_train,
+                                                y_train=y_train,
+                                                x_val=x_val,
+                                                y_val=y_val,
+                                                x_test=x_test,
+                                                y_test=y_test)
 
 
 if __name__ == "__main__":
