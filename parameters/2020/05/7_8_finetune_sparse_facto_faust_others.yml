@@ -15,7 +15,6 @@ all:
 base:
   sparsity_fac: {"--sparsity-factor": [2, 3]}
   verbosity: ["-v"]
-  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10"]}
   faust: ["faust"]
   keep_first: ["--keep-first-layer"]
 #  only_mask: ["--only-mask"]
@@ -29,6 +28,7 @@ log_fac:
   hierarchical: [""]
 
 cifar100:
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_others"]}
   cifar100: ["--cifar100"]
   cifar100_vgg19: ["--cifar100-resnet20", "--cifar100-resnet50", "--cifar100-vgg19"]
 cifar100_log_fac:
@@ -40,6 +40,7 @@ cifar100_log_no_fac:
 
 
 cifar10:
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10"]}
   cifar100: ["--cifar10"]
   cifar100_vgg19: ["--cifar10-vgg19"]
 cifar10_log_fac:
@@ -51,6 +52,7 @@ cifar10_log_no_fac:
 
 
 mnist:
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10"]}
   cifar100: ["--mnist"]
   cifar100_vgg19: ["--mnist-lenet"]
 mnist_log_fac:
@@ -62,6 +64,7 @@ mnist_log_no_fac:
 
 
 svhn:
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_not_hier_others"]}
   svhn: ["--svhn"]
   cifar100_vgg19: ["--svhn-vgg19"]
 svhn_log_fac:

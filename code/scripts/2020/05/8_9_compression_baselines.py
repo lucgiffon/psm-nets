@@ -143,6 +143,8 @@ lst_results_header = [
 class ParameterManagerTensotrainAndTuckerDecomposition(ParameterManager):
     def __init__(self, dct_params, **kwargs):
         super().__init__(self, **dct_params, **kwargs)
+        self.__init_seed()
+
         self["--min-lr"] = float(self["--min-lr"]) if self["--min-lr"] is not None else None
         self["--max-lr"] = float(self["--max-lr"]) if self["--max-lr"] is not None else None
         self["--lr"] = float(self["--lr"]) if self["--lr"] is not None else None
@@ -187,6 +189,14 @@ class ParameterManagerTensotrainAndTuckerDecomposition(ParameterManager):
         self["output_file_notfinishedprinter"] = Path(self["hash"] + ".notfinished")
         self["output_file_csvcbprinter"] = Path(self["hash"] + "_history.csv")
         self["output_file_layerbylayer"] = Path(self["hash"] + "_layerbylayer.csv")
+
+    def __init_seed(self):
+        if not "--seed" in self.keys():
+            self["--seed"] = np.random.randint(0, 2 ** 32 - 2)
+
+        if self["--seed"] is not None:
+            self["--seed"] = int(self["--seed"])
+            np.random.seed(self["--seed"])
 
     def __init_hash_expe(self):
         lst_elem_to_remove_for_hash = [

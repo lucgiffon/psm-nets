@@ -26,6 +26,7 @@ base:
   lr: {"--lr": [1e-3, 1e-4, 1e-5]}
   split: {"--train-val-split": [0.2]}
   epochs: {"--nb-epoch": [10]}
+  seed: {""}
 
 
 cifar100:
