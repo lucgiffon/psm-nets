@@ -14,14 +14,17 @@ from palmnet.utils import build_dct_tt_ranks, get_facto_for_channel_and_order, D
 
 
 class LayerReplacerTT(LayerReplacer):
-    def __init__(self, rank_value, order, use_pretrained=False, *args, **kwargs):
+    def __init__(self, rank_value, order, tt_rank0_conv_1=False, use_pretrained=False, *args, **kwargs):
         self.order = order
         self.rank_value = rank_value
         self.use_pretrained = use_pretrained
 
+        self.tt_rank0_conv_1 = tt_rank0_conv_1
         self.tt_ranks_conv = [rank_value] * order + [1]
         self.tt_ranks_dense = [rank_value] * order + [1]
         self.tt_ranks_dense[0] = 1
+        if tt_rank0_conv_1:
+            self.tt_ranks_conv[0] = 1
 
         self.tt_ranks_dense = tuple(self.tt_ranks_dense)
         self.tt_ranks_conv = tuple(self.tt_ranks_conv)

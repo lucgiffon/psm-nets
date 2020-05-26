@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.stats
 from keras import backend as K
+import tensorflow as tf
 
 from skluc.utils.datautils import build_hadamard
 
@@ -39,7 +40,7 @@ def B_variable(shape, trainable=False):
         return K.constant(B, name="B")
 
 
-def P_variable(d, nbr_stack):
+def P_variable(d, nbr_stack, random_state=None):
     """
     Return a permutation matrix converted into Tensorflow Variable.
 
@@ -49,9 +50,11 @@ def P_variable(d, nbr_stack):
     :type nbr_stack: int
     :return: K.variable object containing the matrix
     """
-    idx = np.hstack([(i * d) + np.random.permutation(d) for i in range(nbr_stack)])
-    P = np.eye(N=nbr_stack * d)[idx].astype(np.float32)
-    return K.constant(P, name="P")
+    idx = np.hstack([(i * d) + random_state.permutation(d) for i in range(nbr_stack)])
+    # P = np.eye(N=nbr_stack * d)[idx].astype(np.float32)
+    # P = np.random.permutation()
+    # return K.constant(idx, name="P", dtype=tf.int32)
+    return idx
 
 
 def H_variable(d):

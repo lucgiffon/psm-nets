@@ -9,9 +9,14 @@ import tensorflow as tf
 
 
 class FastFoodLayerDense(keras.layers.Layer):
-    def __init__(self, nbr_stack=None, nb_units=None, use_bias=True, activation=None, bias_initializer="zeros", sigma=1., cos_sin_act=False, trainable=True, **kwargs):
+    def __init__(self, nbr_stack=None, seed=None, nb_units=None, use_bias=True, activation=None, bias_initializer="zeros", sigma=1., cos_sin_act=False, trainable=True, **kwargs):
         super().__init__(**kwargs)
         self.sigma = sigma
+
+        if seed is None:
+            seed = np.random.randint(2**16)
+        self.random_state = np.random.RandomState(seed)
+        self.seed = seed
 
         self.nbr_stack = nbr_stack
         self.nb_units = nb_units
@@ -71,7 +76,7 @@ class FastFoodLayerDense(keras.layers.Layer):
             # )
             self.H = H
 
-            P = P_variable(self.final_dim, nbr_stack)  # constant also
+            P = P_variable(self.final_dim, nbr_stack, self.random_state)  # constant also
             self.P = P
             # self.P = self.add_weight(
             #     name="P",
@@ -126,7 +131,8 @@ class FastFoodLayerDense(keras.layers.Layer):
         h_ff1 = K.reshape(h_ff1, (-1, self.final_dim))
         h_ff2 = K.dot(h_ff1, self.H)
         h_ff2 = K.reshape(h_ff2, (-1, self.final_dim * self.nbr_stack))
-        h_ff3 = K.dot(h_ff2, self.P)
+        h_ff3 = tf.gather(h_ff2, self.P, axis=1)
+        # h_ff3 = K.dot(h_ff2, self.P)
         h_ff4 = K.reshape(h_ff3, (-1, self.final_dim * self.nbr_stack)) * self.G  # all the diagonals are represented as a single vector with concatenated diagonals
         h_ff4 = K.reshape(h_ff4, (-1, self.final_dim))
         h_ff5 = K.dot(h_ff4, self.H)
@@ -168,6 +174,7 @@ class FastFoodLayerDense(keras.layers.Layer):
             'activation': activations.serialize(self.activation),
             'bias_initializer': initializers.serialize(self.bias_initializer),
             'sigma': self.sigma,
-            "cos_sin_act": self.cos_sin_act
+            "cos_sin_act": self.cos_sin_act,
+            'seed': self.seed
         })
         return base_config

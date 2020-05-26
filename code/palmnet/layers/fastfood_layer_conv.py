@@ -10,8 +10,13 @@ import tensorflow as tf
 
 
 class FastFoodLayerConv(Conv2DCustom):
-    def __init__(self, sigma=1., **kwargs):
+    def __init__(self, sigma=1., seed=None, **kwargs):
         self.sigma = sigma
+
+        if seed is None:
+            seed = np.random.randint(2**16)
+        self.random_state = np.random.RandomState(seed)
+        self.seed = seed
 
         self.init_dim = None
         self.final_dim = None
@@ -56,7 +61,7 @@ class FastFoodLayerConv(Conv2DCustom):
             # )
             self.H = H
 
-            P = P_variable(self.final_dim, nbr_stack)  # constant also
+            P = P_variable(self.final_dim, nbr_stack, self.random_state)  # constant also
             self.P = P
             # self.P = self.add_weight(
             #     name="P",
@@ -99,7 +104,9 @@ class FastFoodLayerConv(Conv2DCustom):
         # this is cool shit
         # reconstruct the full kernel from the fastfood decomposition
         reconstructed_kernel = K.reshape(tf.einsum("ij,kj->kij", self.H[:, :self.init_dim], self.B), (self.nbr_stack*self.final_dim, self.init_dim))  # sd x hwc, c nbr input channel
-        reconstructed_kernel = K.dot(self.P, reconstructed_kernel)  # sd x hwc
+        # reconstructed_kernel = K.dot(self.P, reconstructed_kernel)  # sd x hwc
+        reconstructed_kernel = tf.gather(reconstructed_kernel, self.P, axis=0)  # make permutation of lines: equivalent to the line above if self.P was a permutation matrix
+        # here self.P is an index vector of size sd
         reconstructed_kernel = K.reshape(self.G, (-1, 1)) * reconstructed_kernel  # sd x hwc
         reconstructed_kernel = K.reshape(reconstructed_kernel, (self.nbr_stack, self.final_dim, self.init_dim))  # s x d x hwc
         reconstructed_kernel = K.reshape(tf.einsum("ij,kjm->kim", self.H, reconstructed_kernel), (self.nbr_stack*self.final_dim, self.init_dim))  # sd x hwc
@@ -128,5 +135,6 @@ class FastFoodLayerConv(Conv2DCustom):
         base_config = super().get_config()
         base_config.update({
             'sigma': self.sigma,
+            'seed': self.seed
         })
         return base_config

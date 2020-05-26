@@ -1,7 +1,9 @@
 import unittest
-
+import tempfile
 from keras.optimizers import Adam
 from keras.datasets import cifar10
+import pathlib
+import keras
 
 from palmnet.layers.fastfood_layer_conv import FastFoodLayerConv
 from palmnet.layers.fastfood_layer_dense import FastFoodLayerDense
@@ -45,3 +47,22 @@ class TestFastFoodLayers(unittest.TestCase):
         assert weights_last_layer[-2].shape == (34,)  # asked dimension
         assert weights_last_layer[0].shape[-1] == 16  # first power of 2 above 10
 
+        permutation_conv = model.layers[0].P
+        permutation_dense = model.layers[-1].P
+        print(permutation_conv)
+        print(permutation_dense)
+
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            path_tempfile = pathlib.Path(tmpdirname) / "check.h5"
+            model.save(str(path_tempfile))
+            new_model = keras.models.load_model(str(path_tempfile), custom_objects={
+                "FastFoodLayerConv": FastFoodLayerConv,
+                "FastFoodLayerDense": FastFoodLayerDense
+            })
+            new_permutation_conv = new_model.layers[0].P
+            new_permutation_dense = new_model.layers[-1].P
+
+            assert all(new_permutation_conv == permutation_conv)
+            assert all(new_permutation_dense == permutation_dense)
+            print(permutation_conv)
+            print(permutation_dense)
