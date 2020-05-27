@@ -14,8 +14,9 @@ from palmnet.utils import build_dct_tt_ranks
 
 
 class LayerReplacerDeepFried(LayerReplacer):
-    def __init__(self, nb_stack=None, *args, **kwargs):
+    def __init__(self, nb_stack=None, seed=None, *args, **kwargs):
         self.nb_stack = nb_stack
+        self.seed = seed
         super().__init__(*args, **kwargs)
 
     ##################################
@@ -39,7 +40,7 @@ class LayerReplacerDeepFried(LayerReplacer):
 
         replacing_layer = FastFoodLayerConv(filters=nb_filters, use_bias=use_bias,
                                             kernel_size=kernel_size, strides=strides,
-                                            padding=padding, activation=activation)
+                                            padding=padding, activation=activation, seed=self.seed)
         replacing_weights = None
 
         return replacing_layer, replacing_weights, True
@@ -50,7 +51,7 @@ class LayerReplacerDeepFried(LayerReplacer):
         use_bias = layer.use_bias
         nb_stack = dct_compression["nb_stack"]
 
-        replacing_layer = FastFoodLayerDense(nbr_stack=nb_stack, nb_units=hidden_layer_dim, use_bias=use_bias, activation=activation)
+        replacing_layer = FastFoodLayerDense(nbr_stack=nb_stack, nb_units=hidden_layer_dim, use_bias=use_bias, activation=activation, seed=self.seed)
         replacing_weights = None
 
         return replacing_layer, replacing_weights, True

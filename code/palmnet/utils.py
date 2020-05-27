@@ -939,3 +939,16 @@ def palm4msa(M, p, ret_lambda=False, backend=2016):
         return F, _lambda
     else:
         return F
+
+def load_function_lr(dct_res_new, dataset, model, compression, sparsity_value_magnitude=None, sparsity_value_random=None, nb_fac_random=None, order_value_tensortrain=None,
+                  rank_value_tensortrain=None, rank_value_tucker=None):
+    dct_data_model = dct_res_new[dataset][model][compression]
+    if compression == "magnitude":
+        return dct_data_model[sparsity_value_magnitude]
+    elif compression == "random":
+        return dct_data_model[sparsity_value_random][nb_fac_random]
+    elif compression == "tensortrain":
+        return dct_data_model[order_value_tensortrain][rank_value_tensortrain]
+    elif compression == "tucker":
+        return dct_data_model[rank_value_tucker]
+    return dct_data_model

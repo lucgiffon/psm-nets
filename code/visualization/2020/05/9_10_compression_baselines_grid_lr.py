@@ -73,10 +73,9 @@ if __name__ == "__main__":
     df = df.drop(columns=["Unnamed: 0", "idx-expe"]).drop_duplicates()
 
 
-    root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/reports/figures/")
-    output_dir = root_output_dir / results_path / "grid_search_lr"
+    root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/parameters/2020/05")
+    output_dir = root_output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-
     # sparsity_factors = sorted(set(df_palminized["--sparsity-factor"]))
 
     hue_by_sparsity= {
@@ -232,27 +231,10 @@ if __name__ == "__main__":
             dct_results[dataname][modelname]["deepfried"] = float(lr_values[best_score_indice])
 
 
-    with open(output_dir / "res.yml", 'w') as outfile:
+    with open(output_dir / "baselines_lr.yml", 'w') as outfile:
         yaml.dump(dct_results, outfile, default_flow_style=False)
 
-    with open(output_dir / "res.yml", 'r') as outfile:
-        dct_res_new = yaml.load(outfile, Loader=yaml.FullLoader)
-    print(dct_res_new)
+    # with open(output_dir / "res.yml", 'r') as outfile:
+    #     dct_res_new = yaml.load(outfile, Loader=yaml.FullLoader)
+    # print(dct_res_new)
 
-    def load_function(dct_res_new, dataset, model, compression, sparsity_value_magnitude=None, sparsity_value_random=None, nb_fac_random=None, order_value_tensortrain=None,
-                      rank_value_tensortrain=None, rank_value_tucker=None):
-        dct_data_model = dct_res_new[dataset][model][compression]
-        if compression == "magnitude":
-            return dct_data_model[sparsity_value_magnitude]
-        elif compression == "random":
-            return dct_data_model[sparsity_value_random][nb_fac_random]
-        elif compression == "tensortrain":
-            return dct_data_model[order_value_tensortrain][rank_value_tensortrain]
-        elif compression == "tucker":
-            return dct_data_model[rank_value_tucker]
-        return dct_data_model
-
-    load_function(dct_res_new,
-                  dataset="cifar10",
-                  model="vgg19",
-                  compression="deepfried")

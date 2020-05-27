@@ -36,15 +36,15 @@ data/external/svhn.npz:
 
 models: mnist_lenet cifar10_vgg19_4096x4096 cifar100_vgg19_4096x4096 svhn_vgg19_4096x4096 cifar10_vgg19_2048x2048 cifar100_vgg19_2048x2048 svhn_vgg19_2048x2048 mnist_500 cifar100_resnet20 cifar100_resnet50 cifar10_tensortrain_base cifar100_resnet50_new cifar100_resnet20_new
 
-mnist_lenet: models/external/mnist_lenet_1570207294.h5
+mnist_lenet: models/external/mnist_lenet_1570207294.h5 models/external/mnist_lenet_1_1586853546.h5  models/external/mnist_lenet_2_1586853549.h5 models/external/mnist_lenet_3_1586854101.h5
 
 cifar100_resnet20: models/external/resnet_20_cifar100.h5
 
 cifar100_resnet50: models/external/resnet_50_cifar100.h5
 
-cifar100_resnet50_new: models/external/resnet_resnet50_cifar100_1587927534.h5
+cifar100_resnet50_new: models/external/resnet_resnet50_cifar100_1587927534.h5 models/external/resnet_resnet50_cifar100_1_1588162548.h5 models/external/resnet_resnet50_cifar100_2_1588107732.h5 models/external/resnet_resnet50_cifar100_3_1588102661.h5
 
-cifar100_resnet20_new: models/external/resnet_resnet20_cifar100_1588012286.h5
+cifar100_resnet20_new: models/external/resnet_resnet20_cifar100_1588012286.h5 models/external/resnet_resnet20_cifar100_1_1588096045.h5 models/external/resnet_resnet20_cifar100_2_1588101554.h5 models/external/resnet_resnet20_cifar100_3_1588090286.h5
 
 cifar10_vgg19_4096x4096: models/external/cifar10_vgg19_4096x4096_1570693209.h5
 
@@ -52,11 +52,11 @@ cifar100_vgg19_4096x4096: models/external/cifar100_vgg19_4096x4096_1570789868.h5
 
 svhn_vgg19_4096x4096: models/external/svhn_vgg19_4096x4096_1570786657.h5
 
-cifar10_vgg19_2048x2048: models/external/cifar10_vgg19_2048x2048_1572303047.h5
+cifar10_vgg19_2048x2048: models/external/cifar10_vgg19_2048x2048_1572303047.h5 models/external/cifar10_vgg19_2048x2048_1_1586857195.h5 models/external/cifar10_vgg19_2048x2048_2_1586849939.h5 models/external/cifar10_vgg19_2048x2048_3_1586849939.h5
 
-cifar100_vgg19_2048x2048: models/external/cifar100_vgg19_2048x2048_1572278802.h5
+cifar100_vgg19_2048x2048: models/external/cifar100_vgg19_2048x2048_1572278802.h5 models/external/cifar100_vgg19_2048x2048_1_1586850015.h5 models/external/cifar100_vgg19_2048x2048_2_1586850015.h5 models/external/cifar100_vgg19_2048x2048_3_1586850015.h5
 
-svhn_vgg19_2048x2048: models/external/svhn_vgg19_2048x2048_1572278831.h5
+svhn_vgg19_2048x2048: models/external/svhn_vgg19_2048x2048_1572278831.h5 models/external/svhn_vgg19_2048x2048_1_1586873524.h5 models/external/svhn_vgg19_2048x2048_2_1586877914.h5 models/external/svhn_vgg19_2048x2048_3_1586878915.h5
 
 mnist_500: models/external/mnist_500.h5
 
@@ -74,14 +74,42 @@ models/external/resnet_50_cifar100.h5:
 models/external/resnet_resnet50_cifar100_1587927534.h5:
 	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_resnet50_new models/external
 
+models/external/resnet_resnet50_cifar100_1_1588162548.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_resnet50_new-1 models/external
+
+models/external/resnet_resnet50_cifar100_2_1588107732.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_resnet50_new-2 models/external
+
+models/external/resnet_resnet50_cifar100_3_1588102661.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_resnet50_new-3 models/external
+
 models/external/resnet_resnet20_cifar100_1588012286.h5:
 	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_resnet20_new models/external
+
+models/external/resnet_resnet20_cifar100_1_1588096045.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_resnet20_new-1 models/external
+
+models/external/resnet_resnet20_cifar100_2_1588101554.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_resnet20_new-2 models/external
+
+models/external/resnet_resnet20_cifar100_3_1588090286.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_resnet20_new-3 models/external
 
 models/external/mnist_lenet_1570207294.h5:
 	$(PYTHON_INTERPRETER) code/models/make_models.py mnist_lenet models/external
 
+models/external/mnist_lenet_1_1586853546.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py mnist_lenet-1 models/external
+
+models/external/mnist_lenet_2_1586853549.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py mnist_lenet-2 models/external
+
+models/external/mnist_lenet_3_1586854101.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py mnist_lenet-3 models/external
+
 models/external/mnist_500.h5:
 	$(PYTHON_INTERPRETER) code/models/make_models.py mnist_500 models/external
+
 # vgg19 4096x4096
 models/external/cifar10_vgg19_4096x4096_1570693209.h5:
 	$(PYTHON_INTERPRETER) code/models/make_models.py cifar10_vgg19_4096x4096 models/external
@@ -96,11 +124,38 @@ models/external/svhn_vgg19_4096x4096_1570786657.h5:
 models/external/cifar10_vgg19_2048x2048_1572303047.h5:
 	$(PYTHON_INTERPRETER) code/models/make_models.py cifar10_vgg19_2048x2048 models/external
 
+models/external/cifar10_vgg19_2048x2048_1_1586857195.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar10_vgg19_2048x2048-1 models/external
+
+models/external/cifar10_vgg19_2048x2048_2_1586849939.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar10_vgg19_2048x2048-2 models/external
+
+models/external/cifar10_vgg19_2048x2048_3_1586849939.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar10_vgg19_2048x2048-3 models/external
+
 models/external/cifar100_vgg19_2048x2048_1572278802.h5:
 	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_vgg19_2048x2048 models/external
 
+models/external/cifar100_vgg19_2048x2048_1_1586850015.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_vgg19_2048x2048-1 models/external
+
+models/external/cifar100_vgg19_2048x2048_2_1586850015.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_vgg19_2048x2048-2 models/external
+
+models/external/cifar100_vgg19_2048x2048_3_1586850015.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py cifar100_vgg19_2048x2048-3 models/external
+
 models/external/svhn_vgg19_2048x2048_1572278831.h5:
 	$(PYTHON_INTERPRETER) code/models/make_models.py svhn_vgg19_2048x2048 models/external
+
+models/external/svhn_vgg19_2048x2048_1_1586873524.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py svhn_vgg19_2048x2048-1 models/external
+
+models/external/svhn_vgg19_2048x2048_2_1586877914.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py svhn_vgg19_2048x2048-2 models/external
+
+models/external/svhn_vgg19_2048x2048_3_1586878915.h5:
+	$(PYTHON_INTERPRETER) code/models/make_models.py svhn_vgg19_2048x2048-3 models/external
 
 ## Delete all compiled Python files
 clean:

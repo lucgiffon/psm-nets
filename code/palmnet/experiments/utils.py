@@ -37,10 +37,11 @@ class ParameterManager(dict):
 
     def __init_seed(self):
         if self["--seed"] is not None:
-            self["--seed"] = int(self["--seed"])
-            np.random.seed(self["--seed"])
+            self["seed"] = int(self["--seed"])
+            np.random.seed(self["seed"])
         else:
-            self["--seed"] = int(self["--seed"])  # should break
+            self["seed"] = None
+            # self["seed"] = int(self["--seed"])  # should break
 
     def get_dataset(self):
         """
@@ -76,14 +77,18 @@ class ParameterManager(dict):
             raise NotImplementedError("No dataset specified.")
 
     def get_model(self):
+        if self["--seed"] is not None:
+            seed_str = "-{}".format(self["seed"])
+        else:
+            seed_str = ""
         if self["--mnist-lenet"]:
-            return Mnist.load_model() # for now there is only one model for each dataset... it may change
+            return Mnist.load_model("mnist_lenet"+seed_str) # for now there is only one model for each dataset... it may change
         elif self["--cifar10-vgg19"]:
-            return Cifar10.load_model()
+            return Cifar10.load_model("cifar10_vgg19_2048x2048"+seed_str)
         elif self["--cifar100-vgg19"]:
-            return Cifar100.load_model()
+            return Cifar100.load_model("cifar100_vgg19_2048x2048"+seed_str)
         elif self["--svhn-vgg19"]:
-            return Svhn.load_model()
+            return Svhn.load_model("svhn_vgg19_2048x2048"+seed_str)
         elif self["--test-model"]:
             return Test.load_model()
         elif self["--mnist-500"]:
@@ -93,9 +98,9 @@ class ParameterManager(dict):
         elif self["--cifar100-resnet20"]:
             return Cifar100.load_model("cifar100-resnet20")
         elif self["--cifar100-resnet50-new"]:
-            return Cifar100.load_model("cifar100-resnet50-new")
+            return Cifar100.load_model("cifar100-resnet50-new"+seed_str)
         elif self["--cifar100-resnet20-new"]:
-            return Cifar100.load_model("cifar100-resnet20-new")
+            return Cifar100.load_model("cifar100-resnet20-new"+seed_str)
         else:
             raise NotImplementedError("No dataset specified.")
 

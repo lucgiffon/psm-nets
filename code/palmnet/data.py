@@ -11,18 +11,37 @@ from palmnet.models import random_small_model
 
 MAP_EXTERNAL_MODEL_FILENAME = {
     "mnist_lenet": "mnist_lenet_1570207294.h5",
+    "mnist_lenet-1": "mnist_lenet_1_1586853546.h5",
+    "mnist_lenet-2": "mnist_lenet_2_1586853549.h5",
+    "mnist_lenet-3": "mnist_lenet_3_1586854101.h5",
     "cifar10_vgg19_4096x4096": "cifar10_vgg19_4096x4096_1570693209.h5",
     "cifar100_vgg19_4096x4096": "cifar100_vgg19_4096x4096_1570789868.h5",
     "svhn_vgg19_4096x4096": "svhn_vgg19_4096x4096_1570786657.h5",
     "cifar10_vgg19_2048x2048": "cifar10_vgg19_2048x2048_1572303047.h5",
+    "cifar10_vgg19_2048x2048-1": "cifar10_vgg19_2048x2048_1_1586857195.h5",
+    "cifar10_vgg19_2048x2048-2": "cifar10_vgg19_2048x2048_2_1586849939.h5",
+    "cifar10_vgg19_2048x2048-3": "cifar10_vgg19_2048x2048_3_1586849939.h5",
     "cifar100_vgg19_2048x2048": "cifar100_vgg19_2048x2048_1572278802.h5",
+    "cifar100_vgg19_2048x2048-1": "cifar100_vgg19_2048x2048_1_1586850015.h5",
+    "cifar100_vgg19_2048x2048-2": "cifar100_vgg19_2048x2048_2_1586850015.h5",
+    "cifar100_vgg19_2048x2048-3": "cifar100_vgg19_2048x2048_3_1586850015.h5",
     "svhn_vgg19_2048x2048": "svhn_vgg19_2048x2048_1572278831.h5",
+    "svhn_vgg19_2048x2048-1": "svhn_vgg19_2048x2048_1_1586873524.h5",
+    "svhn_vgg19_2048x2048-2": "svhn_vgg19_2048x2048_2_1586877914.h5",
+    "svhn_vgg19_2048x2048-3": "svhn_vgg19_2048x2048_3_1586878915.h5",
     "mnist-500": "mnist_500.h5",
     "cifar100-resnet50": "resnet_50_cifar100.h5",
     "cifar100-resnet50-new": "resnet_resnet50_cifar100_1587927534.h5",
+    "cifar100-resnet50-new-1": "resnet_resnet50_cifar100_1_1588162548.h5",
+    "cifar100-resnet50-new-2": "resnet_resnet50_cifar100_2_1588107732.h5",
+    "cifar100-resnet50-new-3": "resnet_resnet50_cifar100_3_1588102661.h5",
     "cifar100-resnet20-new": "resnet_resnet20_cifar100_1588012286.h5",
+    "cifar100-resnet20-new-1": "resnet_resnet20_cifar100_1_1588096045.h5",
+    "cifar100-resnet20-new-2": "resnet_resnet20_cifar100_2_1588101554.h5",
+    "cifar100-resnet20-new-3": "resnet_resnet20_cifar100_3_1588090286.h5",
     "cifar100-resnet20": "resnet_20_cifar100.h5",
-    "cifar10_tensortrain_base": "cifar10_tensor_train_base_1585409008.h5"
+    "cifar10_tensortrain_base": "cifar10_tensor_train_base_1585409008.h5",
+
 }
 
 param_training = namedtuple("ParamTraining", ["batch_size", "epochs", "optimizer", "params_optimizer", "min_lr", "max_lr", "loss", "image_data_generator", "callbacks"])
