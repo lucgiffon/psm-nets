@@ -3,22 +3,19 @@
 # --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float]
 
 all:
-  svhn_log_fac:
+#  svhn_log_fac:
   svhn_log_no_fac:
 #  mnist_log_fac:
-#  mnist_log_no_fac:
+  mnist_log_no_fac:
 #  cifar10_log_fac:
-#  cifar10_log_no_fac:
-  cifar100_log_fac:
+  cifar10_log_no_fac:
+#  cifar100_log_fac:
   cifar100_log_no_fac:
 
 base:
-  sparsity_fac: {"--sparsity-factor": [2, 3, 4, 6, 8]}
+  sparsity_fac: {"--sparsity-factor": [2, 3, 4, 8, 10, 14]}
   verbosity: ["-v"]
-  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/03/2_3_palminize_from_scratch"]}
   faust: ["palm"]
-  keep_first: ["--keep-first-layer"]
-  only_mask: ["--only-mask"]
 
 no_log_fac:
   base:
@@ -30,7 +27,7 @@ log_fac:
 
 cifar100:
   cifar100: ["--cifar100"]
-  cifar100_vgg19: ["--cifar100-resnet20", "--cifar100-resnet50", "--cifar100-vgg19"]
+  cifar100_vgg19: ["--cifar100-resnet20-new", "--cifar100-resnet50-new", "--cifar100-vgg19"]
 cifar100_log_fac:
   log_fac:
   cifar100:

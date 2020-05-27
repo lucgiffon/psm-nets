@@ -36,7 +36,7 @@ class Randomizer(SparseFactorizer):
             nb_factors = self.nb_factor
         # self.sparsity_fac = sparsity_fac
         # self.nb_factor = nb_factor
-        random_facto = lambda x, y: prox_splincol(np.random.rand(x, y), max(x,y)*self.sparsity_fac, fast_unstable=True)
+        random_facto = lambda x, y: prox_splincol(np.random.rand(x, y), max(x,y)*self.sparsity_fac, fast_unstable=False)
 
         lst_factors = [random_facto(left_dim, A), *(random_facto(A, A) for _ in range(nb_factors-2)), random_facto(A, right_dim)]
 

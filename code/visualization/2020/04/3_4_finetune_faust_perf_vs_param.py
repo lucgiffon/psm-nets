@@ -72,7 +72,7 @@ def get_palm_results():
     return df
 
 def get_faust_results():
-    results_path = "2020/05/7_8_finetune_sparse_facto_faust_only_mnist_cifar10"
+    results_path = "2020/05/7_8_finetune_sparse_facto_faust"
     # results_path = "2020/05/3_4_finetune_faust_no_hierarchical_only_cifar_mnist"
 
     src_results_path = root_source_dir / results_path / "results.csv"

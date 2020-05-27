@@ -1,18 +1,21 @@
 import logging
 from math import ceil
 
-from pyfaust.fact import hierarchical, palm4msa
-from pyfaust.factparams import ConstraintList, StoppingCriterion, ParamsPalm4MSA, ConstraintInt, ParamsHierarchical
+from pyfaust.fact import hierarchical
+from pyfaust.factparams import ConstraintList, StoppingCriterion, ConstraintInt, ParamsHierarchical
 from pyfaust.proj import splincol
 
 from palmnet.core.sparse_factorizer import SparseFactorizer
 
 import numpy as np
 
+from palmnet.utils import ParamsPalm4MSA, palm4msa
+
 
 class Faustizer(SparseFactorizer):
-    def __init__(self, tol=1e-6, *args, **kwargs):
+    def __init__(self, tol=1e-6, tol_norm2=1e-8, *args, **kwargs):
         self.tol = tol
+        self.tol_norm2 = tol_norm2
         super().__init__(*args, **kwargs)
 
     @staticmethod
@@ -22,7 +25,7 @@ class Faustizer(SparseFactorizer):
         return factors
 
     @staticmethod
-    def create_param_hierarchical_rect_control_stop_criter(m, n, j, sparsity, tol, max_iter):
+    def create_param_hierarchical_rect_control_stop_criter(m, n, j, sparsity, tol, max_iter, tol_norm2):
 
         P = 1.4*m**2
         rho = 0.8
@@ -43,12 +46,13 @@ class Faustizer(SparseFactorizer):
                                       stop_crit,
                                       stop_crit,
                                       is_update_way_R2L=True,
-                                      is_fact_side_left=True)
+                                      is_fact_side_left=True,
+                                      norm2_threshold=tol_norm2)
         except Exception as e:
             print(e)
 
     @staticmethod
-    def build_constraints_faust(left_dim, right_dim, sparsity, N_fac, hierarchical, tol, nb_iter):
+    def build_constraints_faust(left_dim, right_dim, sparsity, N_fac, hierarchical, tol, nb_iter, tol_norm2):
         """
         Only for left to right optimization + bigger dim on left
 
@@ -66,10 +70,11 @@ class Faustizer(SparseFactorizer):
 
             lst_constraints = [splincol((left_dim, right_dim), sparsity).constraint] + [splincol((right_dim, right_dim), sparsity).constraint for _ in range(N_fac - 1)]
             cons = ConstraintList(*lst_constraints)
-            param = ParamsPalm4MSA(cons, stop, is_update_way_R2L=True)
+            param = ParamsPalm4MSA(cons, stop, is_update_way_R2L=True, norm2_threshold=tol_norm2)
             param.init_facts = [np.eye(left_dim, left_dim) for _ in range(N_fac-1)] + [np.zeros((left_dim, right_dim))]
         else:
-            param = Faustizer.create_param_hierarchical_rect_control_stop_criter(left_dim, right_dim, N_fac, sparsity, tol, nb_iter)
+            param = Faustizer.create_param_hierarchical_rect_control_stop_criter(left_dim, right_dim, N_fac, sparsity, tol, nb_iter,
+                                                                                 tol_norm2=tol_norm2)
 
         return param
 
@@ -116,7 +121,8 @@ class Faustizer(SparseFactorizer):
         #     left_dim, right_dim = matrix.shape
 
         constraints = self.build_constraints_faust(left_dim, right_dim, sparsity=self.sparsity_fac, N_fac=nb_factors,
-                                                   hierarchical=self.hierarchical, tol=self.tol, nb_iter=self.nb_iter)
+                                                   hierarchical=self.hierarchical, tol=self.tol, nb_iter=self.nb_iter,
+                                                   tol_norm2=self.tol_norm2)
 
         if self.hierarchical and not nb_factors == 1:
             logging.info("Applying hierarchical faust palm4msa to matrix with shape {}".format(matrix.shape))

@@ -1,0 +1,4 @@
+ --sparsity-factor 2 -v faust --keep-first-layer --nb-factor 2 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_only_resnet_50 --cifar100 --cifar100-resnet50
+ --sparsity-factor 2 -v faust --keep-first-layer --nb-factor 3 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_only_resnet_50 --cifar100 --cifar100-resnet50
+ --sparsity-factor 3 -v faust --keep-first-layer --nb-factor 2 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_only_resnet_50 --cifar100 --cifar100-resnet50
+ --sparsity-factor 3 -v faust --keep-first-layer --nb-factor 3 --input-dir /data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_faust_only_resnet_50 --cifar100 --cifar100-resnet50

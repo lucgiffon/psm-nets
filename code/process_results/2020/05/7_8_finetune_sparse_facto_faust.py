@@ -67,14 +67,16 @@ def cast_to_num(df):
 
 if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/")
-    expe_path = "2020/05/7_8_finetune_sparse_facto_faust_only_mnist_cifar10"
+    expe_path = "2020/05/7_8_finetune_sparse_facto_faust"
 
     lst_path_finetune = [
-        "2020/05/7_8_finetune_sparse_facto_faust_only_mnist_cifar10"
+        "2020/05/7_8_finetune_sparse_facto_faust_only_mnist_cifar10",
+        "2020/05/3_4_finetune_faust_not_hier_others",
     ]
 
     lst_path_compression = [
-        "2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10"
+        "2020/05/3_4_compression_faust_not_hier_only_mnist_cifar10",
+        "2020/05/3_4_compression_faust_not_hier_others",
     ]
 
     df_finetune = pd.concat(list(map(get_df_from_expe_path, lst_path_finetune)))

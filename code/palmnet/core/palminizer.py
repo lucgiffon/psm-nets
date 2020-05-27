@@ -8,7 +8,7 @@ import numpy as np
 
 
 class Palminizer(SparseFactorizer):
-    def __init__(self, delta_threshold_palm=1e-6, fast_unstable_proj=True, *args, **kwargs):
+    def __init__(self, delta_threshold_palm=1e-6, fast_unstable_proj=False, *args, **kwargs):
         self.delta_threshold_palm = delta_threshold_palm
         self.fast_unstable_proj = fast_unstable_proj
         super().__init__(*args, **kwargs)

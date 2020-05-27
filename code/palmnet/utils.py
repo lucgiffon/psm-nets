@@ -1,6 +1,10 @@
 import csv
 import warnings
 
+import _FaustCorePy
+from pyfaust import Faust
+from pyfaust.fact import _check_fact_mat
+from pyfaust.factparams import ParamsFact, StoppingCriterion, ConstraintList
 from typing import Iterable
 import io
 from collections import OrderedDict
@@ -819,3 +823,119 @@ class DummyWith:
 
     def __exit__(self, exc_type, exc_value, traceback):
         return None
+
+class ParamsPalm4MSA(ParamsFact):
+    """
+        The class intents to set input parameters for the Palm4MSA algorithm.
+
+         See also pyfaust.fact.palm4msa
+    """
+
+    def __init__(self, constraints, stop_crit, init_facts=None,
+                 is_update_way_R2L=False, init_lambda=1.0,
+                 step_size=10.0**-16,
+                 constant_step_size=False,
+                 is_verbose=False, grad_calc_opt_mode=ParamsFact.EXTERNAL_OPT, norm2_threshold=1e-6):
+        """
+            Constructor.
+
+            Args:
+                constraints: a pyfaust.factparams.ConstraintList or
+                or a Python list of pyfaust.proj.proj_gen. The number of items
+                determines the number of matrix factors.
+                stop_crit: a pyfaust.factparams.StoppingCriterion instance
+                which defines the algorithm stopping criterion.
+                init_facts: if defined, pyfaust.fact.palm4msa will initialize the factors
+                with init_facts (by default, None, implies that the first
+                factor to be updated is initialized to zero and the others to
+                identity. Note that the so called first factor can be the
+                rightmost or the leftmost depending on the is_update_way_R2L argument).
+                is_update_way_R2L: if True pyfaust.fact.palm4msa will update factors from
+                the right to the left, otherwise it's done in reverse order.
+                init_lambda: the scale scalar initial value (by default the
+                value is one).
+                step_size: the initial step of the PALM descent.
+                constant_step_size: if True the step_size keeps constant along
+                the algorithm iterations otherwise it is updated before every
+                factor update.
+                is_verbose: True to enable the verbose mode.
+                grad_calc_opt_mode: the mode used for computing the PALM gradient.
+                It can be one value among ParamsFact.EXTERNAL_OPT,
+                ParamsFact.INTERNAL_OPT or ParamsFact.DISABLED_OPT. This
+                parameter is experimental, its value shouldn't be changed.
+        """
+        if(not isinstance(constraints, list) and not
+           isinstance(constraints, ConstraintList)):
+            raise TypeError('constraints argument must be a list or a'
+                            ' ConstraintList.')
+        num_facts = len(constraints)
+        super(ParamsPalm4MSA, self).__init__(num_facts, is_update_way_R2L,
+                                             init_lambda,
+                                             constraints, step_size,
+                                             constant_step_size,
+                                             is_verbose, grad_calc_opt_mode, norm2_threshold=norm2_threshold)
+        if(init_facts != None and (not isinstance(init_facts, list) and not isinstance(init_facts,
+                                                               tuple) or
+           len(init_facts) != num_facts)):
+            raise ValueError('ParamsPalm4MSA init_facts argument must be a '
+                             'list/tuple of '+str(num_facts)+" (num_facts) arguments.")
+        else:
+            self.init_facts = init_facts
+        if(not isinstance(stop_crit, StoppingCriterion)):
+           raise TypeError('ParamsPalm4MSA stop_crit argument must be a StoppingCriterion '
+                           'object')
+        self.stop_crit = stop_crit
+        #TODO: verify number of constraints is consistent with num_facts
+
+    def is_mat_consistent(self, M):
+        return super(ParamsPalm4MSA, self).is_mat_consistent(M)
+
+def palm4msa(M, p, ret_lambda=False, backend=2016):
+    """
+    Factorizes the matrix M with Palm4MSA algorithm using the parameters set in p.
+
+    Args:
+        M: the numpy matrix to factorize.
+        p: the ParamsPalm4MSA instance to define the algorithm parameters.
+        ret_lambda: set to True to ask the function to return the scale factor (False by default).
+
+    Returns:
+        The Faust object resulting of the factorization.
+        if ret_lambda == True then the function returns a tuple (Faust, lambda).
+
+    Examples:
+    >>> from pyfaust.fact import palm4msa
+    >>> from pyfaust.factparams import ParamsPalm4MSA, ConstraintList, StoppingCriterion
+    >>> import numpy as np
+    >>> M = np.random.rand(500, 32)
+    >>> cons = ConstraintList('splin', 5, 500, 32, 'normcol', 1.0, 32, 32)
+    >>> # or alternatively using pyfaust.proj
+    >>> # from pyfaust.proj import splin, normcol
+    >>> # cons = [ splin((500,32), 5), normcol((32,32), 1.0)]
+    >>> stop_crit = StoppingCriterion(num_its=200)
+    >>> param = ParamsPalm4MSA(cons, stop_crit)
+    >>> F = palm4msa(M, param)
+    >>> F
+    Faust size 500x32, density 0.22025, nnz_sum 3524, 2 factor(s):
+    FACTOR 0 (real) SPARSE, size 500x32, density 0.15625, nnz 2500
+    FACTOR 1 (real) SPARSE, size 32x32, density 1, nnz 1024
+    """
+    # if(not isinstance(p, pyfaust.factparams.ParamsPalm4MSA)):
+    #     raise TypeError("p must be a ParamsPalm4MSA object.")
+    _check_fact_mat('palm4msa()', M)
+    if(not p.is_mat_consistent(M)):
+        raise ValueError("M's number of columns must be consistent with "
+                         "the last residuum constraint defined in p. "
+                         "Likewise its number of rows must be consistent "
+                         "with the first factor constraint defined in p.")
+    if(backend == 2016):
+        core_obj, _lambda = _FaustCorePy.FaustFact.fact_palm4msa(M, p)
+    elif(backend == 2020):
+        core_obj, _lambda = _FaustCorePy.FaustFact.palm4msa2020(M, p)
+    else:
+        raise ValueError("Unknown backend (only 2016 and 2020 are available).")
+    F = Faust(core_obj=core_obj)
+    if(ret_lambda):
+        return F, _lambda
+    else:
+        return F
