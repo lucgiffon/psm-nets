@@ -1,0 +1,12 @@
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-3 --train-val-split 0.2 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-3 --train-val-split 0.2 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-4 --train-val-split 0.2 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-4 --train-val-split 0.2 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-5 --train-val-split 0.2 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-5 --train-val-split 0.2 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-3 --train-val-split 0.2 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-3 --train-val-split 0.2 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-4 --train-val-split 0.2 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-4 --train-val-split 0.2 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-5 --train-val-split 0.2 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-5 --train-val-split 0.2 --nb-epoch 10 --cifar100 --cifar100-resnet50-new

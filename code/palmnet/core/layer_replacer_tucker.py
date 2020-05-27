@@ -107,14 +107,14 @@ class LayerReplacerTucker(LayerReplacer):
         in_rank = dct_compression["in_rank"]
         out_rank = dct_compression["out_rank"]
 
-        replacing_layer = TuckerLayerConv(in_rank=in_rank, out_rank=out_rank, filters=nb_filters,
+        replacing_layer = TuckerLayerConv(in_rank=in_rank, out_rank=out_rank, filters=nb_filters, use_bias=layer.use_bias,
                                           kernel_size=kernel_size, strides=strides, padding=padding, activation=activation,
                                           kernel_regularizer=kernel_regularizer, bias_regularizer=bias_regularizer)
 
         replacing_weights = [dct_compression["first_conv_weights"]] \
             + [dct_compression["core_conv_weights"]] \
             + [dct_compression["last_conv_weights"]] \
-            + [layer.get_weights()[-1]] if layer.use_bias else []
+            + ([layer.get_weights()[-1]] if layer.use_bias else [])
 
         return replacing_layer, replacing_weights, True
 
@@ -127,10 +127,12 @@ class LayerReplacerTucker(LayerReplacer):
             bias_regularizer = layer.bias_regularizer
 
             rank = dct_compression["rank"]
-            replacing_layer = LowRankDense(units=hidden_layer_dim, rank=rank, activation=activation, kernel_regularizer=regularizer, bias_regularizer=bias_regularizer)
+            replacing_layer = LowRankDense(units=hidden_layer_dim, rank=rank,
+                                           activation=activation, kernel_regularizer=regularizer,
+                                           bias_regularizer=bias_regularizer, use_bias=layer.use_bias)
             replacing_weights = [
                 dct_compression["dense_in"], dct_compression["dense_out"]
-            ] + [layer.get_weights()[-1]] if layer.use_bias else []
+            ] + ([layer.get_weights()[-1]] if layer.use_bias else [])
             return replacing_layer, replacing_weights, True
         else:
             return None, None, False
