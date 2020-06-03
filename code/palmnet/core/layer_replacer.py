@@ -53,15 +53,67 @@ class LayerReplacer(metaclass=ABCMeta):
         self.fit(model)
         return self.transform(model)
 
+    def fit_one_layer(self, layer):
+        if layer.name not in self.dct_name_compression:
+            dct_replacement = self._apply_replacement(layer)
+            # should return dict in most case but need to be backward compatible with older implementation of PALM
+            self.dct_name_compression[layer.name] = dct_replacement
+            self.save_dct_name_compression()
+        else:
+            logger.warning("skip layer {} because already in dict".format(layer.name))
+
     def fit(self, model):
         for layer in model.layers:
-            if layer.name not in self.dct_name_compression:
-                dct_replacement = self._apply_replacement(layer)
-                # should return dict in most case but need to be backward compatible with older implementation of PALM
-                self.dct_name_compression[layer.name] = dct_replacement
-                self.save_dct_name_compression()
+            self.fit_one_layer(layer)
+
+
+    def transform_one_layer(self, layer, idx_layer, layer_inputs):
+        sparse_factorization = self.dct_name_compression[layer.name]
+        # adapted to the palminized case... not very clean but OK
+        bool_find_modif = (sparse_factorization != None and sparse_factorization != (None, None))
+        logger.info('Prepare layer {}'.format(layer.name))
+        bool_only_dense = not isinstance(layer, self.keras_module.layers.Dense) and self.only_dense
+        bool_last_layer = idx_layer == self.idx_last_dense_layer and self.keep_last_layer
+        bool_first_layer = idx_layer == self.idx_first_conv_layer and self.keep_first_layer
+        keep_this_layer = bool_only_dense or bool_last_layer or bool_first_layer
+        if bool_find_modif and not keep_this_layer:
+            # if there is a replacement available and not (it is the last layer and we want to keep it as is)
+            # create new layer
+            if isinstance(layer, self.keras_module.layers.Dense):
+                logger.debug("Dense layer treatment")
+                replacing_layer, replacing_weights, bool_modified = self._replace_dense(layer, sparse_factorization)
+            elif isinstance(layer, self.keras_module.layers.Conv2D):
+                logger.debug("Conv2D layer treatment")
+                replacing_layer, replacing_weights, bool_modified = self._replace_conv2D(layer, sparse_factorization)
             else:
-                logger.warning("skip layer {} because already in dict".format(layer.name))
+                raise ValueError("Unsupported layer class")
+
+            if bool_modified:  # then replace layer with compressed layer
+                try:
+                    replacing_layer.name = '{}_-_{}'.format(layer.name, replacing_layer.name)
+                except AttributeError:
+                    logger.warning("Found layer with property name unsettable. try _name instead.")
+                    replacing_layer._name = '{}_-_{}'.format(layer.name, replacing_layer.name)
+
+                x = replacing_layer(layer_inputs)
+
+                self.dct_old_name_new_name[layer.name] = replacing_layer.name
+                self.dct_new_name_old_name[replacing_layer.name] = layer.name
+                self.dct_bool_replaced_layers[layer.name] = True
+
+                self._set_weights_to_layer(replacing_layer, replacing_weights)
+
+                logger.info('Layer {} modified into {}'.format(layer.name, replacing_layer.name))
+            else:
+                x, new_fresh_layer = self.__refresh_and_apply_layer_to_input(layer, layer_inputs)
+                logger.info('Layer {} unmodified'.format(new_fresh_layer.name))
+        else:
+            x, new_fresh_layer = self.__refresh_and_apply_layer_to_input(layer, layer_inputs)
+            # x = layer(layer_inputs)
+            logger.info('Layer {} unmodified'.format(new_fresh_layer.name))
+
+        return x
+
 
     def transform(self, model):
 
@@ -74,17 +126,16 @@ class LayerReplacer(metaclass=ABCMeta):
         network_dict['new_output_tensor_of'].update(
             {model.layers[0].name: model.input})
 
-
         for i, layer in enumerate(model.layers):
             # each layer is set as `input` layer of all its outbound layers
             for node in layer._outbound_nodes:
                 outbound_layer_name = node.outbound_layer.name
                 network_dict['input_layers_of'][outbound_layer_name].append(layer.name)
 
-        idx_last_dense_layer = get_idx_last_layer_of_class(model, self.keras_module.layers.Dense) if self.keep_last_layer else -1
-        idx_last_dense_layer -= 1
-        idx_first_conv_layer = get_idx_first_layer_of_class(model, self.keras_module.layers.Conv2D) if self.keep_first_layer else -1
-        idx_first_conv_layer -= 1
+        self.idx_last_dense_layer = get_idx_last_layer_of_class(model, self.keras_module.layers.Dense) if self.keep_last_layer else -1
+        self.idx_last_dense_layer -= 1
+        self.idx_first_conv_layer = get_idx_first_layer_of_class(model, self.keras_module.layers.Conv2D) if self.keep_first_layer else -1
+        self.idx_first_conv_layer -= 1
 
         for i, layer in enumerate(model.layers[1:]):
             log_memory_usage("Before layer {}".format(layer.name))
@@ -94,49 +145,7 @@ class LayerReplacer(metaclass=ABCMeta):
             if len(layer_inputs) == 1:
                 layer_inputs = layer_inputs[0]
 
-            sparse_factorization = self.dct_name_compression[layer.name]
-            # adapted to the palminized case... not very clean but OK
-            bool_find_modif = (sparse_factorization != None and sparse_factorization != (None, None))
-            logger.info('Prepare layer {}'.format(layer.name))
-            bool_only_dense = not isinstance(layer, self.keras_module.layers.Dense) and self.only_dense
-            bool_last_layer = i == idx_last_dense_layer and self.keep_last_layer
-            bool_first_layer = i == idx_first_conv_layer and self.keep_first_layer
-            keep_this_layer = bool_only_dense or bool_last_layer or bool_first_layer
-            if bool_find_modif and not keep_this_layer:
-                # if there is a replacement available and not (it is the last layer and we want to keep it as is)
-                # create new layer
-                if isinstance(layer, self.keras_module.layers.Dense):
-                    logger.debug("Dense layer treatment")
-                    replacing_layer, replacing_weights, bool_modified = self._replace_dense(layer, sparse_factorization)
-                elif isinstance(layer, self.keras_module.layers.Conv2D):
-                    logger.debug("Conv2D layer treatment")
-                    replacing_layer, replacing_weights, bool_modified = self._replace_conv2D(layer, sparse_factorization)
-                else:
-                    raise ValueError("Unsupported layer class")
-
-                if bool_modified: # then replace layer with compressed layer
-                    try:
-                        replacing_layer.name = '{}_-_{}'.format(layer.name, replacing_layer.name)
-                    except AttributeError:
-                        logger.warning("Found layer with property name unsettable. try _name instead.")
-                        replacing_layer._name = '{}_-_{}'.format(layer.name, replacing_layer.name)
-
-                    x = replacing_layer(layer_inputs)
-
-                    self.dct_old_name_new_name[layer.name] = replacing_layer.name
-                    self.dct_new_name_old_name[replacing_layer.name] = layer.name
-                    self.dct_bool_replaced_layers[layer.name] = True
-
-                    self._set_weights_to_layer(replacing_layer, replacing_weights)
-
-                    logger.info('Layer {} modified into {}'.format(layer.name, replacing_layer.name))
-                else:
-                    x, new_fresh_layer = self.__refresh_and_apply_layer_to_input(layer, layer_inputs)
-                    logger.info('Layer {} unmodified'.format(new_fresh_layer.name))
-            else:
-                x, new_fresh_layer = self.__refresh_and_apply_layer_to_input(layer, layer_inputs)
-                # x = layer(layer_inputs)
-                logger.info('Layer {} unmodified'.format(new_fresh_layer.name))
+            x = self.transform_one_layer(layer, i, layer_inputs)
 
             network_dict['new_output_tensor_of'].update({layer.name: x})
 
