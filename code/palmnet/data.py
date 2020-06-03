@@ -141,7 +141,12 @@ image_data_generator_cifar_svhn = ImageDataGenerator(horizontal_flip=True,
                              height_shift_range=0.125,
                              fill_mode='constant',
                              cval=0.)
-
+# image_data_generator_cifar_svhn = ImageDataGenerator(horizontal_flip=True,
+#                              rotation_range=15,
+#                              width_shift_range=4,
+#                              height_shift_range=4,
+#                              fill_mode='constant', cval=0.,)
+#
 cifar10_param_training = param_training(
     batch_size=64,
     epochs=300,
@@ -171,6 +176,9 @@ cifar100_param_training = param_training(
 
 svhn_param_training = cifar10_param_training
 
+def categorical_cross_entropy_from_logits(pred, truth):
+    return keras.losses.categorical_crossentropy(pred, truth, from_logits=True)
+
 cifar100_resnet_param_training = param_training(
     batch_size=128,
     epochs=300,
@@ -179,7 +187,8 @@ cifar100_resnet_param_training = param_training(
     params_optimizer={"lr": 0.00005},
     min_lr=0.000005,
     max_lr=0.001,
-    loss="categorical_crossentropy",
+    # loss="categorical_crossentropy",
+    loss=categorical_cross_entropy_from_logits ,
     image_data_generator=image_data_generator_cifar_svhn,
     # callbacks=[LearningRateScheduler(scheduler_cifar100_resnet)],
     callbacks=[]
@@ -217,6 +226,15 @@ def get_external_model(name):
     model_path = root_dir / "models/external" / MAP_EXTERNAL_MODEL_FILENAME[name]
     model = keras.models.load_model(str(model_path), compile=False)
     return model
+
+
+def get_external_data(name):
+    from palmnet.utils import root_dir
+
+    data_dir = root_dir / "data/external" / f"{name}.npz"
+    loaded_npz = np.load(data_dir)
+
+    return (loaded_npz["x_train"], loaded_npz["y_train"]), (loaded_npz["x_test"], loaded_npz["y_test"])
 
 def get_svhn():
     from palmnet.utils import root_dir
@@ -262,16 +280,19 @@ class Mnist:
 
     @staticmethod
     def load_data():
-        (x_train, y_train), (x_test, y_test) = mnist.load_data()
-        x_train = np.expand_dims(x_train, axis=-1)
-        x_test = np.expand_dims(x_test, axis=-1)
-        x_train = x_train.astype('float32')
-        x_test = x_test.astype('float32')
-        x_train /= 255
-        x_test /= 255
-        y_train = keras.utils.to_categorical(y_train, Mnist.num_classes)
-        y_test = keras.utils.to_categorical(y_test, Mnist.num_classes)
-        return (x_train, y_train), (x_test, y_test)
+        try:
+            return get_external_data("mnist")
+        except FileNotFoundError:
+            (x_train, y_train), (x_test, y_test) = mnist.load_data()
+            x_train = np.expand_dims(x_train, axis=-1)
+            x_test = np.expand_dims(x_test, axis=-1)
+            x_train = x_train.astype('float32')
+            x_test = x_test.astype('float32')
+            x_train /= 255
+            x_test /= 255
+            y_train = keras.utils.to_categorical(y_train, Mnist.num_classes)
+            y_test = keras.utils.to_categorical(y_test, Mnist.num_classes)
+            return (x_train, y_train), (x_test, y_test)
 
     @staticmethod
     def load_model(name="mnist_lenet"):
@@ -288,21 +309,24 @@ class Cifar10:
 
     @staticmethod
     def load_data():
-        (x_train, y_train), (x_test, y_test) = cifar10.load_data()
-        x_train = x_train.astype('float32')
-        x_test = x_test.astype('float32')
-        mean_x_train = np.mean(x_train, axis=(0, 1, 2))
-        std_x_train = np.std(x_train, axis=(0, 1, 2))
-        x_train -= mean_x_train
-        x_train /= std_x_train
-        mean_x_test = np.mean(x_test, axis=(0, 1, 2))
-        std_x_test = np.std(x_test, axis=(0, 1, 2))
-        x_test -= mean_x_test
-        x_test /= std_x_test
+        try:
+            return get_external_data("cifar10")
+        except FileNotFoundError:
+            (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+            x_train = x_train.astype('float32')
+            x_test = x_test.astype('float32')
+            mean_x_train = np.mean(x_train, axis=(0, 1, 2))
+            std_x_train = np.std(x_train, axis=(0, 1, 2))
+            x_train -= mean_x_train
+            x_train /= std_x_train
+            mean_x_test = np.mean(x_test, axis=(0, 1, 2))
+            std_x_test = np.std(x_test, axis=(0, 1, 2))
+            x_test -= mean_x_test
+            x_test /= std_x_test
 
-        y_train = keras.utils.to_categorical(y_train, Cifar10.num_classes)
-        y_test = keras.utils.to_categorical(y_test, Cifar10.num_classes)
-        return (x_train, y_train), (x_test, y_test)
+            y_train = keras.utils.to_categorical(y_train, Cifar10.num_classes)
+            y_test = keras.utils.to_categorical(y_test, Cifar10.num_classes)
+            return (x_train, y_train), (x_test, y_test)
 
     @staticmethod
     def load_model(name="cifar10_vgg19_2048x2048"):
@@ -318,21 +342,24 @@ class Cifar100:
 
     @staticmethod
     def load_data():
-        (x_train, y_train), (x_test, y_test) = cifar100.load_data()
-        x_train = x_train.astype('float32')
-        x_test = x_test.astype('float32')
-        mean_x_train = np.mean(x_train, axis=(0, 1, 2))
-        std_x_train = np.std(x_train, axis=(0, 1, 2))
-        x_train -= mean_x_train
-        x_train /= std_x_train
-        mean_x_test = np.mean(x_test, axis=(0, 1, 2))
-        std_x_test = np.std(x_test, axis=(0, 1, 2))
-        x_test -= mean_x_test
-        x_test /= std_x_test
+        try:
+            return get_external_data("cifar100")
+        except FileNotFoundError:
+            (x_train, y_train), (x_test, y_test) = cifar100.load_data()
+            x_train = x_train.astype('float32')
+            x_test = x_test.astype('float32')
+            mean_x_train = np.mean(x_train, axis=(0, 1, 2))
+            std_x_train = np.std(x_train, axis=(0, 1, 2))
+            x_train -= mean_x_train
+            x_train /= std_x_train
+            mean_x_test = np.mean(x_test, axis=(0, 1, 2))
+            std_x_test = np.std(x_test, axis=(0, 1, 2))
+            x_test -= mean_x_test
+            x_test /= std_x_test
 
-        y_train = keras.utils.to_categorical(y_train, Cifar100.num_classes)
-        y_test = keras.utils.to_categorical(y_test, Cifar100.num_classes)
-        return (x_train, y_train), (x_test, y_test)
+            y_train = keras.utils.to_categorical(y_train, Cifar100.num_classes)
+            y_test = keras.utils.to_categorical(y_test, Cifar100.num_classes)
+            return (x_train, y_train), (x_test, y_test)
 
     @staticmethod
     def load_model(name="cifar100_vgg19_2048x2048"):

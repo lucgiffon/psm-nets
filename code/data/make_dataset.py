@@ -13,6 +13,8 @@ from dotenv import find_dotenv, load_dotenv
 import os
 import numpy as np
 import scipy.io as sio
+
+from palmnet.data import Mnist, Cifar10, Cifar100
 from skluc.utils.osutils import read_matfile, download_file
 
 from skluc.utils import logger
@@ -63,10 +65,16 @@ def main(output_dirpath, dataset):
 
 MAP_NAME_DATASET = {
     "svhn": load_svhn_data,
+    "cifar100": Cifar100.load_data,
+    "cifar10": Cifar10.load_data,
+    "mnist": Mnist.load_data,
 }
 
 MAP_NAME_CLASSES_PRESENCE = {
     "svhn": True,
+    "cifar100": True,
+    "cifar10": True,
+    "mnist": True,
 }
 
 

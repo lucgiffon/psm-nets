@@ -1,0 +1,6 @@
+deepfried -v --keep-first-layer --lr-configuration-file /gpfsdswork/projects/rech/hpp/ulk32cz/DeployedProjects/palmnet/parameters/2020/05/baselines_lr.yml --seed 2 --svhn --svhn-vgg19
+deepfried -v --keep-first-layer --lr-configuration-file /gpfsdswork/projects/rech/hpp/ulk32cz/DeployedProjects/palmnet/parameters/2020/05/baselines_lr.yml --seed 3 --svhn --svhn-vgg19
+deepfried -v --keep-first-layer --lr-configuration-file /gpfsdswork/projects/rech/hpp/ulk32cz/DeployedProjects/palmnet/parameters/2020/05/baselines_lr.yml --seed 2 --cifar10 --cifar10-vgg19
+deepfried -v --keep-first-layer --lr-configuration-file /gpfsdswork/projects/rech/hpp/ulk32cz/DeployedProjects/palmnet/parameters/2020/05/baselines_lr.yml --seed 3 --cifar10 --cifar10-vgg19
+deepfried -v --keep-first-layer --lr-configuration-file /gpfsdswork/projects/rech/hpp/ulk32cz/DeployedProjects/palmnet/parameters/2020/05/baselines_lr.yml --seed 2 --cifar100 --cifar100-vgg19
+deepfried -v --keep-first-layer --lr-configuration-file /gpfsdswork/projects/rech/hpp/ulk32cz/DeployedProjects/palmnet/parameters/2020/05/baselines_lr.yml --seed 3 --cifar100 --cifar100-vgg19

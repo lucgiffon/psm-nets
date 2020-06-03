@@ -3,24 +3,29 @@
 # --sparsity-factor=int [--nb-iteration-palm=int] [--delta-threshold=float]
 
 all:
-  svhn_log_fac:
-  svhn_hier_fac:
-  mnist_log_fac:
-  mnist_hier_fac:
-  cifar10_log_fac:
-  cifar10_hier_fac:
-  cifar100_log_fac:
-  cifar100_hier_fac:
+#  svhn_log_fac:
+  svhn_log_no_fac:
+#  mnist_log_fac:
+  mnist_log_no_fac:
+#  cifar10_log_fac:
+  cifar10_log_no_fac:
+#  cifar100_log_fac:
+  cifar100_log_no_fac:
 
 base:
   sparsity_fac: {"--sparsity-factor": [2, 3, 4, 8, 14]}
   verbosity: ["-v"]
+  lr: {"--lr": [1e-3, 1e-4, 1e-5]}
+  split: {"--train-val-split": [0.2]}
+  epochs: {"--nb-epoch": [10]}
+  input_dir: {"--input-dir": ["/data1/home/luc.giffon/DeployedProjects/palmnet/results/2020/05/3_4_compression_palm_not_log_all"]}
   faust: ["palm"]
+  keep_first_or_only_dense: ["--keep-first-layer"]
+  only_mask: ["--only-mask"]
 
-hier_fac:
+no_log_fac:
   base:
-  hierarchical: ["--hierarchical"]
-  nb_iter: {"--nb-iteration-palm": [50]}
+  nb_fac: {"--nb-factor": [2, 3]}
 
 log_fac:
   base:
@@ -29,11 +34,12 @@ log_fac:
 cifar100:
   cifar100: ["--cifar100"]
   cifar100_vgg19: ["--cifar100-resnet20-new", "--cifar100-resnet50-new", "--cifar100-vgg19"]
+#  cifar100_vgg19: ["--cifar100-resnet20-new", "--cifar100-resnet50-new"]
 cifar100_log_fac:
   log_fac:
   cifar100:
-cifar100_hier_fac:
-  hier_fac:
+cifar100_log_no_fac:
+  no_log_fac:
   cifar100:
 
 
@@ -43,8 +49,8 @@ cifar10:
 cifar10_log_fac:
   log_fac:
   cifar10:
-cifar10_hier_fac:
-  hier_fac:
+cifar10_log_no_fac:
+  no_log_fac:
   cifar10:
 
 
@@ -54,8 +60,8 @@ mnist:
 mnist_log_fac:
   log_fac:
   mnist:
-mnist_hier_fac:
-  hier_fac:
+mnist_log_no_fac:
+  no_log_fac:
   mnist:
 
 
@@ -65,6 +71,6 @@ svhn:
 svhn_log_fac:
   log_fac:
   svhn:
-svhn_hier_fac:
-  hier_fac:
+svhn_log_no_fac:
+  no_log_fac:
   svhn:

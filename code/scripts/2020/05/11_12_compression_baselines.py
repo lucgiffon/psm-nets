@@ -7,6 +7,7 @@ Usage:
     script.py deepfried [-h] [-v|-vv] [--lr-configuration-file path] [--seed int] [--only-dense] [--keep-last-layer] [--batch-size int] [--train-val-split float] [--keep-first-layer] [--nb-stack int] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
     script.py magnitude [-h] [-v|-vv] [--lr-configuration-file path] [--seed int] --final-sparsity float [--only-dense] [--batch-size int] [--train-val-split float] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
     script.py random [-h] [-v|-vv] [--lr-configuration-file path] [--seed int] --sparsity-factor int [--nb-factor int] [--batch-size int] [--train-val-split float] [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
+    script.py dummy [-h] [-v|-vv] [--lr-configuration-file path] [--seed int]  [--batch-size int] [--train-val-split float] [--only-dense] [--keep-last-layer] [--keep-first-layer] [--lr float] [--nb-epoch int] [--use-clr] [--min-lr float] [--max-lr float] [--epoch-step-size int] (--mnist|--svhn|--cifar10|--cifar100|--test-data) [--cifar100-resnet50-new|--cifar100-resnet20-new|--cifar100-resnet50|--cifar100-resnet20|--mnist-500|--mnist-lenet|--test-model|--cifar10-vgg19|--cifar100-vgg19|--svhn-vgg19]
 
 Options:
   -h --help                             Show this screen.
@@ -71,6 +72,9 @@ Finetuning options:
     --batch-size int                    Use specified batch size
 """
 import logging
+
+from palmnet.core.layer_replacer_dummy import LayerReplacerDummy
+
 mpl_logger = logging.getLogger("matplotlib")
 mpl_logger.setLevel(logging.WARNING)
 from tensorflow import set_random_seed
@@ -98,7 +102,7 @@ from palmnet.core.layer_replacer_magnitude_pruning import LayerReplacerMagnitude
 from palmnet.core.layer_replacer_random_sparse_facto import LayerReplacerRandomSparseFacto
 from palmnet.core.layer_replacer_tucker import LayerReplacerTucker
 from palmnet.core.randomizer import Randomizer
-from palmnet.data import Mnist, Cifar10, Cifar100, Svhn, Test
+from palmnet.data import Mnist, Cifar10, Cifar100, Svhn, Test, categorical_cross_entropy_from_logits
 from palmnet.experiments.utils import ResultPrinter, ParameterManager
 from palmnet.layers.fastfood_layer_conv import FastFoodLayerConv
 from palmnet.layers.fastfood_layer_dense import FastFoodLayerDense
@@ -284,6 +288,8 @@ def get_params_optimizer():
         str_method = "magnitude"
     elif paraman["random"]:
         str_method = "random"
+    elif paraman["dummy"]:
+        str_method = "dummy"
     else:
         raise ValueError("Unknown compression method")
 
@@ -402,6 +408,8 @@ def compress_and_evaluate_model(base_model, model_compilation_params, param_trai
     elif paraman["deepfried"]:
         layer_replacer = LayerReplacerDeepFried(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"],
                                                 nb_stack=paraman["--nb-stack"], only_dense=paraman["--only-dense"])
+    elif paraman["dummy"]:
+        layer_replacer = LayerReplacerDummy(keep_last_layer=paraman["--keep-last-layer"], keep_first_layer=paraman["--keep-first-layer"], only_dense=paraman["--only-dense"])
     elif paraman["random"]:
         randomizer = Randomizer(sparsity_fac=paraman["--sparsity-factor"],
                                 nb_factor=paraman["--nb-factor"])
@@ -423,6 +431,7 @@ def compress_and_evaluate_model(base_model, model_compilation_params, param_trai
 
     start_replace = time.time()
     new_model = layer_replacer.fit_transform(base_model)
+    # new_model = base_model
     stop_replace = time.time()
     new_model.compile(**model_compilation_params)
     test_score_compressed, test_acc_compressed = new_model.evaluate(x_test, y_test, verbose=0)
@@ -523,7 +532,8 @@ def load_model_from_disc():
             'FastFoodLayerDense': FastFoodLayerDense,
             'FastFoodLayerConv': FastFoodLayerConv,
             "SparseFactorisationDense": SparseFactorisationDense,
-            "SparseFactorisationConv2D": SparseFactorisationConv2D
+            "SparseFactorisationConv2D": SparseFactorisationConv2D,
+            'categorical_cross_entropy_from_logits': categorical_cross_entropy_from_logits
         })
 
     return new_model
@@ -592,6 +602,7 @@ def fit_new_model(new_model, param_train_dataset, init_nb_epoch, call_backs, x_t
                                                                 batch_size=batch_size),
                   epochs=(param_train_dataset.epochs if paraman["--nb-epoch"] is None else paraman["--nb-epoch"]) - init_nb_epoch,
                   # epochs=2 - init_nb_epoch,
+                  # verbose=1,
                   verbose=2,
                   # validation_data=(x_test, y_test),
                   callbacks=param_train_dataset.callbacks + call_backs)

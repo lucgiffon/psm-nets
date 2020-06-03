@@ -1,0 +1,12 @@
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+magnitude --final-sparsity 0.95 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+magnitude --final-sparsity 0.98 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new

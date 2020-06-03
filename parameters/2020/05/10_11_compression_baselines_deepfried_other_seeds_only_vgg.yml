@@ -1,0 +1,151 @@
+all:
+#  tucker_svhn:
+#  tucker_mnist:
+#  tucker_cifar10:
+#  tucker_cifar100:
+#  tensortrain_svhn:
+#  tensortrain_mnist:
+#  tensortrain_cifar10:
+#  tensortrain_cifar100:
+  deepfried_svhn:
+#  deepfried_mnist:
+  deepfried_cifar10:
+  deepfried_cifar100:
+#  random_svhn:
+#  random_mnist:
+#  random_cifar10:
+#  random_cifar100:
+#  magnitude_svhn:
+#  magnitude_mnist:
+#  magnitude_cifar10:
+#  magnitude_cifar100:
+
+base:
+  verbosity: ["-v"]
+  only_dense: ["--keep-first-layer"]
+  baselines_lr: {"--lr-configuration-file": ["/gpfsdswork/projects/rech/hpp/ulk32cz/DeployedProjects/palmnet/parameters/2020/05/baselines_lr.yml"]}
+#  lr: {"--lr": [1e-3, 1e-4, 1e-5]}
+#  split: {"--train-val-split": [0.2]}
+#  epochs: {"--nb-epoch": [10]}
+  seed: {"--seed": [2, 3]}
+
+
+cifar100:
+  base:
+  cifar100: ["--cifar100"]
+#  cifar100_model: ["--cifar100-resnet20-new", "--cifar100-resnet50-new", "--cifar100-vgg19"]
+  cifar100_model: ["--cifar100-vgg19"]
+
+cifar10:
+  base:
+  cifar100: ["--cifar10"]
+  cifar100_model: ["--cifar10-vgg19"]
+
+mnist:
+  base:
+  mnist: ["--mnist"]
+  mnist_model: ["--mnist-lenet"]
+
+svhn:
+  base:
+  svhn: ["--svhn"]
+  svhn_model: ["--svhn-vgg19"]
+
+tucker_vals:
+  nb_sv: {"--rank-percentage-dense": [0.1, 0.2]}
+
+tucker_cifar100:
+  tucker: ["tucker"]
+  tucker_vals:
+  cifar100:
+tucker_cifar10:
+  tucker: ["tucker"]
+  tucker_vals:
+  cifar10:
+tucker_mnist:
+  tucker: ["tucker"]
+  tucker_vals:
+  mnist:
+tucker_svhn:
+  tucker: ["tucker"]
+  tucker_vals:
+  svhn:
+
+
+tensortrain_vals:
+  order: {"--order": [4]}
+  rank_value: {"--rank-value": [6, 10, 14]}
+  pretrained: ["--use-pretrained"]
+  batch_size: {"--batch-size": [32]}
+
+tensortrain_cifar100:
+  tensortrain: ["tensortrain"]
+  tensortrain_vals:
+  cifar100:
+tensortrain_cifar10:
+  tensortrain: ["tensortrain"]
+  tensortrain_vals:
+  cifar10:
+tensortrain_mnist:
+  tensortrain: ["tensortrain"]
+  tensortrain_vals:
+  mnist:
+tensortrain_svhn:
+  tensortrain: ["tensortrain"]
+  tensortrain_vals:
+  svhn:
+
+deepfried_cifar100:
+  deepfried: ["deepfried"]
+  cifar100:
+deepfried_cifar10:
+  deepfried: ["deepfried"]
+  cifar10:
+deepfried_mnist:
+  deepfried: ["deepfried"]
+  mnist:
+deepfried_svhn:
+  deepfried: ["deepfried"]
+  svhn:
+
+random_vals:
+  sparsity_factor: {"--sparsity-factor": [2, 8, 10, 14, 3, 4]}
+  nb_fac: {"--nb-factor": [2, 3]}
+
+random_cifar100:
+  random: ["random"]
+  random_vals:
+  cifar100:
+random_cifar10:
+  random: ["random"]
+  random_vals:
+  cifar10:
+random_mnist:
+  random: ["random"]
+  random_vals:
+  mnist:
+random_svhn:
+  random: ["random"]
+  random_vals:
+  svhn:
+
+
+magnitude_vals:
+  final_sparsity: {"--final-sparsity": ["0.95", "0.98"]}
+
+magnitude_cifar100:
+  magnitude: ["magnitude"]
+  magnitude_vals:
+  cifar100:
+magnitude_cifar10:
+  random: ["magnitude"]
+  magnitude_vals:
+  cifar10:
+magnitude_mnist:
+  random: ["magnitude"]
+  magnitude_vals:
+  mnist:
+magnitude_svhn:
+  random: ["magnitude"]
+  magnitude_vals:
+  svhn:

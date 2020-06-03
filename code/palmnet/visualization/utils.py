@@ -70,7 +70,7 @@ def display_cmd_lines_from_root_name_list(root_names_list, src_results_dir, find
     return cmd_lines
 
 
-def get_dct_result_files_by_root(src_results_dir, old_filename_objective=False):
+def get_dct_result_files_by_root(src_results_dir):
     """
     From a directory with the result of oarjobs give the dictionnary of results file for each experiment. Files are:
 
@@ -108,26 +108,28 @@ def get_dct_result_files_by_root(src_results_dir, old_filename_objective=False):
     count_total = 0
 
     for pth_file in files:
-        if pth_file.suffix != '.stdout':
+        # if pth_file.suffix != f'.{suffix}':
+        #     continue
+        if "_results.csv" not in pth_file.name:
             continue
 
         count_total += 1
 
-        with open(pth_file, 'r') as stdoutfile:
-            lines = stdoutfile.readlines()
-            for i_line, lin in enumerate(lines):
-                if lin[:2] == "--":
-                    break
-            else:
-                logger.warning("file {} didn't contain anything".format(pth_file.name))
-                dct_output_files_by_root[pth_file.stem] = {}
-                continue
-            count_has_printed_results += 1
-
-            data = "".join(lines[i_line:i_line + 2])
-
-        io_data = StringIO(data)
-        df = pd.read_csv(io_data)
+        # with open(pth_file, 'r') as stdoutfile:
+        #     lines = stdoutfile.readlines()
+        #     for i_line, lin in enumerate(lines):
+        #         if lin[:2] == "--":
+        #             break
+        #     else:
+        #         logger.warning("file {} didn't contain anything".format(pth_file.name))
+        #         dct_output_files_by_root[pth_file.stem] = {}
+        #         continue
+        #     count_has_printed_results += 1
+        #
+        #     data = "".join(lines[i_line:i_line + 2])
+        #
+        # io_data = StringIO(data)
+        df = pd.read_csv(str(pth_file))
 
         try:
             root_name = df["output_file_resprinter"][0].split("_")[0]
@@ -192,7 +194,7 @@ def get_palminized_model_and_df(path):
 
 def get_df(path):
     src_result_dir = pathlib.Path(path)
-    dct_output_files_by_root = get_dct_result_files_by_root(src_results_dir=src_result_dir, old_filename_objective=True)
+    dct_output_files_by_root = get_dct_result_files_by_root(src_results_dir=src_result_dir)
 
     col_to_delete = []
 

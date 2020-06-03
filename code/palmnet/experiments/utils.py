@@ -38,10 +38,10 @@ class ParameterManager(dict):
     def __init_seed(self):
         if self["--seed"] is not None:
             self["seed"] = int(self["--seed"])
-            np.random.seed(self["seed"])
         else:
-            self["seed"] = None
-            # self["seed"] = int(self["--seed"])  # should break
+            self["seed"] = np.random.randint(0, 2 ** 32 - 2)
+        np.random.seed(self["seed"])
+        # self["seed"] = int(self["--seed"])  # should break
 
     def get_dataset(self):
         """

@@ -1,0 +1,10 @@
+ --sparsity-factor 2 -v palm --seed 1 --nb-factor 2 --cifar100 --cifar100-vgg19
+ --sparsity-factor 2 -v palm --seed 1 --nb-factor 3 --cifar100 --cifar100-vgg19
+ --sparsity-factor 3 -v palm --seed 1 --nb-factor 2 --cifar100 --cifar100-vgg19
+ --sparsity-factor 3 -v palm --seed 1 --nb-factor 3 --cifar100 --cifar100-vgg19
+ --sparsity-factor 4 -v palm --seed 1 --nb-factor 2 --cifar100 --cifar100-vgg19
+ --sparsity-factor 4 -v palm --seed 1 --nb-factor 3 --cifar100 --cifar100-vgg19
+ --sparsity-factor 8 -v palm --seed 1 --nb-factor 2 --cifar100 --cifar100-vgg19
+ --sparsity-factor 8 -v palm --seed 1 --nb-factor 3 --cifar100 --cifar100-vgg19
+ --sparsity-factor 14 -v palm --seed 1 --nb-factor 2 --cifar100 --cifar100-vgg19
+ --sparsity-factor 14 -v palm --seed 1 --nb-factor 3 --cifar100 --cifar100-vgg19

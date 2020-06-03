@@ -1,0 +1,144 @@
+ --sparsity-factor 2 -v palm --seed 1 --svhn --svhn-vgg19
+ --sparsity-factor 2 -v palm --seed 2 --svhn --svhn-vgg19
+ --sparsity-factor 2 -v palm --seed 3 --svhn --svhn-vgg19
+ --sparsity-factor 3 -v palm --seed 1 --svhn --svhn-vgg19
+ --sparsity-factor 3 -v palm --seed 2 --svhn --svhn-vgg19
+ --sparsity-factor 3 -v palm --seed 3 --svhn --svhn-vgg19
+ --sparsity-factor 8 -v palm --seed 1 --svhn --svhn-vgg19
+ --sparsity-factor 8 -v palm --seed 2 --svhn --svhn-vgg19
+ --sparsity-factor 8 -v palm --seed 3 --svhn --svhn-vgg19
+ --sparsity-factor 14 -v palm --seed 1 --svhn --svhn-vgg19
+ --sparsity-factor 14 -v palm --seed 2 --svhn --svhn-vgg19
+ --sparsity-factor 14 -v palm --seed 3 --svhn --svhn-vgg19
+ --sparsity-factor 2 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --svhn --svhn-vgg19
+ --sparsity-factor 2 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --svhn --svhn-vgg19
+ --sparsity-factor 2 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --svhn --svhn-vgg19
+ --sparsity-factor 3 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --svhn --svhn-vgg19
+ --sparsity-factor 3 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --svhn --svhn-vgg19
+ --sparsity-factor 3 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --svhn --svhn-vgg19
+ --sparsity-factor 8 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --svhn --svhn-vgg19
+ --sparsity-factor 8 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --svhn --svhn-vgg19
+ --sparsity-factor 8 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --svhn --svhn-vgg19
+ --sparsity-factor 14 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --svhn --svhn-vgg19
+ --sparsity-factor 14 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --svhn --svhn-vgg19
+ --sparsity-factor 14 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --svhn --svhn-vgg19
+ --sparsity-factor 2 -v palm --seed 1 --mnist --mnist-lenet
+ --sparsity-factor 2 -v palm --seed 2 --mnist --mnist-lenet
+ --sparsity-factor 2 -v palm --seed 3 --mnist --mnist-lenet
+ --sparsity-factor 3 -v palm --seed 1 --mnist --mnist-lenet
+ --sparsity-factor 3 -v palm --seed 2 --mnist --mnist-lenet
+ --sparsity-factor 3 -v palm --seed 3 --mnist --mnist-lenet
+ --sparsity-factor 8 -v palm --seed 1 --mnist --mnist-lenet
+ --sparsity-factor 8 -v palm --seed 2 --mnist --mnist-lenet
+ --sparsity-factor 8 -v palm --seed 3 --mnist --mnist-lenet
+ --sparsity-factor 14 -v palm --seed 1 --mnist --mnist-lenet
+ --sparsity-factor 14 -v palm --seed 2 --mnist --mnist-lenet
+ --sparsity-factor 14 -v palm --seed 3 --mnist --mnist-lenet
+ --sparsity-factor 2 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --mnist --mnist-lenet
+ --sparsity-factor 2 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --mnist --mnist-lenet
+ --sparsity-factor 2 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --mnist --mnist-lenet
+ --sparsity-factor 3 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --mnist --mnist-lenet
+ --sparsity-factor 3 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --mnist --mnist-lenet
+ --sparsity-factor 3 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --mnist --mnist-lenet
+ --sparsity-factor 8 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --mnist --mnist-lenet
+ --sparsity-factor 8 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --mnist --mnist-lenet
+ --sparsity-factor 8 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --mnist --mnist-lenet
+ --sparsity-factor 14 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --mnist --mnist-lenet
+ --sparsity-factor 14 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --mnist --mnist-lenet
+ --sparsity-factor 14 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --mnist --mnist-lenet
+ --sparsity-factor 2 -v palm --seed 1 --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v palm --seed 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v palm --seed 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v palm --seed 1 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v palm --seed 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v palm --seed 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v palm --seed 1 --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v palm --seed 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v palm --seed 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 14 -v palm --seed 1 --cifar10 --cifar10-vgg19
+ --sparsity-factor 14 -v palm --seed 2 --cifar10 --cifar10-vgg19
+ --sparsity-factor 14 -v palm --seed 3 --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar10 --cifar10-vgg19
+ --sparsity-factor 3 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar10 --cifar10-vgg19
+ --sparsity-factor 8 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar10 --cifar10-vgg19
+ --sparsity-factor 14 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar10 --cifar10-vgg19
+ --sparsity-factor 14 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar10 --cifar10-vgg19
+ --sparsity-factor 14 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar10 --cifar10-vgg19
+ --sparsity-factor 2 -v palm --seed 1 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 2 -v palm --seed 1 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 2 -v palm --seed 1 --cifar100 --cifar100-vgg19
+ --sparsity-factor 2 -v palm --seed 2 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 2 -v palm --seed 2 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 2 -v palm --seed 2 --cifar100 --cifar100-vgg19
+ --sparsity-factor 2 -v palm --seed 3 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 2 -v palm --seed 3 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 2 -v palm --seed 3 --cifar100 --cifar100-vgg19
+ --sparsity-factor 3 -v palm --seed 1 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v palm --seed 1 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 3 -v palm --seed 1 --cifar100 --cifar100-vgg19
+ --sparsity-factor 3 -v palm --seed 2 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v palm --seed 2 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 3 -v palm --seed 2 --cifar100 --cifar100-vgg19
+ --sparsity-factor 3 -v palm --seed 3 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v palm --seed 3 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 3 -v palm --seed 3 --cifar100 --cifar100-vgg19
+ --sparsity-factor 8 -v palm --seed 1 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 8 -v palm --seed 1 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 8 -v palm --seed 1 --cifar100 --cifar100-vgg19
+ --sparsity-factor 8 -v palm --seed 2 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 8 -v palm --seed 2 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 8 -v palm --seed 2 --cifar100 --cifar100-vgg19
+ --sparsity-factor 8 -v palm --seed 3 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 8 -v palm --seed 3 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 8 -v palm --seed 3 --cifar100 --cifar100-vgg19
+ --sparsity-factor 14 -v palm --seed 1 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 14 -v palm --seed 1 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 14 -v palm --seed 1 --cifar100 --cifar100-vgg19
+ --sparsity-factor 14 -v palm --seed 2 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 14 -v palm --seed 2 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 14 -v palm --seed 2 --cifar100 --cifar100-vgg19
+ --sparsity-factor 14 -v palm --seed 3 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 14 -v palm --seed 3 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 14 -v palm --seed 3 --cifar100 --cifar100-vgg19
+ --sparsity-factor 2 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 2 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 2 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-vgg19
+ --sparsity-factor 2 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 2 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 2 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-vgg19
+ --sparsity-factor 2 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 2 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 2 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-vgg19
+ --sparsity-factor 3 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 3 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-vgg19
+ --sparsity-factor 3 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 3 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-vgg19
+ --sparsity-factor 3 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 3 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 3 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-vgg19
+ --sparsity-factor 8 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 8 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 8 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-vgg19
+ --sparsity-factor 8 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 8 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 8 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-vgg19
+ --sparsity-factor 8 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 8 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 8 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-vgg19
+ --sparsity-factor 14 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 14 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 14 -v palm --seed 1 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-vgg19
+ --sparsity-factor 14 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 14 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 14 -v palm --seed 2 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-vgg19
+ --sparsity-factor 14 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet20-new
+ --sparsity-factor 14 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-resnet50-new
+ --sparsity-factor 14 -v palm --seed 3 --hierarchical --nb-iteration-palm 100 --cifar100 --cifar100-vgg19

@@ -25,12 +25,21 @@ requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
 
 ## Make Dataset
-data: svhn
+data: svhn cifar100 cifar10 mnist
 
 svhn: data/external/svhn.npz
+cifar100: data/external/cifar100.npz
+cifar10: data/external/cifar10.npz
+mnist: data/external/mnist.npz
 
 data/external/svhn.npz:
 	$(PYTHON_INTERPRETER) code/data/make_dataset.py svhn data/external
+data/external/cifar100.npz:
+	$(PYTHON_INTERPRETER) code/data/make_dataset.py cifar100 data/external
+data/external/cifar10.npz:
+	$(PYTHON_INTERPRETER) code/data/make_dataset.py cifar10 data/external
+data/external/mnist.npz:
+	$(PYTHON_INTERPRETER) code/data/make_dataset.py mnist data/external
 
 ## Make Model
 

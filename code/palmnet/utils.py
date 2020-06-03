@@ -8,7 +8,7 @@ from pyfaust.factparams import ParamsFact, StoppingCriterion, ConstraintList
 from typing import Iterable
 import io
 from collections import OrderedDict
-
+import time
 import re
 import six
 import os
@@ -597,9 +597,17 @@ class SafeModelCheckpoint(Callback):
         tmp_filepath_name = filepath + ".tmp"
         if self.save_weights_only:
             self.model.save_weights(tmp_filepath_name, overwrite=True)
+            i = 0
+            while not os.path.exists(tmp_filepath_name) and i < 5:
+                time.sleep(1)
+                i += 1
             os.replace(tmp_filepath_name, filepath)
         else:
             self.model.save(tmp_filepath_name, overwrite=True)
+            i = 0
+            while not os.path.exists(tmp_filepath_name) and i < 5:
+                time.sleep(1)
+                i += 1
             os.replace(tmp_filepath_name, filepath)
 
 def get_idx_last_layer_of_class(model, class_=Dense):
@@ -941,7 +949,7 @@ def palm4msa(M, p, ret_lambda=False, backend=2016):
         return F
 
 def load_function_lr(dct_res_new, dataset, model, compression, sparsity_value_magnitude=None, sparsity_value_random=None, nb_fac_random=None, order_value_tensortrain=None,
-                  rank_value_tensortrain=None, rank_value_tucker=None):
+                  rank_value_tensortrain=None, rank_value_tucker=None, only_mask=False, sparsity_value_palm=None, nb_fac_palm=None):
     dct_data_model = dct_res_new[dataset][model][compression]
     if compression == "magnitude":
         return dct_data_model[sparsity_value_magnitude]
@@ -951,4 +959,11 @@ def load_function_lr(dct_res_new, dataset, model, compression, sparsity_value_ma
         return dct_data_model[order_value_tensortrain][rank_value_tensortrain]
     elif compression == "tucker":
         return dct_data_model[rank_value_tucker]
+    elif compression == "palm":
+        if only_mask:
+            str_only_mask = "only_mask"
+        else:
+            str_only_mask = "weighted"
+        return dct_data_model[str_only_mask][int(sparsity_value_palm)][int(nb_fac_palm)]
+
     return dct_data_model

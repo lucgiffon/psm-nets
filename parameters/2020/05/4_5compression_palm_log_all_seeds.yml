@@ -13,14 +13,15 @@ all:
   cifar100_hier_fac:
 
 base:
-  sparsity_fac: {"--sparsity-factor": [2, 3, 4, 8, 14]}
+  sparsity_fac: {"--sparsity-factor": [2, 3, 8, 14]}
   verbosity: ["-v"]
   faust: ["palm"]
+  seed: {"--seed": [1, 2, 3]}
 
 hier_fac:
   base:
   hierarchical: ["--hierarchical"]
-  nb_iter: {"--nb-iteration-palm": [50]}
+  nb_iter: {"--nb-iteration-palm": [100]}
 
 log_fac:
   base:
