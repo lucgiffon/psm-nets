@@ -115,8 +115,7 @@ class LayerReplacer(metaclass=ABCMeta):
         return x
 
 
-    def transform(self, model):
-
+    def prepare_transform(self, model):
         if not isinstance(model.layers[0], self.keras_module.layers.InputLayer):
             model = self.keras_module.models.Model(input=model.input, output=model.output)
 
@@ -136,6 +135,12 @@ class LayerReplacer(metaclass=ABCMeta):
         self.idx_last_dense_layer -= 1
         self.idx_first_conv_layer = get_idx_first_layer_of_class(model, self.keras_module.layers.Conv2D) if self.keep_first_layer else -1
         self.idx_first_conv_layer -= 1
+
+        return model, network_dict
+
+    def transform(self, model):
+
+        model, network_dict = self.prepare_transform(model)
 
         for i, layer in enumerate(model.layers[1:]):
             log_memory_usage("Before layer {}".format(layer.name))

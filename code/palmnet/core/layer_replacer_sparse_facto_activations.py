@@ -13,7 +13,7 @@ from collections import defaultdict
 import pathlib
 
 
-class LayerReplacerActivations(LayerReplacerSparseFacto, metaclass=ABCMeta):
+class LayerReplacerSparseFactoActivations(LayerReplacerSparseFacto, metaclass=ABCMeta):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -26,26 +26,7 @@ class LayerReplacerActivations(LayerReplacerSparseFacto, metaclass=ABCMeta):
 
     def fit_transform(self, model):
 
-        if not isinstance(model.layers[0], self.keras_module.layers.InputLayer):
-            model = self.keras_module.models.Model(input=model.input, output=model.output)
-
-        network_dict = {'input_layers_of': defaultdict(lambda: []), 'new_output_tensor_of': defaultdict(lambda: [])}
-
-        # Set the output tensor of the input layer
-        network_dict['new_output_tensor_of'].update(
-            {model.layers[0].name: model.input})
-
-
-        for i, layer in enumerate(model.layers):
-            # each layer is set as `input` layer of all its outbound layers
-            for node in layer._outbound_nodes:
-                outbound_layer_name = node.outbound_layer.name
-                network_dict['input_layers_of'][outbound_layer_name].append(layer.name)
-
-        idx_last_dense_layer = get_idx_last_layer_of_class(model, self.keras_module.layers.Dense) if self.keep_last_layer else -1
-        idx_last_dense_layer -= 1
-        idx_first_conv_layer = get_idx_first_layer_of_class(model, self.keras_module.layers.Conv2D) if self.keep_first_layer else -1
-        idx_first_conv_layer -= 1
+        model, network_dict = self.prepare_transform(model)
 
         new_model = None
 
