@@ -54,7 +54,8 @@ scale_tasks = {
 
 
 def get_palm_results():
-    results_path = "2020/05/9_10_finetune_sparse_facto_not_log_all_seeds"
+    # results_path = "2020/05/9_10_finetune_sparse_facto_not_log_all_seeds"
+    results_path = "2020/07/11_12_finetune_sparse_facto_fix_replicates"
     # results_path_2 = "2020/04/9_10_finetune_palminized_no_useless"
 
     src_results_path = root_source_dir / results_path / "results.csv"
@@ -169,6 +170,8 @@ if __name__ == "__main__":
     # sparsity_factors = sorted(set(df_palminized["--sparsity-factor"]))
     # nb_factors = set(df_faust["nb-factor"].values)
 
+    show_random = False
+
     hue_by_sparsity= {
         2: 10,
         3: 60,
@@ -204,10 +207,10 @@ if __name__ == "__main__":
         "PYQALM Q=3": "diamond-open",
         "PYQALM Q=None": "hash-open",
         "PYQALM Q=None H": "star-square-open",
-        "PYQALM Q=2 -1": "square-open-dot",
-        "PYQALM Q=3 -1": "diamond-open-dot",
-        "PYQALM Q=None -1": "hash-open-dot",
-        "PYQALM Q=None H -1": "star-square-open-dot",
+        "PYQALM Q=2 -1": "square",
+        "PYQALM Q=3 -1": "diamond",
+        "PYQALM Q=None -1": "hash",
+        "PYQALM Q=None H -1": "star-square",
         "Random Q=2 -1": "square",
         "Random Q=3 -1": "diamond",
         "Random Q=None -1": "hash",
@@ -218,10 +221,10 @@ if __name__ == "__main__":
         "PYQALM Q=None H -1 M": "star-square",
         "Base": "x",
         "Tucker": "circle",
-        "Tucker -1": "circle-dot",
+        "Tucker -1": "circle",
         "TT": "triangle-up",
-        "TT -1": "triangle-up-dot",
-        "TT -1 pretrained": "triangle-up-open-dot",
+        "TT -1": "triangle-up",
+        "TT -1 pretrained": "triangle-up-open",
         "Magnitude": "hexagon"
     }
 
@@ -256,13 +259,13 @@ if __name__ == "__main__":
 
     SIZE_MARKERS = 15
     WIDTH_MARKER_LINES = 2
-
+    dict_algo_data_perf = dict()
     datasets = set(df_palm["dataset"].values)
     for dataname in datasets:
         df_data_palm = df_palm[df_palm["dataset"] == dataname]
         df_baselines_data =  df_baselines[df_baselines["dataset"] == dataname]
         df_model_values = set(df_data_palm["model"].values)
-
+        dict_algo_data_perf[dataname] = dict()
         for modelname in df_model_values:
             df_model_palm = df_data_palm[df_data_palm["model"] == modelname]
             df_baselines_model = df_baselines_data[df_baselines_data["model"] == modelname]
@@ -295,9 +298,10 @@ if __name__ == "__main__":
                 str_keep_first = ' -1' if keep_first is True else ''
 
                 only_mask = dct_group_by_vals["only-mask"]
+                if only_mask: continue
                 str_only_mask = " M" if only_mask is True else ""
 
-                name_trace = f"{palm_algo} Q={nb_factor} K={sparsity_factor}{str_hierarchical}{str_keep_first}{str_only_mask}"
+                name_trace = f"{palm_algo} Q={nb_factor} K={sparsity_factor}"
 
                 finetuned_score_mean = group["finetuned-score"].mean()
                 finetuned_score_std = group["finetuned-score"].std()
@@ -316,6 +320,8 @@ if __name__ == "__main__":
                 base_nb_param_mean = base_nb_param_tmp_mean
                 base_score_std = base_score_tmp_std
                 base_nb_param_std = base_nb_param_tmp_std
+
+                dict_algo_data_perf[dataname][name_trace] = finetuned_score_mean
 
                 fig.add_trace(
                     go.Scatter(
@@ -390,7 +396,7 @@ if __name__ == "__main__":
 
                 str_percentage = f' + Low Rank {rank_percentage}%' if rank_percentage is not None else ''
 
-                name_trace = f"Tucker{str_keep_first}{str_percentage}"
+                name_trace = f"Tucker{str_percentage}"
 
                 finetuned_score_mean = group["finetuned-score"].mean()
                 nb_param_mean = group["nb-param-compressed-total"].mean()
@@ -439,7 +445,7 @@ if __name__ == "__main__":
                 rank_value = int(dct_group_by_vals["rank-value"])
 
 
-                name_trace = f"Tensortrain{str_keep_first} K={order} R={rank_value}"
+                name_trace = f"Tensortrain R={rank_value}"
 
                 finetuned_score_mean = group["finetuned-score"].mean()
                 nb_param_mean = group["nb-param-compressed-total"].mean()
@@ -475,55 +481,56 @@ if __name__ == "__main__":
             ###############
             # random data #
             ###############
-            df_random = df_baselines_model[df_baselines_model["compression"] == "random"]
+            if show_random:
+                df_random = df_baselines_model[df_baselines_model["compression"] == "random"]
 
-            groupby_col = ['nb-fac', 'sparsity-factor', 'keep-first-layer']
-            gp_by = df_random.groupby(groupby_col)
-            for names, group in gp_by:
-                dct_group_by_vals = dict(zip(groupby_col, names))
-                try:
-                    nb_factor = int(dct_group_by_vals["nb-fac"])
-                except:
-                    nb_factor = None
-                sparsity_factor = int(dct_group_by_vals["sparsity-factor"])
-                if sparsity_factor == 10:
-                    continue
-                keep_first = dct_group_by_vals["keep-first-layer"]
-                str_keep_first = ' -1' if keep_first is True else ''
+                groupby_col = ['nb-fac', 'sparsity-factor', 'keep-first-layer']
+                gp_by = df_random.groupby(groupby_col)
+                for names, group in gp_by:
+                    dct_group_by_vals = dict(zip(groupby_col, names))
+                    try:
+                        nb_factor = int(dct_group_by_vals["nb-fac"])
+                    except:
+                        nb_factor = None
+                    sparsity_factor = int(dct_group_by_vals["sparsity-factor"])
+                    if sparsity_factor == 10:
+                        continue
+                    keep_first = dct_group_by_vals["keep-first-layer"]
+                    str_keep_first = ' -1' if keep_first is True else ''
 
-                name_trace = f"Random Q={nb_factor} K={sparsity_factor}{str_keep_first}"
+                    name_trace = f"Random Q={nb_factor} K={sparsity_factor}{str_keep_first}"
 
-                finetuned_score_mean = group["finetuned-score"].mean()
-                nb_param_mean = group["nb-param-compressed-total"].mean()
-                finetuned_score_std = group["finetuned-score"].std()
-                nb_param_std = group["nb-param-compressed-total"].std()
+                    finetuned_score_mean = group["finetuned-score"].mean()
+                    nb_param_mean = group["nb-param-compressed-total"].mean()
+                    finetuned_score_std = group["finetuned-score"].std()
+                    nb_param_std = group["nb-param-compressed-total"].std()
 
-                fig.add_trace(
-                    go.Scatter(
-                        x=[nb_param_mean],
-                        y=[finetuned_score_mean],
-                        mode='markers',
-                        name=name_trace,
-                        hovertext=name_trace,
-                        legendgroup=f"Random K={sparsity_factor}",
-                        marker=dict(
-                            color=dct_colors[f"Random K={sparsity_factor}"],
-                            symbol=dct_symbol[f"Random Q={nb_factor}{str_keep_first}"],
-                            size=SIZE_MARKERS,
-                            line=dict(
-                                color='Black',
-                                width=0
-                            )
-                        ),
-                        error_y=dict(
-                            type='data',  # value of error bar given in data coordinates
-                            array=[finetuned_score_std],
-                            visible=True),
-                        # error_x=dict(
-                        #     type='data',  # value of error bar given in data coordinates
-                        #     array=[nb_param_std],
-                        #     visible=True)
-                    ))
+                    fig.add_trace(
+                        go.Scatter(
+                            x=[nb_param_mean],
+                            y=[finetuned_score_mean],
+                            mode='markers',
+                            name=name_trace,
+                            hovertext=name_trace,
+                            legendgroup=f"Random K={sparsity_factor}",
+                            marker=dict(
+                                color=dct_colors[f"Random K={sparsity_factor}"],
+                                symbol=dct_symbol[f"Random Q={nb_factor}{str_keep_first}"],
+                                size=SIZE_MARKERS,
+                                line=dict(
+                                    color='Black',
+                                    width=0
+                                )
+                            ),
+                            error_y=dict(
+                                type='data',  # value of error bar given in data coordinates
+                                array=[finetuned_score_std],
+                                visible=True),
+                            # error_x=dict(
+                            #     type='data',  # value of error bar given in data coordinates
+                            #     array=[nb_param_std],
+                            #     visible=True)
+                        ))
 
 
             ###############
@@ -541,7 +548,7 @@ if __name__ == "__main__":
                 final_sparsity = float(dct_group_by_vals["final-sparsity"])
 
 
-                name_trace = f"Magnitude{str_keep_first}{final_sparsity}"
+                name_trace = f"Magnitude {int(final_sparsity*100)}%"
 
                 finetuned_score_mean = group["finetuned-score"].mean()
                 nb_param_mean = group["nb-param-compressed-total"].mean()
@@ -575,12 +582,55 @@ if __name__ == "__main__":
 
 
 
-            title = "Performance = f(# Param); " + dataname + " " + modelname
+            title = "Perf_vs_param" + dataname + "_" + modelname
+            # showlegend = True; width, height = 1000, 500
+            showlegend = False; width, height = 500, 250
 
-            fig.update_layout(title=title,
-                              xaxis_title="# Parameter in Dense and Conv Layers",
-                              yaxis_title="Accuracy (%)",
-                              xaxis_type="log",
-                              )
-            fig.show()
+
+            x_legend = 0
+            y_legend = -0.3
+            fig.update_layout(
+                # title=title,
+                xaxis_title="# Param. couches Dense et Conv.",
+                yaxis_title="Précision (%)",
+                xaxis_type="log",
+                # xaxis={"mirror": True,
+                #        "ticks": 'outside',
+                #        "showline": True,
+                #        'zerolinewidth':3},
+                # yaxis={"mirror": True,
+                #        "ticks": 'outside',
+                #        "showline": True, },
+                width=width,
+                height=height,
+                autosize=False,
+                margin=dict(l=20, r=20, t=20, b=20),
+                # title=title_figure,
+                font=dict(
+                    # family="Courier New, monospace",
+                    size=18,
+                    color="black"
+                ),
+                legend_orientation="h",
+                showlegend=showlegend,
+                legend=dict(
+                    x=x_legend, y=y_legend,
+                    traceorder="normal",
+                    font=dict(
+                        family="sans-serif",
+                        size=18,
+                        color="black"
+                    ),
+                    # bgcolor="LightSteelBlue",
+                    # bordercolor="Black",
+                    borderwidth=1,
+                ),
+
+            )
+            fig.update_xaxes(showline=True, ticks="outside", linewidth=2, linecolor='black', mirror=True)
+            fig.update_yaxes(showline=True, ticks="outside", linewidth=2, linecolor='black', mirror=True)
+            # fig.show()
             fig.write_image(str((output_dir / title).absolute()) + ".png")
+
+    from pprint import pprint
+    pprint(dict_algo_data_perf)

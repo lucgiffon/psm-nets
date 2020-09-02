@@ -49,6 +49,9 @@ def get_df_from_expe_path(expe_path):
     df = get_df(src_dir)
     df = df.assign(results_dir=[str(src_dir.absolute())] * len(df))
     df = df.rename(columns={"--tol": "--delta-threshold"})
+
+    if expe_path == "2020/07/11_12_finetune_sparse_facto_fix_replicates":
+        df = df[df["--only-mask"] == False]
     return df
 
 
@@ -67,19 +70,16 @@ def cast_to_num(df):
 
 if __name__ == "__main__":
     root_source_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/")
-    expe_path = "2020/05/7_8_finetune_sparse_facto_not_log_all_grid_lr"
+    expe_path = "2020/07/11_12_finetune_sparse_facto_fix_replicates"
 
     lst_path_finetune = [
-        "2020/05/7_8_finetune_sparse_facto_not_log_all_grid_lr",
-        "2020/05/7_8_finetune_sparse_facto_not_log_all_grid_lr_only_mask",
-        "2020/05/11_12_finetune_sparse_facto_resnet_grid_lr",
-        "2020/05/11_12_finetune_sparse_facto_not_log_resnet_not_only_mask_grid_lr",
-        "2020/07/11_12_finetune_fix_only_mask_grid_lr"
+        "2020/07/11_12_finetune_sparse_facto_fix_replicates",
+        "2020/07/11_12_finetune_sparse_factro_fix_only_mask"
     ]
 
-    lst_path_compression = [
-        "2020/05/3_4_compression_palm_not_log_all",
-    ]
+    # lst_path_compression = [
+    #     "2020/05/3_4_compression_palm_not_log_all",
+    # ]
 
     df_finetune = pd.concat(list(map(get_df_from_expe_path, lst_path_finetune)))
     # df_finetune = get_df_from_expe_path(lst_path_finetune[0])
@@ -89,9 +89,9 @@ if __name__ == "__main__":
     df_finetune = cast_to_num(df_finetune)
     df_finetune = df_finetune[~df_finetune["test_accuracy_finetuned_model"].isnull()]
 
-    df_compression = pd.concat(list(map(get_df_from_expe_path, lst_path_compression)))
+    # df_compression = pd.concat(list(map(get_df_from_expe_path, lst_path_compression)))
     # df_compression = get_df_from_expe_path(lst_path_compression[0])
-    df_compression = cast_to_num(df_compression)
+    # df_compression = cast_to_num(df_compression)
 
     root_output_dir = pathlib.Path("/home/luc/PycharmProjects/palmnet/results/processed/")
     output_dir = root_output_dir / expe_path
@@ -105,8 +105,20 @@ if __name__ == "__main__":
     for idx, (_, row) in enumerate(df_finetune.iterrows()):
         # if df_results_tmp is not None and row["hash"] in df_results_tmp["hash"].values:
         #     continue
-        if np.isnan(row["test_loss_finetuned_model"]):
+        bool_resnet_new = row["--cifar100-resnet20-new"] or row["--cifar100-resnet50-new"]
+        if row["--cifar100-resnet50-new"] and np.isnan(row["test_loss_finetuned_model"]) and row["--only-mask"] :
+            print("FOUND NAN 50 :(")
             continue
+            pass
+        if row["--cifar100-resnet20-new"] and np.isnan(row["test_loss_finetuned_model"]) and row["--only-mask"] :
+            print("FOUND NAN 20 :(")
+            continue
+            pass
+
+        # if np.isnan(row["test_loss_finetuned_model"]) :
+        #     print("FOUND NAN 2 :(")
+        #     continue
+
         log_memory_usage("Start loop")
         print("row {}/{}".format(idx, length_df))
         dct_attributes["idx-expe"].append(idx)
@@ -136,7 +148,7 @@ if __name__ == "__main__":
                 '--cifar100-resnet20',
             ])
 
-        row_before_finetune = get_line_of_interest(df_compression, keys_of_interest, row).iloc[0]
+        # row_before_finetune = get_line_of_interest(df_compression, keys_of_interest, row).iloc[0]
         # this is the row of results for the model before finetuning
 
         ############################################
@@ -209,10 +221,10 @@ if __name__ == "__main__":
         dct_attributes["finetuned-score-val"].append(float(row["val_accuracy_finetuned_model"]))
 
         # store path informations
-        path_model_compressed = pathlib.Path(row_before_finetune["results_dir"]) / row_before_finetune["output_file_modelprinter"]
+        # path_model_compressed = pathlib.Path(row_before_finetune["results_dir"]) / row_before_finetune["output_file_modelprinter"]
         path_history = pathlib.Path(row["results_dir"]) / row["output_file_csvcbprinter"]
         dct_attributes["path-learning-history"].append(path_history)
-        dct_attributes["path-model-compressed"].append(path_model_compressed)
+        # dct_attributes["path-model-compressed"].append(path_model_compressed)
         ##############################
         # Layer by Layer information #
         ##############################
@@ -261,7 +273,7 @@ if __name__ == "__main__":
                 dct_results_matrices["sparsity-factor"].append(dct_attributes["sparsity-factor"][-1])
                 dct_results_matrices["hierarchical"].append(dct_attributes["hierarchical"][-1])
         else:
-            # continue
+            exit("Need compression path")
             palmnet.hunt.show_most_common_types(limit=20)
             log_memory_usage("Before pickle")
             layer_replacer = LayerReplacerFaust(only_mask=False, keep_last_layer=dct_attributes["keep-last-layer"][-1], path_checkpoint_file=path_model_compressed, sparse_factorizer=Faustizer())

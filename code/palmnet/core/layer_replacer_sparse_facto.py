@@ -83,18 +83,9 @@ class LayerReplacerSparseFacto(LayerReplacer):
 
     def _set_weights_to_layer(self, replacing_layer, replacing_weights):
         if self.only_mask:
-            masked_weights = []
-            i = 0
-            for w in replacing_layer.get_weights():
-                if len(w.shape) > 1:  # if not bias vector then apply sparsity
-                    new_weight = w * get_sparsity_pattern(replacing_weights[i])
-                    i += 1
-                else:
-                    new_weight = w # case bias
-                masked_weights.append(new_weight)
-            replacing_weights = masked_weights
-
-        replacing_layer.set_weights(replacing_weights)
+            pass
+        else:
+            replacing_layer.set_weights(replacing_weights)
 
     ####################################
     # LayerReplacerSparseFacto methods #

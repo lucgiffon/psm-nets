@@ -56,6 +56,8 @@ class TTLayerDense(Layer):
 
         super(TTLayerDense, self).__init__(**kwargs)
 
+        self.image_max_size = -1
+
     def build(self, input_shape):
         inp_ch = input_shape[-1]
         if self.mode == "auto":
@@ -76,9 +78,11 @@ class TTLayerDense(Layer):
 
         super(TTLayerDense, self).build(input_shape)
 
-    def call(self, input):
+    def call(self, input_):
         dim = self.order
-        out = tf.reshape(input, [-1, np.prod(self.inp_modes)])
+
+        out = tf.reshape(input_, [-1, np.prod(self.inp_modes)])
+        self.image_max_size = max(self.image_max_size, np.prod(self.inp_modes))
         out = tf.transpose(out, [1, 0])
         for i in range(dim):
             out = tf.reshape(out, [self.mat_ranks[i] * self.inp_modes[i], -1])
@@ -87,7 +91,7 @@ class TTLayerDense(Layer):
             out = tf.transpose(out, [1, 0])
 
         out = tf.reshape(out, [-1, np.prod(self.out_modes)])
-
+        # self.image_max_size = max(self.image_max_size, np.prod([val.value for val in out.get_shape()[1:]]))
         if self.use_bias:
             out = tf.add(out, self.bias, name='out')
 

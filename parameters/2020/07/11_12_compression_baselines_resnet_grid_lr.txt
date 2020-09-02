@@ -1,0 +1,42 @@
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.1 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+tucker --rank-percentage-dense 0.2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+deepfried -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+deepfried -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+deepfried -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+deepfried -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+deepfried -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+deepfried -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 2 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 2 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 2 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 2 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 2 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 2 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 2 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 2 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 2 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 2 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 2 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 2 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 14 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 14 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 14 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 14 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 14 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 14 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 14 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 14 --nb-factor 3 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 14 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 14 --nb-factor 3 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet50-new
+random --sparsity-factor 14 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+random --sparsity-factor 14 --nb-factor 3 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet50-new

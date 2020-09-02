@@ -6,6 +6,7 @@ from keras.utils import conv_utils
 
 from palmnet.layers import Conv2DCustom
 from palmnet.utils import get_facto_for_channel_and_order, DCT_CHANNEL_PREDEFINED_FACTORIZATIONS
+from skluc.utils import logger
 
 '''
 Implementation of the paper 'Ultimate tensorization: compressing convolutional and FC layers alike', Timur Garipov, Dmitry Podoprikhin, Alexander Novikov, Dmitry P. Vetrov, 2016
@@ -52,6 +53,8 @@ class TTLayerConv(Conv2DCustom):
         else:
             raise ValueError("Unknown mode {}".format(self.mode))
 
+        self.image_max_size = -1
+
     def build(self, input_shape):
         inp_shape = input_shape[1:]
         inp_h, inp_w, inp_ch = inp_shape[0:3]
@@ -92,6 +95,8 @@ class TTLayerConv(Conv2DCustom):
         # tmp shape = [batch_size * inp_ch, h, w, r]
         h, w = tmp.get_shape().as_list()[1:3]
         tmp = tf.reshape(tmp, [-1, inp_ch, h, w, self.mat_ranks[0]])
+        self.image_max_size = max(self.image_max_size, np.prod([inp_ch, h, w, self.mat_ranks[0]]))
+        logger.debug(f"Mat_ranks 0 TT conv {self.name}: {self.mat_ranks[0]}")
         tmp = tf.transpose(tmp, [4, 1, 0, 2, 3])
         # tmp shape = [r, c, b, h, w]
 

@@ -162,6 +162,7 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
 
         if self["--seed"] is not None:
             self["seed"] = int(self["--seed"])
+            self["--seed"] = int(self["--seed"])
             np.random.seed(self["seed"])
         else:
             self["seed"] = np.random.randint(0, 2 ** 32 - 2)
@@ -213,6 +214,7 @@ class ParameterManagerPalminizeFinetune(ParameterManagerPalminize):
                             '--cifar100-resnet20',
                             '--cifar100-resnet50-new',
                             '--cifar100-resnet20-new',
+                            "--seed"
                             ]
 
         # queries = []
@@ -303,7 +305,7 @@ def get_params_optimizer():
 
     params_optimizer = param_train_dataset.params_optimizer
 
-    if paraman["--lr-configuration-file"] is not None:
+    if paraman["--lr-configuration-file"] is not None and paraman["--lr"] is None:
         with open(str(paraman["--lr-configuration-file"]), 'r') as f:
             dct_config_lr = yaml.full_load(f)
 
@@ -422,22 +424,23 @@ def compress_and_evaluate_model(base_model, model_compilation_params, x_train, y
 
     layer_replacer.load_dct_name_compression()
     new_model = layer_replacer.transform(base_model)
+    # new_model = base_model
     new_model.compile(**model_compilation_params)
-    test_score_compressed, test_acc_compressed = new_model.evaluate(x_test, y_test, verbose=0)
-    train_score_compressed, train_acc_compressed = new_model.evaluate(x_train, y_train, verbose=0)
-    val_score_compressed, val_acc_compressed = new_model.evaluate(x_val, y_val, verbose=0)
-    actual_learning_rate = K.eval(new_model.optimizer.lr)
-
-    dct_results = {
-        "actual-lr": actual_learning_rate,
-        "test_accuracy_compressed_model": test_acc_compressed,
-        "test_loss_compressed_model": test_score_compressed,
-        "train_accuracy_compressed_model": train_acc_compressed,
-        "train_loss_compressed_model": train_score_compressed,
-        "val_accuracy_compressed_model": val_acc_compressed,
-        "val_loss_compressed_model": val_score_compressed,
-    }
-    resprinter.add(dct_results)
+    # test_score_compressed, test_acc_compressed = new_model.evaluate(x_test, y_test, verbose=0)
+    # train_score_compressed, train_acc_compressed = new_model.evaluate(x_train, y_train, verbose=0)
+    # val_score_compressed, val_acc_compressed = new_model.evaluate(x_val, y_val, verbose=0)
+    # actual_learning_rate = K.eval(new_model.optimizer.lr)
+    #
+    # dct_results = {
+    #     "actual-lr": actual_learning_rate,
+    #     "test_accuracy_compressed_model": test_acc_compressed,
+    #     "test_loss_compressed_model": test_score_compressed,
+    #     "train_accuracy_compressed_model": train_acc_compressed,
+    #     "train_loss_compressed_model": train_score_compressed,
+    #     "val_accuracy_compressed_model": val_acc_compressed,
+    #     "val_loss_compressed_model": val_score_compressed,
+    # }
+    # resprinter.add(dct_results)
 
     count_models_parameters(base_model, new_model, layer_replacer.dct_name_compression)
 
@@ -448,19 +451,19 @@ def get_and_evaluate_base_model(model_compilation_params, x_train, y_train, x_va
     base_model = paraman.get_model()
     base_model.compile(**model_compilation_params)
 
-    test_score_base, test_acc_base = base_model.evaluate(x_test, y_test, verbose=0)
-    train_score_base, train_acc_base = base_model.evaluate(x_train, y_train, verbose=0)
-    val_score_base, val_acc_base = base_model.evaluate(x_val, y_val, verbose=0)
-
-    dct_results = {
-        "test_accuracy_base_model": test_acc_base,
-        "test_loss_base_model": test_score_base,
-        "train_accuracy_base_model": train_acc_base,
-        "train_loss_base_model": train_score_base,
-        "val_accuracy_base_model": val_acc_base,
-        "val_loss_base_model": val_score_base,
-    }
-    resprinter.add(dct_results)
+    # test_score_base, test_acc_base = base_model.evaluate(x_test, y_test, verbose=0)
+    # train_score_base, train_acc_base = base_model.evaluate(x_train, y_train, verbose=0)
+    # val_score_base, val_acc_base = base_model.evaluate(x_val, y_val, verbose=0)
+    #
+    # dct_results = {
+    #     "test_accuracy_base_model": test_acc_base,
+    #     "test_loss_base_model": test_score_base,
+    #     "train_accuracy_base_model": train_acc_base,
+    #     "train_loss_base_model": train_score_base,
+    #     "val_accuracy_base_model": val_acc_base,
+    #     "val_loss_base_model": val_score_base,
+    # }
+    # resprinter.add(dct_results)
 
     return base_model
 

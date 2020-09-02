@@ -111,6 +111,8 @@ def get_df_from_expe_path(expe_path):
     src_dir = root_source_dir / expe_path
     df = get_df(src_dir)
     df = df.assign(results_dir=[str(src_dir.absolute())] * len(df))
+    if expe_path != "2020/07/11_12_compression_baselines_resnet_grid_lr" and expe_path != "2020/05/11_12_compression_magnitude_resnet_grid_lr":
+        df = df.loc[(df["--cifar100-resnet20-new"] == False) & (df["--cifar100-resnet50-new"] == False)]
     return df
 
 def cast_to_num(df):
@@ -129,7 +131,8 @@ if __name__ == "__main__":
         "2020/05/8_9_compression_tucker_tensortrain_deepfried_grid_lr",
         "2020/05/9_10_compression_sparse_facto_random_grid_lr_greater_sp",
         "2020/05/9_10_compression_tucker_only_resnet_grid_lr",
-        "2020/05/11_12_compression_magnitude_resnet_grid_lr"
+        "2020/05/11_12_compression_magnitude_resnet_grid_lr",
+        "2020/07/11_12_compression_baselines_resnet_grid_lr",
     ]
 
     df_tucker_tt = pd.concat(list(map(get_df_from_expe_path, lst_paths_finetune)))
@@ -151,8 +154,8 @@ if __name__ == "__main__":
     for idx, (_, row) in enumerate(df_tucker_tt.iterrows()):
         cifar100_resnet = (row["--cifar100-resnet20-new"] is True or row["--cifar100-resnet50-new"] is True)
         if row["tucker"] is True:
-            if cifar100_resnet and "2020/05/9_10_compression_tucker_only_resnet_grid_lr" not in row["results_dir"]:
-                continue
+            # if cifar100_resnet and "2020/05/9_10_compression_tucker_only_resnet_grid_lr" not in row["results_dir"]:
+            #     continue
             dct_attributes["compression"].append("tucker")
             # continue
         elif row["deepfried"] is True:
@@ -164,9 +167,9 @@ if __name__ == "__main__":
         elif row["random"] is True:
             dct_attributes["compression"].append("random")
         else:
-            if cifar100_resnet and "2020/05/9_10_compression_tensortrain_smaller_batch_size" not in row["results_dir"]:
-                continue
-            elif not cifar100_resnet and "2020/05/9_10_compression_tensortrain_smaller_batch_size" in row["results_dir"]:
+            # if cifar100_resnet and "2020/05/9_10_compression_tensortrain_smaller_batch_size" not in row["results_dir"]:
+            #     continue
+            if not cifar100_resnet and "2020/05/9_10_compression_tensortrain_smaller_batch_size" in row["results_dir"]:
                 continue
             dct_attributes["compression"].append("tensortrain")
 

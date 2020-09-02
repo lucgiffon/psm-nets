@@ -222,13 +222,13 @@ if __name__ == "__main__":
                 dct_results[dataname][modelname]["tucker"][float(rank_percentage)] = float(lr_values[best_score_indice])
 
             # deepfried
-            df_deepfried = df_model[df_model["compression"] == "deepfried"]
-            dct_results[dataname][modelname]["deepfried"] = dict()
-            lr_values = df_deepfried["learning-rate"].values
-            score_values = df_deepfried["finetuned-score-val"].values
-            best_score_indice = np.argmax(score_values)
-            assert score_values[best_score_indice] != "0.1"
-            dct_results[dataname][modelname]["deepfried"] = float(lr_values[best_score_indice])
+            # df_deepfried = df_model[df_model["compression"] == "deepfried"]
+            # dct_results[dataname][modelname]["deepfried"] = dict()
+            # lr_values = df_deepfried["learning-rate"].values
+            # score_values = df_deepfried["finetuned-score-val"].values
+            # best_score_indice = np.argmax(score_values)
+            # assert score_values[best_score_indice] != "0.1"
+            # dct_results[dataname][modelname]["deepfried"] = float(lr_values[best_score_indice])
 
 
     with open(output_dir / "baselines_lr.yml", 'w') as outfile:

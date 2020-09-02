@@ -57,7 +57,7 @@ class LayerReplacerTT(LayerReplacer):
 
         if not all((core.shape[0] == tt_ranks[idx_core] and  core.shape[-1] == tt_ranks[idx_core+1]) for idx_core, core in enumerate(res)):
             obtained_ranks = tuple([core.shape[0] for core in res] + [res[-1].shape[-1]])
-            logger.warning(TensortrainBadRankException(expected_ranks=tt_ranks, obtained_ranks=obtained_ranks))
+            logger.warning(f"{layer.name}: " + str(TensortrainBadRankException(expected_ranks=tt_ranks, obtained_ranks=obtained_ranks)))
             tt_ranks = obtained_ranks
 
         lst_shapes = list()

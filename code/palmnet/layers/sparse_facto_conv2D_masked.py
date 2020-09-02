@@ -54,6 +54,8 @@ class SparseFactorisationConv2D(Conv2DCustom):
         self.scaler_regularizer = regularizers.get(scaler_regularizer)
         self.scaler_constraint = constraints.get(scaler_constraint)
 
+        self.image_max_size = -1
+
 
     def get_config(self):
         config = super().get_config()
@@ -135,11 +137,15 @@ class SparseFactorisationConv2D(Conv2DCustom):
         else:
             reconstructed_kernel = tf.reshape(reconstructed_kernel, (*self.kernel_size, X.get_shape()[-1].value, self.filters))
 
+        self.image_max_size = max(self.image_max_size, np.prod([val.value for val in X.get_shape()[1:]]))
+
         output = K.conv2d(
             X,
             reconstructed_kernel,
             strides=self.strides,
             padding=self.padding)
+
+        # self.image_max_size = max(self.image_max_size, np.prod([val.value for val in output.get_shape()[1:]]))
 
         if self.use_bias:
             output = K.bias_add(output, self.bias)

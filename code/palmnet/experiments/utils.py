@@ -77,7 +77,7 @@ class ParameterManager(dict):
             raise NotImplementedError("No dataset specified.")
 
     def get_model(self):
-        if self["--seed"] is not None:
+        if "--seed" in self.keys() and self["--seed"] is not None:
             seed_str = "-{}".format(self["seed"])
         else:
             seed_str = ""
@@ -418,7 +418,6 @@ def get_line_of_interest(df, keys_of_interest, dct_values):
         logger.debug("{}, {}, {}".format(dct_values[k], type(dct_values[k]), k))
         try:
             key_type = df.dtypes[k].name
-
             if key_type == "object" or dct_values[k] is None or np.isnan(dct_values[k]):
                 df[k] = df[k].astype(str)
                 str_k = "'{}'".format(dct_values[k])

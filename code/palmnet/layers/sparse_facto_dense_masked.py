@@ -3,6 +3,7 @@ from keras.engine import Layer
 from keras.layers import BatchNormalization
 
 from palmnet.utils import cast_sparsity_pattern, NAME_INIT_SPARSE_FACTO, sparse_facto_init
+import numpy as np
 
 
 class SparseFactorisationDense(Layer):
@@ -79,6 +80,8 @@ class SparseFactorisationDense(Layer):
         self.scaler_constraint = constraints.get(scaler_constraint)
 
         self.intertwine_batchnorm = intertwine_batchnorm
+
+        self.image_max_size = -1
 
     def get_config(self):
         base_config = super().get_config()
@@ -162,11 +165,14 @@ class SparseFactorisationDense(Layer):
     def call(self, inputs):
 
         output = inputs
+        self.image_max_size = max(self.image_max_size, self.kernels[0].shape[0].value)
         for i in range(self.nb_factor):
             # multiply by the constant mask tensor so that gradient is 0 for zero entries.
             output = K.dot(output, self.kernels[i] * self.sparsity_masks[i])
             # batchnorm_or_id contains either a batchnormlayer or the identity function which has no effect
             output = self.batchnorms_or_id[i](output)
+
+        # self.image_max_size = max(self.image_max_size, np.prod([val.value for val in output.get_shape()[1:]]))
 
         if self.use_scaling:
             output = self.scaling* output

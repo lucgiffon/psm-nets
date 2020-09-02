@@ -757,13 +757,17 @@ def sparse_facto_init(shape, idx_fac, sparsity_pattern, multiply_left=False):
     :param multiply_left:
     :return:
     """
+    def init_func(numerator):
+        random_init = np.random.randn(*shape) * np.sqrt(numerator / np.sum(sparsity_pattern, axis=int(multiply_left))) * sparsity_pattern
+        random_init[np.isnan(random_init)] = 0
+        return lambda *args, **kwargs: random_init
     if idx_fac == 0:
         # sum of sparsity_pattern[i] is norm zero of sparsity pattern
         # we use 2 on the numerator because the input has gone through relu and then is not 0 mean -> he initialisation
-        kernel_init = lambda *args, **kwargs: np.random.randn(*shape) * np.sqrt(2 / np.sum(sparsity_pattern, axis=int(multiply_left))) * sparsity_pattern
+        kernel_init =init_func(numerator=2)
     else:
         # we use 1 on the numerator because between factor the "activations" (linear) are expected to have 0 mean -> xavier initialisation
-        kernel_init = lambda *args, **kwargs: np.random.randn(*shape) * np.sqrt(1 / np.sum(sparsity_pattern, axis=int(multiply_left))) * sparsity_pattern
+        kernel_init = init_func(numerator=1)
 
     return kernel_init
 

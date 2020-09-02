@@ -125,7 +125,8 @@ if __name__ == "__main__":
 
     lst_paths_finetune = [
         "2020/05/10_11_compression_baselines_full",
-        "2020/05/11_12_compression_baselines_magnitude_resnet"
+        "2020/05/11_12_compression_baselines_magnitude_resnet",
+        "2020/07/11_12_compression_baselines_resnet"
     ]
 
     df_tucker_tt = pd.concat(list(map(get_df_from_expe_path, lst_paths_finetune)))
@@ -146,17 +147,17 @@ if __name__ == "__main__":
 
     for idx, (_, row) in enumerate(df_tucker_tt.iterrows()):
         cifar100_resnet = (row["--cifar100-resnet20-new"] is True or row["--cifar100-resnet50-new"] is True)
-        if cifar100_resnet and np.isnan(row["test_loss_finetuned_model"]):
+        if cifar100_resnet and np.isnan(row["test_loss_finetuned_model"]) and not row["deepfried"] == 1:
             continue
 
         if row["tucker"] is True:
-            if cifar100_resnet and "2020/05/9_10_compression_tucker_only_resnet_grid_lr" not in row["results_dir"]:
+            if cifar100_resnet and "2020/07/11_12_compression_baselines_resnet" not in row["results_dir"]:
                 continue
             dct_attributes["compression"].append("tucker")
             # continue
         elif row["deepfried"] is True:
-            if "2020/05/9_10_compression_deepfried_grid_lr" not in row["results_dir"]:
-                continue
+            # if "2020/05/9_10_compression_deepfried_grid_lr" not in row["results_dir"]:
+            #     continue
             dct_attributes["compression"].append("deepfried")
         elif row["magnitude"] is True:
             dct_attributes["compression"].append("magnitude")
@@ -175,6 +176,7 @@ if __name__ == "__main__":
         print("row {}/{}".format(idx, length_df))
         dct_attributes["idx-expe"].append(idx)
         dct_attributes["hash"].append(row["hash"])
+        dct_attributes["seed"].append(row["--seed"])
 
         # this is the row of results for the model before finetuning
 
