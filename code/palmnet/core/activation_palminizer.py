@@ -27,6 +27,8 @@ class ActivationPalminizer(Palminizer):
         self.nb_epochs = nb_epochs
         self.queue_maxisize = queue_maxisize
 
+        self.dct_lst_objectives = dict()
+
         super().__init__(*args, **kwargs)
 
     def batch_preprocessing(self, data, block_size):
@@ -56,7 +58,7 @@ class ActivationPalminizer(Palminizer):
         transposed = False
 
         # todo can be done outside the loop and function call
-        if matrix.shape[0] > matrix.shape[1]:
+        if weight_matrix.shape[0] > weight_matrix.shape[1]:
             # we want the bigger dimension to be on right due to the residual computation that should remain big
             matrix = matrix.T
             transposed = True
@@ -65,7 +67,7 @@ class ActivationPalminizer(Palminizer):
         left_dim, right_dim = weight_matrix.shape
         A = min(left_dim, right_dim)
         B = max(left_dim, right_dim)
-        assert A == left_dim and B == right_dim, "Dimensionality problem: left dim should be higher than right dim before palm"
+        assert A == left_dim and B == right_dim, f"Dimensionality problem: left dim should be higher than right dim before palm. left {left_dim} right {right_dim}"
 
         if self.nb_factor is None:
             nb_factors = int(np.log2(B))
@@ -129,34 +131,51 @@ class ActivationPalminizer(Palminizer):
         if transposed:
             final_lambda, final_factors, final_X = final_lambda, final_factors.transpose(), final_X.T
             weight_matrix = weight_matrix.T
+            matrix = matrix.T
 
         lst_factors_final = final_factors.get_list_of_factors(copy=True)[1:]
         final_factors = SparseFactors(lst_factors_final)
         final_X = final_lambda * final_factors.compute_product()
 
-        print(np.linalg.norm(processed_data @ final_X - processed_data @ weight_matrix) / np.linalg.norm(processed_data @ weight_matrix))
-
         return final_lambda, final_factors, final_X
 
     @staticmethod
-    def factorize_one_batch_of_activations_worker(fct_factorize_one_batch_of_activations, queue_palm, queue_result, queue_exception):
+    def factorize_one_batch_of_activations_worker(fct_factorize_one_batch_of_activations, target_weight_matrix, processed_validation_data, queue_palm, queue_result, queue_exception, queue_objectives):
         try:
             logger.debug("Start factorize_one_batch_of_activations worker process.")
             processed_batch = queue_palm.get(block=True)
             current_factors = None
             current_lambda = 1.
             current_X = None
+            id_batch = 0
+
+            if processed_validation_data is not None:
+                val_target = processed_validation_data @ target_weight_matrix
+                val_target_norm = np.linalg.norm(val_target)
+
             while processed_batch is not None:
+                id_batch += 1
                 logger.debug("Found one batch to process in factorize_one_batch_of_activations.")
                 current_lambda, current_factors, current_X = fct_factorize_one_batch_of_activations(processed_batch, current_factors, current_lambda)
                 current_factors = current_factors.get_list_of_factors()
+                batch_target = processed_batch @ target_weight_matrix
+
+                objective_value_batch = np.linalg.norm(processed_batch @ current_X - batch_target) / np.linalg.norm(batch_target)
+                if processed_validation_data is not None:
+                    objective_value_val = np.linalg.norm(processed_validation_data @ current_X - val_target) / val_target_norm
+                else:
+                    objective_value_val = None
+
                 processed_batch = queue_palm.get(block=True)
+
+                queue_objectives.put((id_batch, objective_value_batch, objective_value_val))
 
             logger.info("Found None in factorize_one_batch_of_activations worker process. End process and deliver result.")
             queue_result.put((current_lambda, current_factors, current_X), block=True)
         except Exception as e:
             import sys
-            queue_exception.put((e, str(sys.exc_info())))
+            sys_exc_info = [str(elm) for elm in sys.exc_info()]
+            queue_exception.put((e, sys_exc_info))
 
 
     def apply_factorization(self, weight_matrix, block_size=None):
@@ -181,19 +200,23 @@ class ActivationPalminizer(Palminizer):
 
         if self.val_data is not None:
             processed_val_data = self.batch_preprocessing(self.val_data, block_size)
-            val_activations = processed_val_data @ weight_matrix
-            val_activations_norm = np.linalg.norm(val_activations)
-            lst_diff = []
-            print("After join")
+            # val_activations = processed_val_data @ weight_matrix
+            # val_activations_norm = np.linalg.norm(val_activations)
+            # lst_diff = []
+            # print("After join")
+        else:
+            processed_val_data = None
 
         queue_palm = Queue(maxsize=self.queue_maxisize)
         queue_result = Queue(maxsize=self.queue_maxisize)
         queue_exception = Queue(maxsize=1)
+        queue_objectives = Queue(maxsize=self.nb_epochs * (nb_iter_by_epoch + 1))
 
         lambda_factorize_one_batch_of_activations_worker = lambda processed_batch, current_factors, current_lambda: self.factorize_one_batch_of_activations(processed_batch, weight_matrix, current_factors, current_lambda)
-        process_palm = Process(target=self.factorize_one_batch_of_activations_worker, args=(lambda_factorize_one_batch_of_activations_worker, queue_palm, queue_result, queue_exception))
+        process_palm = Process(target=self.factorize_one_batch_of_activations_worker, args=(lambda_factorize_one_batch_of_activations_worker, weight_matrix, processed_val_data, queue_palm, queue_result, queue_exception, queue_objectives))
         process_palm.start()
 
+        lst_objs = []
         try:
             for i in range(self.nb_epochs):
                 logger.debug(f"Epoch {i}")
@@ -209,28 +232,43 @@ class ActivationPalminizer(Palminizer):
                         str_exception = f"Got exception {str(base_exception)}\n Traceback was {traceback_str}"
                         raise Exception(str_exception)
 
+
             queue_palm.put(None, block=True)
 
             current_lambda, current_factors, current_X = queue_result.get(block=True)
+            while not queue_objectives.empty():
+                lst_objs.append(queue_objectives.get())
 
         finally:
             process_palm.join()
 
-        if self.val_data is not None:
-            val_activations_pred = processed_val_data @ current_X
-            diff = np.linalg.norm(val_activations - val_activations_pred) / val_activations_norm
-            lst_diff.append(diff)
+        # if self.val_data is not None:
+        #     val_activations_pred = processed_val_data @ current_X
+        #     diff = np.linalg.norm(val_activations - val_activations_pred) / val_activations_norm
+        #     lst_diff.append(diff)
 
         current_factors = SparseFactors(current_factors)
-        return current_lambda, current_factors, current_X
+        return current_lambda, current_factors, current_X, lst_objs
 
 
     def factorize_conv2D_weights(self, layer_weights):
         filter_height, filter_width, in_chan, out_chan = layer_weights.shape
         filter_matrix = layer_weights.reshape(filter_height * filter_width * in_chan, out_chan)
-        _lambda, op_sparse_factors, reconstructed_filter_matrix = self.apply_factorization(filter_matrix, block_size=(filter_height, filter_width))
+        _lambda, op_sparse_factors, reconstructed_filter_matrix, lst_objs = self.apply_factorization(filter_matrix, block_size=(filter_height, filter_width))
         new_layer_weights = reconstructed_filter_matrix.reshape(filter_height, filter_width, in_chan, out_chan)
+
+        self.dct_lst_objectives[self.layer_to_factorize] = lst_objs
         return _lambda, op_sparse_factors, new_layer_weights
+
+    def factorize_dense_weights(self, layer_weights):
+        _lambda, op_sparse_factors, reconstructed_dense_matrix, lst_objs = self.apply_factorization(layer_weights)
+        new_layer_weights = reconstructed_dense_matrix
+        self.dct_lst_objectives[self.layer_to_factorize] = lst_objs
+        return _lambda, op_sparse_factors, new_layer_weights
+
+
+    def set_layer_to_factorize_name(self, name):
+        self.layer_to_factorize = name
 
     def set_preprocessing_model(self, model):
         if model is not None:

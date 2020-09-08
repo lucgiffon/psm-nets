@@ -39,6 +39,8 @@ class LayerReplacerSparseFactoActivations(LayerReplacerSparseFacto, metaclass=AB
                 layer_inputs = layer_inputs[0]
 
             self.sparse_factorizer.set_preprocessing_model(new_model)
+            self.sparse_factorizer.set_layer_to_factorize_name(layer.name)
+
             # the fit method from before
             # {
             self.fit_one_layer(layer)
