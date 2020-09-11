@@ -55,6 +55,7 @@ from palmnet.utils import get_nb_learnable_weights_from_model, get_nb_learnable_
 mpl_logger = logging.getLogger("matplotlib")
 mpl_logger.setLevel(logging.WARNING)
 
+
 from keras.models import Model
 import tensorflow as tf
 
@@ -82,6 +83,9 @@ palminizable.Palminizer = Palminizer
 import sys
 sys.modules["palmnet.core.palminize"] = palminizable
 
+import warnings
+warnings.filterwarnings("ignore", message=".*values to real discards the imaginary part")
+
 class ParameterManagerCompressionFaust(ParameterManager):
     def __init__(self, dct_params, **kwargs):
         super().__init__(self, **dct_params, **kwargs)
@@ -96,6 +100,8 @@ class ParameterManagerCompressionFaust(ParameterManager):
             self["--max-cum-batch-size"] = int(self["--max-cum-batch-size"])
             self["--batch-size"] = int(self["--batch-size"])
             self["nb-queue"] = self["--max-cum-batch-size"] // self["--batch-size"]
+
+        self["--max-cum-batch-size"] = int(self["--max-cum-batch-size"]) if self["--max-cum-batch-size"] is not None else None
 
         if "--train-val-split" in self.keys() and self["--train-val-split"] is not None:
             self["--train-val-split"] = float(self["--train-val-split"]) if self["--train-val-split"] is not None else None
@@ -243,25 +249,32 @@ def count_models_parameters(base_model, new_model, dct_name_compression, x_val):
 
     for idx_layer, compressed_layer in enumerate(new_model.layers):
         if any(isinstance(compressed_layer, _class) for _class in (Dense, Conv2D, SparseFactorisationDense, SparseFactorisationConv2D)):
+
             log_memory_usage("Start secondary loop")
             base_layer = base_model.layers[idx_layer]
 
             intermediate_layer_base_model = Model(inputs=base_model.input,
                                              outputs=base_layer.output)
             intermediate_output_base_model = intermediate_layer_base_model.predict(x_val)
+
+            del intermediate_layer_base_model
+
             intermediate_layer_compressed_model = Model(inputs=new_model.input,
                                              outputs=compressed_layer.output)
             intermediate_output_compressed_model = intermediate_layer_compressed_model.predict(x_val)
 
+            del intermediate_layer_compressed_model
+
             diff_total_processing = np.linalg.norm(intermediate_output_base_model - intermediate_output_compressed_model) / np.linalg.norm(intermediate_output_base_model)
             dct_results_matrices["diff-total-processing"].append(diff_total_processing)
 
-            try:
+            if new_model.input is compressed_layer.input:
+                output_just_before_intermediate_layer_compressed_model = x_val
+            else:
                 just_before_intermediate_layer_compressed_model = Model(inputs=new_model.input,
                                                             outputs=compressed_layer.input)
                 output_just_before_intermediate_layer_compressed_model = just_before_intermediate_layer_compressed_model.predict(x_val)
-            except InvalidArgumentError:
-                output_just_before_intermediate_layer_compressed_model = x_val
+
 
             only_intermediate_layer_compressed_model = K.function([compressed_layer.input], [compressed_layer.output])
             output_only_intermediate_layer_compressed_model = only_intermediate_layer_compressed_model([output_just_before_intermediate_layer_compressed_model])[0]
@@ -334,14 +347,16 @@ def main():
     base_model = get_base_model()
     # Dataset
     (x_train, y_train), (x_val, y_val), (x_test, y_test) = get_dataset()
+
+    small_x_val = x_val[np.random.permutation(x_val.shape[0])[:paraman["--max-cum-batch-size"]]]
     # write preliminary results before compression (ease debugging)
     resprinter.print()
     # Do compression #
-    new_model, layer_replacer = compress_model(base_model, x_train, x_val[np.random.permutation(x_val.shape[0])[:paraman["--batch-size"]]])
+    new_model, layer_replacer = compress_model(base_model, x_train, small_x_val)
 
     save_objectives(layer_replacer)
 
-    count_models_parameters(base_model, new_model, layer_replacer.dct_name_compression, x_val)
+    count_models_parameters(base_model, new_model, layer_replacer.dct_name_compression, small_x_val)
 
     if os.path.exists(paraman["output_file_notfinishedprinter"]):
         os.remove(paraman["output_file_notfinishedprinter"])

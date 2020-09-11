@@ -10,7 +10,7 @@
 #SBATCH --output=%j.out                                           # nom du fichier de sortie
 #SBATCH --error=%j.err                                            # nom du fichier d'erreur (ici commun avec la sortie)
 #SBATCH --mem=30GB
-#SBATCH --array=1-56                                             # array batch indices availabale wiht $SLURM_ARRAY_TASK_ID
+#SBATCH --array=1-20                                             # array batch indices availabale wiht $SLURM_ARRAY_TASK_ID
 
 ROOT_DIR=/data1/home/luc.giffon/DeployedProjects/palmnet
 PYTHON_EXEC=/data1/home/luc.giffon/anaconda3/envs/palmnet-gpu/bin/python

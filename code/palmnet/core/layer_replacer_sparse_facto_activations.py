@@ -28,7 +28,7 @@ class LayerReplacerSparseFactoActivations(LayerReplacerSparseFacto, metaclass=AB
 
         model, network_dict = self.prepare_transform(model)
 
-        new_model = None
+        # new_model = None
 
         for i, layer in enumerate(model.layers[1:]):
             log_memory_usage("Before layer {}".format(layer.name))
@@ -37,6 +37,11 @@ class LayerReplacerSparseFactoActivations(LayerReplacerSparseFacto, metaclass=AB
             layer_inputs = [network_dict['new_output_tensor_of'][curr_layer_input] for curr_layer_input in network_dict['input_layers_of'][layer.name]]
             if len(layer_inputs) == 1:
                 layer_inputs = layer_inputs[0]
+
+            if i ==0:
+                new_model = None
+            else:
+                new_model = self.keras_module.models.Model(inputs=model.inputs, outputs=layer_inputs)
 
             self.sparse_factorizer.set_preprocessing_model(new_model)
             self.sparse_factorizer.set_layer_to_factorize_name(layer.name)
@@ -53,6 +58,6 @@ class LayerReplacerSparseFactoActivations(LayerReplacerSparseFacto, metaclass=AB
 
             network_dict['new_output_tensor_of'].update({layer.name: x})
 
-            new_model = self.keras_module.models.Model(inputs=model.inputs, outputs=x)
+        new_model = self.keras_module.models.Model(inputs=model.inputs, outputs=x)
 
         return new_model

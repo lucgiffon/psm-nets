@@ -19,15 +19,16 @@ base:
   verbosity: ["-v"]
   faust: ["palm"]
 #  seed: {"--seed": [1, 2, 3]}
-  split: {"--train-val-split": [0.9]}
+  max_batch_size: {"--max-cum-batch-size": [128]}
 
 
 act:
-  batch_size: {"--batch-size": [50, 100, 128]}
-  max_batch_size: {"--max-cum-batch-size": [128]}
+  batch_size: {"--batch-size": [128]}
   activations: ["--activations"]
-  nb_epoch: {"--nb-epochs": [1, 2, 3]}
+  nb_epoch: {"--nb-epochs": [1]}
   nb_iter_palm: {--nb-iteration-palm: [5, 10, 50]}
+  split: {"--train-val-split": [0.9, 0.95, 0.99]}
+
 
 no_log_fac:
   base:
