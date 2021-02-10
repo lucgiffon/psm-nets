@@ -410,19 +410,22 @@ class ParameterManagerEntropyRegularizationFinetune(ParameterManagerEntropyRegul
 
         self["input_model_path"] = self["--input-dir"] / line_of_interest["output_file_modelprinter"].iloc[0]
 
-def get_line_of_interest(df, keys_of_interest, dct_values):
+def get_line_of_interest(df, keys_of_interest, dct_values, dct_mapping_key_of_interest_to_dict=None):
+    if dct_mapping_key_of_interest_to_dict is None:
+        dct_mapping_key_of_interest_to_dict = dict()
+
     queries = []
     logger.debug(keys_of_interest)
     set_element_to_remove = set()
     for k in keys_of_interest:
-        logger.debug("{}, {}, {}".format(dct_values[k], type(dct_values[k]), k))
+        logger.debug("{}, {}, {}".format(dct_values[dct_mapping_key_of_interest_to_dict.get(k, k)], type(dct_values[dct_mapping_key_of_interest_to_dict.get(k, k)]), k))
         try:
             key_type = df.dtypes[k].name
-            if key_type == "object" or dct_values[k] is None or np.isnan(dct_values[k]):
+            if key_type == "object" or dct_values[dct_mapping_key_of_interest_to_dict.get(k, k)] is None or np.isnan(dct_values[dct_mapping_key_of_interest_to_dict.get(k, k)]):
                 df[k] = df[k].astype(str)
-                str_k = "'{}'".format(dct_values[k])
+                str_k = "'{}'".format(dct_values[dct_mapping_key_of_interest_to_dict.get(k, k)])
             else:
-                str_k = "{}".format(dct_values[k])
+                str_k = "{}".format(dct_values[dct_mapping_key_of_interest_to_dict.get(k, k)])
         except KeyError:
             logger.warning("key {} not present in input palminized results".format(k) )
             set_element_to_remove.add(k)

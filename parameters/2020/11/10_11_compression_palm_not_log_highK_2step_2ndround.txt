@@ -1,0 +1,1 @@
+ --sparsity-factor-old 30 --sparsity-factor 8 -v palm --from-compressed-model /gpfsdswork/projects/rech/hpp/ulk32cz/DeployedProjects/palmnet/results/2020/11/12_13_finetune_palm_not_log_highK_2step --nb-factor-old 2 --nb-factor 2 --cifar100 --cifar100-resnet20-new

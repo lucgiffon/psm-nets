@@ -1,0 +1,1 @@
+ --sparsity-factor 30 -v --lr-configuration-file /gpfsdswork/projects/rech/hpp/ulk32cz/DeployedProjects/palmnet/parameters/2020/11/finetune_palm_not_log_highK_2step_find_lr.yml --input-dir /gpfsdswork/projects/rech/hpp/ulk32cz/DeployedProjects/palmnet/results/2020/11/9_10_compression_palm_not_log_highK_2step palm --keep-first-layer --nb-factor 2 --cifar100 --cifar100-resnet20-new

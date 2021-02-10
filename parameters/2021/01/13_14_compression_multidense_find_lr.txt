@@ -1,0 +1,72 @@
+multidense --final-sparsity 0.98 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.98 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.98 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.98 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.98 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.98 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.99 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.99 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.99 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.99 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.99 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.99 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.999 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.999 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.999 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.999 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.999 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.999 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --mnist --mnist-lenet
+multidense --final-sparsity 0.98 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.98 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.98 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.98 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.98 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.98 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.99 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.99 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.99 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.99 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.99 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.99 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.999 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.999 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.999 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.999 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.999 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.999 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar10 --cifar10-vgg19
+multidense --final-sparsity 0.98 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.98 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.98 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.98 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.98 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.98 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.99 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.99 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.99 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.99 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.99 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.99 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.999 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.999 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.999 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.999 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.999 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0.999 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0 --double-epochs-pruning --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0 --nb-factor 2 -v --keep-first-layer --lr 1e-3 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0 --nb-factor 2 -v --keep-first-layer --lr 1e-4 --nb-epoch 10 --cifar100 --cifar100-resnet20-new
+multidense --final-sparsity 0 --nb-factor 2 -v --keep-first-layer --lr 1e-5 --nb-epoch 10 --cifar100 --cifar100-resnet20-new

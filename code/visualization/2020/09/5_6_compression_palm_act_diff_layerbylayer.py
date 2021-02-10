@@ -59,6 +59,13 @@ def get_palm_results():
     df = df.drop(columns=["Unnamed: 0", "idx-expe"]).drop_duplicates()
 
     df = df.fillna("None")
+
+    df = df.loc[~((df["full-net-approx"] == "None") & (df["activations"] == 1)) ]
+    # df = df[df["nb-epochs"] == 1]
+    # df = df[df["batch-size"] == 128]
+
+    df['full-net-approx'] = df['full-net-approx'].replace(['None'], 0)
+
     return df
 
 if __name__ == "__main__":
@@ -74,7 +81,6 @@ if __name__ == "__main__":
     dct_config_color = {
         "ACT K=3 Q=3": "navy",
         "K=3 Q=3": "blue",
-
     }
 
     datasets = set(df["data"].values)
@@ -102,9 +108,12 @@ if __name__ == "__main__":
                     sp_fac_palm = int(row["sparsity-level"])
                     nb_fac_param = row["nb-fac"]
                     activations_str = "ACT " if row["activations"] else ""
+                    full_net_str = "FULL " if row["full-net-approx"] else ""
+                    nb_iter_pal = int(row["nb-iteration-palm"])
+                    train_percentage = f"{(1 - float(row['train-val-split']))*100:.2f}" if row['train-val-split']!= "None" else ""
                     # config string
-                    str_config_legend = f"{activations_str}K={sp_fac_palm} Q={nb_fac_param}"
-                    str_config_hover = f"{activations_str}K={sp_fac_palm} Q={nb_fac_param}"
+                    str_config_legend = f"{full_net_str}{activations_str}K={sp_fac_palm} Q={nb_fac_param} iter={nb_iter_pal} {train_percentage}%"
+                    str_config_hover = str_config_legend
                     dct_legend_hover[str_config_legend] = str_config_hover
 
                     # values
@@ -135,7 +144,35 @@ if __name__ == "__main__":
                 # attribue des noms "jolis" aux traces
                 dct_name_trace = {
                     "K=3 Q=3": "Sparse Facto. K=3 Q=3",
-                    "ACT K=3 Q=3": "ACT Sparse Facto. K=3 Q=3"
+                    "K=3 Q=3 iter=300 1.00%": "Sparse Facto. K=3 Q=3",
+                    "K=3 Q=3 iter=300 %": "Sparse Facto. K=3 Q=3",
+                    "K=3 Q=3 iter=300 5.00%": "Sparse Facto. K=3 Q=3",
+                    "K=3 Q=3 iter=300 10.00%": "Sparse Facto. K=3 Q=3",
+                    "ACT K=3 Q=3": "ACT Sparse Facto. K=3 Q=3",
+                    "ACT K=3 Q=3 iter=10 1.00%": "ACT Sparse Facto. K=3 Q=3 iter=10 1.00%",
+                    "ACT K=3 Q=3 iter=10 5.00%": "ACT Sparse Facto. K=3 Q=3 iter=10 5.00%",
+                    "ACT K=3 Q=3 iter=10 10.00%": "ACT Sparse Facto. K=3 Q=3 iter=10 10.00%",
+                    "ACT K=3 Q=3 iter=5 1.00%": "ACT Sparse Facto. K=3 Q=3 iter=5 1.00%",
+                    "ACT K=3 Q=3 iter=5 5.00%": "ACT Sparse Facto. K=3 Q=3 iter=5 5.00%",
+                    "ACT K=3 Q=3 iter=5 10.00%": "ACT Sparse Facto. K=3 Q=3 iter=5 10.00%",
+                    "ACT K=3 Q=3 iter=50 1.00%": "ACT Sparse Facto. K=3 Q=3 iter=50 1.00%",
+                    "ACT K=3 Q=3 iter=50 5.00%": "ACT Sparse Facto. K=3 Q=3 iter=50 5.00%",
+                    "ACT K=3 Q=3 iter=50 10.00%": "ACT Sparse Facto. K=3 Q=3 iter=50 10.00%",
+                    "ACT K=3 Q=3 iter=100 1.00%": "ACT Sparse Facto. K=3 Q=3 iter=100 1.00%",
+                    "ACT K=3 Q=3 iter=100 5.00%": "ACT Sparse Facto. K=3 Q=3 iter=100 5.00%",
+                    "ACT K=3 Q=3 iter=100 10.00%": "ACT Sparse Facto. K=3 Q=3 iter=100 10.00%",
+                    "FULL ACT K=3 Q=3 iter=10 1.00%": "FULL ACT Sparse Facto. K=3 Q=3 iter=10 1.00%",
+                    "FULL ACT K=3 Q=3 iter=10 5.00%": "FULL ACT Sparse Facto. K=3 Q=3 iter=10 5.00%",
+                    "FULL ACT K=3 Q=3 iter=10 10.00%": "FULL ACT Sparse Facto. K=3 Q=3 iter=10 10.00%",
+                    "FULL ACT K=3 Q=3 iter=5 1.00%": "FULL ACT Sparse Facto. K=3 Q=3 iter=5 1.00%",
+                    "FULL ACT K=3 Q=3 iter=5 5.00%": "FULL ACT Sparse Facto. K=3 Q=3 iter=5 5.00%",
+                    "FULL ACT K=3 Q=3 iter=5 10.00%": "FULL ACT Sparse Facto. K=3 Q=3 iter=5 10.00%",
+                    "FULL ACT K=3 Q=3 iter=50 1.00%": "FULL ACT Sparse Facto. K=3 Q=3 iter=50 1.00%",
+                    "FULL ACT K=3 Q=3 iter=50 5.00%": "FULL ACT Sparse Facto. K=3 Q=3 iter=50 5.00%",
+                    "FULL ACT K=3 Q=3 iter=50 10.00%": "FULL ACT Sparse Facto. K=3 Q=3 iter=50 10.00%",
+                    "FULL ACT K=3 Q=3 iter=100 1.00%": "FULL ACT Sparse Facto. K=3 Q=3 iter=100 1.00%",
+                    "FULL ACT K=3 Q=3 iter=100 5.00%": "FULL ACT Sparse Facto. K=3 Q=3 iter=100 5.00%",
+                    "FULL ACT K=3 Q=3 iter=100 10.00%": "FULL ACT Sparse Facto. K=3 Q=3 iter=100 10.00%",
                 }
 
                 dct_config_color["Base"] = "black"
@@ -157,9 +194,10 @@ if __name__ == "__main__":
                             lst_layers.append(layer_name)
                             lst_configs.append(0)
 
+
                     fig.add_trace(go.Bar(name=dct_name_trace[s_conf],
                                          x=lst_layers, y=lst_configs,
-                                         marker_color=dct_config_color[hover_text],
+                                         # marker_color=dct_config_color[hover_text],
                                          hovertext=hover_text,
                                          showlegend=True
                                          ))
@@ -197,12 +235,12 @@ if __name__ == "__main__":
                            'tickvals': tickvals,
                            'ticktext': ticktexts},
                     xaxis_tickangle=-75,
-                    # showlegend=True,
-                    showlegend=False,
-                    autosize=False,
-                    margin=dict(l=20, r=20, t=20, b=20),
-                    width=800,
-                    height=400,
+                    showlegend=True,
+                    # showlegend=False,
+                    # autosize=False,
+                    # margin=dict(l=20, r=20, t=20, b=20),
+                    # width=800,
+                    # height=400,
                     font=dict(
                         # family="Courier New, monospace",
                         size=12,

@@ -326,7 +326,7 @@ if __name__ == "__main__":
     from pprint import pprint
     pprint(dict_algo_data_perf)
 
-    array_str = np.empty((14, 7), dtype=object)
+    array_str = np.empty((14, 4), dtype=object)
     lst_elm = [
 'Base',
 'PYQALM Q=2 K=2',
@@ -344,38 +344,40 @@ if __name__ == "__main__":
 ]
     dict_str_fancy_compression = {
     'Base': "Base",
-    'PYQALM Q=2 K=2': "Sparse Facto. Q=2 K=2",
-    'PYQALM Q=2 K=2 M': "Sparse Facto. re-init. Q=2 K=2",
-    'Random Q=2 K=2': "Sparse Facto. aléatoire Q=2 K=2",
-    'PYQALM Q=2 K=14': "Sparse Facto. Q=2 K=14",
-    'PYQALM Q=2 K=14 M': "Sparse Facto. re-init. Q=2 K=14",
-    'Random Q=2 K=14': "Sparse Facto. aléatoire Q=2 K=14",
-    'PYQALM Q=3 K=2': "Sparse Facto. Q=3 K=2",
-    'PYQALM Q=3 K=2 M': "Sparse Facto. re-init. Q=3 K=2",
-    'Random Q=3 K=2': "Sparse Facto. aléatoire Q=3 K=2",
-    'PYQALM Q=3 K=14': "Sparse Facto. Q=3 K=14",
-    'PYQALM Q=3 K=14 M': "Sparse Facto. re-init. Q=3 K=14",
-    'Random Q=3 K=14': "Sparse Facto. aléatoire Q=3 K=14",
+    'PYQALM Q=2 K=2': r"\texttt{PSM} Q=2 K=2",
+    'PYQALM Q=2 K=2 M': r"\texttt{PSM re-init.} Q=2 K=2",
+    'Random Q=2 K=2': r"\texttt{PSM random} Q=2 K=2",
+    'PYQALM Q=2 K=14': r"\texttt{PSM} Q=2 K=14",
+    'PYQALM Q=2 K=14 M': r"\texttt{PSM re-init.} Q=2 K=14",
+    'Random Q=2 K=14': r"\texttt{PSM random} Q=2 K=14",
+    'PYQALM Q=3 K=2': r"\texttt{PSM} Q=3 K=2",
+    'PYQALM Q=3 K=2 M': r"\texttt{PSM re-init.} Q=3 K=2",
+    'Random Q=3 K=2': r"\texttt{PSM random} Q=3 K=2",
+    'PYQALM Q=3 K=14': r"\texttt{PSM} Q=3 K=14",
+    'PYQALM Q=3 K=14 M': r"\texttt{PSM re-init.} Q=3 K=14",
+    'Random Q=3 K=14': r"\texttt{PSM random} Q=3 K=14",
     }
 
     lst_base_models = [
-        'mnist_lenet',
-        "svhn_vgg19",
-        "cifar10_vgg19",
+        # 'mnist_lenet',
+        # "svhn_vgg19",
+        # "cifar10_vgg19",
         "cifar100_vgg19",
         "cifar100_resnet20",
         "cifar100_resnet50"
     ]
     dct_str_fancy = {
-        'mnist_lenet': "MNIST Lenet",
-        "svhn_vgg19": "SVHN Vgg19",
-        "cifar10_vgg19": "Cifar10 Vgg19",
-        "cifar100_vgg19": "Cifar100 Vgg19",
-        "cifar100_resnet20": "Cifar100 Resnet20",
-        "cifar100_resnet50": "Cifar100 Resnet50",
+        # 'mnist_lenet': "MNIST Lenet",
+        # "svhn_vgg19": "SVHN Vgg19",
+        # "cifar10_vgg19": "Cifar10 Vgg19",
+        "cifar100_vgg19": r"\texttt{Vgg19}",
+        "cifar100_resnet20": r"\texttt{Resnet20}",
+        "cifar100_resnet50": r"\texttt{Resnet50}",
     }
 
     for i_d, dataname in enumerate(dict_algo_data_perf):
+        if "cifar100" not in dataname:
+            continue
         for i_m, base_model in enumerate(dict_algo_data_perf[dataname]):
 
             for i_c, compression in enumerate(dict_algo_data_perf[dataname][base_model]):

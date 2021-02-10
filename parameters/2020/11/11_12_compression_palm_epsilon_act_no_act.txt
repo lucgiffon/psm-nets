@@ -1,0 +1,1 @@
+  --sparsity-factor 3 -v palm --nb-factor 3 --mnist --mnist-lenet

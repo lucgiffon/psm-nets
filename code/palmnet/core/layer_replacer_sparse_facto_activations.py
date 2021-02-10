@@ -41,15 +41,24 @@ class LayerReplacerSparseFactoActivations(LayerReplacerSparseFacto, metaclass=AB
             if i ==0:
                 new_model = None
             else:
-                new_model = self.keras_module.models.Model(inputs=model.inputs, outputs=layer_inputs)
+                # new_model = self.keras_module.models.Model(inputs=model.inputs, outputs=layer_inputs)
+                new_model = self.keras_module.models.Model(inputs=network_dict['new_output_tensor_of'][model.layers[0].name], outputs=layer_inputs)
 
-            self.sparse_factorizer.set_preprocessing_model(new_model)
+            self.sparse_factorizer.set_comp_preprocessing_model(new_model)
+            if self.sparse_factorizer.full_net_approx:
+                if i == 0:
+                    target_model = None
+                else:
+                    target_model = self.keras_module.models.Model(inputs=model.inputs, outputs=layer.input)
+                self.sparse_factorizer.set_target_preprocessing_model(target_model)
             self.sparse_factorizer.set_layer_to_factorize_name(layer.name)
 
             # the fit method from before
             # {
             self.fit_one_layer(layer)
             # }
+
+            self.sparse_factorizer.save_objectives_layer_to_factorize()
 
             # the transform method from before: doesn't change either
             # {
@@ -58,6 +67,6 @@ class LayerReplacerSparseFactoActivations(LayerReplacerSparseFacto, metaclass=AB
 
             network_dict['new_output_tensor_of'].update({layer.name: x})
 
-        new_model = self.keras_module.models.Model(inputs=model.inputs, outputs=x)
+        new_model = self.keras_module.models.Model(inputs=network_dict['new_output_tensor_of'][model.layers[0].name], outputs=x)
 
         return new_model

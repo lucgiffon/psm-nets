@@ -144,12 +144,16 @@ if __name__ == "__main__":
         task_compressed = tpl_task[0]
         task_base = tpl_task[1]
         for dataname in datasets:
+            if "cifar100" not in dataname:
+                continue
             df_data = df[df["data"] == dataname]
             df_tucker_tt_data = df_tucker_tt[df_tucker_tt["data"] == dataname]
             df_model_values = set(df_data["model"].values)
 
             dct_table[dataname] = dict()
             for modelname in df_model_values:
+                if "vgg" not in modelname:
+                    continue
                 dct_table[dataname][modelname] = list()
 
                 dct_config_dct_layer_tpl_comp_nfac = defaultdict(lambda: dict())
@@ -302,50 +306,51 @@ if __name__ == "__main__":
                 count_dense = 1
                 for i_elm, elm in enumerate(ticktexts):
                     if "Conv2D" in elm:
-                        ticktexts[i_elm] = f"Conv2D {count_conv}"
+                        ticktexts[i_elm] = f"C{count_conv}"
                         count_conv += 1
                     elif "Dense" in elm:
-                        ticktexts[i_elm] = f"Dense {count_dense}"
+                        ticktexts[i_elm] = f"D{count_dense}"
                         count_dense += 1
                     else:
-                        pass
+                        ticktexts[i_elm] = f"S"
+
 
                 x_legend = 0
                 y_legend = -0.8
                 fig.update_layout(
                     barmode='group',
                     # title=title,
-                    xaxis_title="Nom de la couche",
-                    yaxis_title="Erreur relative",
+                    # xaxis_title="Layer name",
+                    # yaxis_title="Error",
                     # yaxis_type="log",
                     xaxis={'type': 'category',
                            'tickvals': tickvals,
                            'ticktext': ticktexts},
-                    xaxis_tickangle=-75,
+                    xaxis_tickangle=-85,
                     # showlegend=True,
                     showlegend=False,
                     autosize=False,
-                    margin=dict(l=20, r=20, t=20, b=20),
-                    width=800,
-                    height=400,
+                    margin=dict(l=5, r=5, t=5, b=5),
+                    width=350,
+                    height=200,
                     font=dict(
                         # family="Courier New, monospace",
                         size=12,
                         color="black"
                     ),
                     legend_orientation="h",
-                    legend=dict(
-                        x=x_legend, y=y_legend,
-                        traceorder="normal",
-                        font=dict(
-                            family="sans-serif",
-                            size=18,
-                            color="black"
-                        ),
-                        # bgcolor="LightSteelBlue",
-                        # bordercolor="Black",
-                        borderwidth=1,
-                    )
+                    # legend=dict(
+                    #     x=x_legend, y=y_legend,
+                    #     traceorder="normal",
+                    #     font=dict(
+                    #         family="sans-serif",
+                    #         size=18,
+                    #         color="black"
+                    #     ),
+                    #     # bgcolor="LightSteelBlue",
+                    #     # bordercolor="Black",
+                    #     borderwidth=1,
+                    # )
                 )
                 # fig.show()
                 fig.update_xaxes(showline=True, ticks="outside", linewidth=2, linecolor='black', mirror=True)

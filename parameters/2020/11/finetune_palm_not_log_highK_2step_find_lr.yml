@@ -1,0 +1,6 @@
+cifar100:
+  resnet20:
+    palm:
+      weighted:
+        30:
+          2: 1.0e-05

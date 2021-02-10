@@ -700,19 +700,24 @@ def get_cumsum_size_weights(lst_weights, nnz=False):
 def get_nb_learnable_weights(layer, nnz=False):
     from palmnet.layers.sparse_facto_conv2D_masked import SparseFactorisationConv2D
     from palmnet.layers.sparse_facto_dense_masked import SparseFactorisationDense
+    from palmnet.layers.sparse_conv2D_masked import SparseConv2D
+    from palmnet.layers.sparse_dense_masked import SparseDense
     from palmnet.layers.tucker_layer_sparse_facto import TuckerSparseFactoLayerConv
     from palmnet.layers.fastfood_layer_dense import FastFoodLayerDense
     from palmnet.layers.fastfood_layer_conv import FastFoodLayerConv
 
-    if isinstance(layer, SparseFactorisationConv2D) or isinstance(layer, SparseFactorisationDense):
-        sp_patterns = layer.sparsity_patterns
+    if isinstance(layer, SparseFactorisationConv2D) or isinstance(layer, SparseFactorisationDense) or isinstance(layer, SparseConv2D) or isinstance(layer, SparseDense):
+        try:
+            sp_patterns = layer.sparsity_patterns
+        except AttributeError:
+            sp_patterns = layer.sparsity_pattern
         assert sp_patterns is not None, f"No sparsity pattern found in layer {layer.name}"
         count_sparsity_patterns = get_nb_non_zero_values(sp_patterns)
         if layer.use_bias:
-            count_bias = layer.filters if isinstance(layer, SparseFactorisationConv2D) else layer.units
+            count_bias = layer.filters if isinstance(layer, SparseFactorisationConv2D) or isinstance(layer, SparseConv2D) else layer.units
         else:
             count_bias = 0
-        if layer.use_scaling:
+        if hasattr(layer, "use_scaling") and layer.use_scaling:
             count_scaling = 1
         else:
             count_scaling = 0
@@ -953,9 +958,12 @@ def palm4msa(M, p, ret_lambda=False, backend=2016):
         return F
 
 def load_function_lr(dct_res_new, dataset, model, compression, sparsity_value_magnitude=None, sparsity_value_random=None, nb_fac_random=None, order_value_tensortrain=None,
-                  rank_value_tensortrain=None, rank_value_tucker=None, only_mask=False, sparsity_value_palm=None, nb_fac_palm=None):
+                     rank_value_tensortrain=None, rank_value_tucker=None, only_mask=False, sparsity_value_palm=None, nb_fac_palm=None,
+                     double_epochs_value=None, nb_fac_multidense=None, sparsity_value_multidense=None):
     dct_data_model = dct_res_new[dataset][model][compression]
     if compression == "magnitude":
+        return dct_data_model[sparsity_value_magnitude]
+    elif compression == "magnitude_hard":
         return dct_data_model[sparsity_value_magnitude]
     elif compression == "random":
         return dct_data_model[sparsity_value_random][nb_fac_random]
@@ -969,5 +977,7 @@ def load_function_lr(dct_res_new, dataset, model, compression, sparsity_value_ma
         else:
             str_only_mask = "weighted"
         return dct_data_model[str_only_mask][int(sparsity_value_palm)][int(nb_fac_palm)]
+    elif compression == "multidense":
+        return dct_data_model[nb_fac_multidense][sparsity_value_multidense][double_epochs_value]
 
     return dct_data_model

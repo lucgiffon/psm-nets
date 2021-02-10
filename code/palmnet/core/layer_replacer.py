@@ -13,7 +13,7 @@ import pathlib
 
 
 class LayerReplacer(metaclass=ABCMeta):
-    def __init__(self, keep_last_layer=False, keep_first_layer=False, dct_name_compression=None, path_checkpoint_file=None, only_dense=False, keras_module=keras):
+    def __init__(self, keep_last_layer=False, keep_first_layer=False, dct_name_compression=None, path_checkpoint_file=None, only_dense=False, keras_module=keras, multi_step=False):
         self.keras_module = keras_module
         self.keep_last_layer = keep_last_layer
         self.keep_first_layer = keep_first_layer
@@ -23,6 +23,11 @@ class LayerReplacer(metaclass=ABCMeta):
         self.dct_bool_replaced_layers = defaultdict(lambda: False)
         self.dct_old_name_new_name = defaultdict(lambda: None)
         self.dct_new_name_old_name = defaultdict(lambda: None)
+
+        self._init_layer_classes()  # set the classes to be recognised to replace
+
+        self.multi_step = multi_step
+
 
     def __refresh_and_apply_layer_to_input(self, layer, layer_inputs):
         new_fresh_layer = layer.__class__(**layer.get_config())
@@ -66,9 +71,22 @@ class LayerReplacer(metaclass=ABCMeta):
         for layer in model.layers:
             self.fit_one_layer(layer)
 
+    def _init_layer_classes(self):
+        self.dense_layer_class = self.keras_module.layers.Dense
+        self.conv_layer_class = self.keras_module.layers.Conv2D
 
     def transform_one_layer(self, layer, idx_layer, layer_inputs):
-        sparse_factorization = self.dct_name_compression[layer.name]
+        if not self.multi_step:
+            sparse_factorization = self.dct_name_compression[layer.name]
+        else:
+            try:
+                sparse_factorization = self.dct_name_compression[layer.name]
+            except KeyError:
+                # print(layer.name)
+                # print(self.dct_name_compression.keys())
+                # print([k for k, v in self.dct_name_compression.items() if k.startswith(layer.name + "_-_")])
+                sparse_factorization = next(v for k, v in self.dct_name_compression.items() if k.startswith(layer.name + "_-_"))
+                # exit()
         # adapted to the palminized case... not very clean but OK
         bool_find_modif = (sparse_factorization != None and sparse_factorization != (None, None))
         logger.info('Prepare layer {}'.format(layer.name))
@@ -79,10 +97,10 @@ class LayerReplacer(metaclass=ABCMeta):
         if bool_find_modif and not keep_this_layer:
             # if there is a replacement available and not (it is the last layer and we want to keep it as is)
             # create new layer
-            if isinstance(layer, self.keras_module.layers.Dense):
+            if isinstance(layer, self.dense_layer_class):
                 logger.debug("Dense layer treatment")
                 replacing_layer, replacing_weights, bool_modified = self._replace_dense(layer, sparse_factorization)
-            elif isinstance(layer, self.keras_module.layers.Conv2D):
+            elif isinstance(layer, self.conv_layer_class):
                 logger.debug("Conv2D layer treatment")
                 replacing_layer, replacing_weights, bool_modified = self._replace_conv2D(layer, sparse_factorization)
             else:
@@ -117,13 +135,23 @@ class LayerReplacer(metaclass=ABCMeta):
 
     def prepare_transform(self, model):
         if not isinstance(model.layers[0], self.keras_module.layers.InputLayer):
-            model = self.keras_module.models.Model(input=model.input, output=model.output)
+            model = self.keras_module.models.Model(inputs=model.input, outputs=model.output)
+        # else:
+        #     # this is important because we also want the InputLayer to be reinitialized
+        #     input_shape = model.input_shape
+        #     model.layers.pop(0)
+        #     newInput = self.keras_module.layers.Input(shape=input_shape[1:])
+        #     newOutput = model(newInput)
+        #     model2 = self.keras_module.models.Model(input=newInput, output=newOutput)
 
         network_dict = {'input_layers_of': defaultdict(lambda: []), 'new_output_tensor_of': defaultdict(lambda: [])}
 
+        input_shape = model.input_shape
+        newInput = self.keras_module.layers.Input(shape=input_shape[1:])
+
         # Set the output tensor of the input layer
         network_dict['new_output_tensor_of'].update(
-            {model.layers[0].name: model.input})
+            {model.layers[0].name: newInput})
 
         for i, layer in enumerate(model.layers):
             # each layer is set as `input` layer of all its outbound layers
@@ -154,7 +182,8 @@ class LayerReplacer(metaclass=ABCMeta):
 
             network_dict['new_output_tensor_of'].update({layer.name: x})
 
-        model = self.keras_module.models.Model(inputs=model.inputs, outputs=x)
+        # model = self.keras_module.models.Model(inputs=model.inputs, outputs=x)
+        model = self.keras_module.models.Model(inputs=network_dict['new_output_tensor_of'][model.layers[0].name], outputs=x)
 
         return model
 

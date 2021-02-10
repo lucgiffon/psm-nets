@@ -1,0 +1,8 @@
+--sparsity-factor 3 -v palm --nb-factor 3 --mnist --mnist-lenet --batch-size 8 --activations --full-model-approx --only-one-batch --train-val-split 0.99 --nb-iteration-palm 300
+--sparsity-factor 3 -v palm --nb-factor 3 --mnist --mnist-lenet --batch-size 16 --activations --full-model-approx --only-one-batch --train-val-split 0.99 --nb-iteration-palm 300
+--sparsity-factor 3 -v palm --nb-factor 3 --cifar100 --cifar100-resnet20-new --batch-size 128 --activations --full-model-approx --only-one-batch --train-val-split 0.99 --nb-iteration-palm 300
+--sparsity-factor 3 -v palm --nb-factor 3 --cifar100 --cifar100-resnet20-new --batch-size 256 --activations --full-model-approx --only-one-batch --train-val-split 0.99 --nb-iteration-palm 300
+--sparsity-factor 3 -v palm --nb-factor 3 --cifar100 --cifar100-resnet20-new --batch-size 512 --activations --full-model-approx --only-one-batch --train-val-split 0.99 --nb-iteration-palm 300
+--sparsity-factor 3 -v palm --nb-factor 3 --cifar100 --cifar100-vgg19 --batch-size 128 --activations --full-model-approx --only-one-batch --train-val-split 0.99 --nb-iteration-palm 300
+--sparsity-factor 3 -v palm --nb-factor 3 --cifar100 --cifar100-vgg19 --batch-size 256 --activations --full-model-approx --only-one-batch --train-val-split 0.99 --nb-iteration-palm 300
+--sparsity-factor 3 -v palm --nb-factor 3 --cifar100 --cifar100-vgg19 --batch-size 512 --activations --full-model-approx --only-one-batch --train-val-split 0.99 --nb-iteration-palm 300

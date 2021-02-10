@@ -1,0 +1,6 @@
+  --sparsity-factor 3 -v palm --nb-factor 3 --mnist --mnist-lenet --batch-size 128 --max-cum-batch-size 128 --activations --full-model-approx --only-one-batch --nb-epochs 1 --train-val-split 0.99 --nb-iteration-palm 50
+  --sparsity-factor 3 -v palm --nb-factor 3 --mnist --mnist-lenet --batch-size 128 --max-cum-batch-size 128 --activations --full-model-approx --only-one-batch --nb-epochs 1 --train-val-split 0.99 --nb-iteration-palm 100
+  --sparsity-factor 3 -v palm --nb-factor 3 --cifar100 --cifar100-resnet20-new --batch-size 128 --max-cum-batch-size 128 --activations --full-model-approx --only-one-batch --nb-epochs 1 --train-val-split 0.99 --nb-iteration-palm 50
+  --sparsity-factor 3 -v palm --nb-factor 3 --cifar100 --cifar100-resnet20-new --batch-size 128 --max-cum-batch-size 128 --activations --full-model-approx --only-one-batch --nb-epochs 1 --train-val-split 0.99 --nb-iteration-palm 100
+  --sparsity-factor 3 -v palm --nb-factor 3 --cifar100 --cifar100-vgg19 --batch-size 128 --max-cum-batch-size 128 --activations --full-model-approx --only-one-batch --nb-epochs 1 --train-val-split 0.99 --nb-iteration-palm 50
+  --sparsity-factor 3 -v palm --nb-factor 3 --cifar100 --cifar100-vgg19 --batch-size 128 --max-cum-batch-size 128 --activations --full-model-approx --only-one-batch --nb-epochs 1 --train-val-split 0.99 --nb-iteration-palm 100

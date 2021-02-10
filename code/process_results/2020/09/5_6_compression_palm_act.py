@@ -81,11 +81,12 @@ if __name__ == "__main__":
     experiment_name = "2020/09/6_7_compression_palm_act"
 
     lst_paths_finetune = [
-        "2020/09/6_7_compression_palm_act"
+        "2020/09/6_7_compression_palm_act",
+        "2020/09/6_7_compression_palm_act_cifar100",
     ]
 
-    # df_compression = pd.concat(list(map(get_df_from_expe_path, lst_paths_finetune)))
-    df_compression = get_df_from_expe_path(lst_paths_finetune[0])
+    df_compression = pd.concat(list(map(get_df_from_expe_path, lst_paths_finetune)))
+    # df_compression = get_df_from_expe_path(lst_paths_finetune[0])
     df_compression = df_compression.dropna(subset=["failure"])
     df_compression = df_compression[df_compression["failure"] == False]
     df_compression = df_compression.drop(columns="oar_id").drop_duplicates()
@@ -132,9 +133,9 @@ if __name__ == "__main__":
             dct_attributes["model"].append("lenet")
         elif row["--mnist-500"]:
             dct_attributes["model"].append("fc500")
-        elif row["--cifar100-resnet20"]:
+        elif row["--cifar100-resnet20"] or row["--cifar100-resnet20-new"]:
             dct_attributes["model"].append("resnet20")
-        elif row["--cifar100-resnet50"]:
+        elif row["--cifar100-resnet50"] or row["--cifar100-resnet50-new"]:
             dct_attributes["model"].append("resnet50")
         else:
             raise ValueError("Unknown model")
@@ -146,6 +147,8 @@ if __name__ == "__main__":
         dct_attributes["nb-fac"].append(int(row["--nb-factor"]))
         dct_attributes["sparsity-level"].append(int(row["--sparsity-factor"]))
         dct_attributes["nb-iteration-palm"].append(int(row["--nb-iteration-palm"]))
+        dct_attributes["train-val-split"].append(float(row["--train-val-split"]))
+
 
         dct_attributes["nb-param-compressed-total"].append(int(row["new_model_nb_param"]))
         dct_attributes["nb-param-base-total"].append(int(row["base_model_nb_param"]))
@@ -174,7 +177,10 @@ if __name__ == "__main__":
                 dct_results_matrices["diff-only-layer-processing"].append(row_layer["diff-only-layer-processing"])
                 dct_results_matrices["diff-total-processing"].append(row_layer["diff-total-processing"])
                 dct_results_matrices["diff-approx"].append(row_layer["diff-approx"])
-
+                dct_results_matrices["nb-iteration-palm"].append(int(row["--nb-iteration-palm"]))
+                dct_results_matrices["train-val-split"].append(float(row["--train-val-split"]))
+                dct_results_matrices["nb-epochs"].append(int(row["--nb-epochs"]) if not np.isnan(row["--nb-epochs"]) else np.nan)
+                dct_results_matrices["batch-size"].append(int(row["--batch-size"]) if not np.isnan(row["--batch-size"]) else np.nan)
 
                 dct_results_matrices["sparsity-level"].append(dct_attributes["sparsity-level"][-1])
                 dct_results_matrices["nb-fac"].append(dct_attributes["nb-fac"][-1])

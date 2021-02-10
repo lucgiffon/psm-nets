@@ -78,7 +78,7 @@ class TestLayerReplacerPalm(unittest.TestCase):
         model_transformer = LayerReplacerPalm(sparse_factorizer=self.palminizer, keep_last_layer=True, only_mask=False, dct_name_compression=None)
         new_model = model_transformer.fit_transform(deepcopy(self.base_model))
 
-        model_transformer_already_fit = LayerReplacerPalm(keep_last_layer=True, only_mask=False, dct_name_compression=self.dct_sparsely_factorized_layers)
+        model_transformer_already_fit = LayerReplacerPalm(keep_last_layer=True, only_mask=False, dct_name_compression=self.dct_sparsely_factorized_layers, sparse_factorizer=self.palminizer)
         new_model_2 = model_transformer_already_fit.transform(deepcopy(self.base_model))
 
         for idx_layer, layer in enumerate(new_model.layers):

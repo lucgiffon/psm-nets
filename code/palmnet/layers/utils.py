@@ -90,3 +90,19 @@ def S_variable(shape, G_norms, trainable=False):
     # else:
     #     return K.constant(S, name="S")
     return S
+
+
+def proj_percent_greatest(matrix, percent):
+    nb_val_to_keep = int(np.floor(percent * matrix.size))
+    ind_to_keep = np.argpartition(matrix.ravel(), -nb_val_to_keep)[-nb_val_to_keep:]
+    pos_to_keep = np.unravel_index(ind_to_keep, matrix.shape)
+    new_array = np.zeros_like(matrix)
+    new_array[pos_to_keep] = matrix[pos_to_keep]
+    return new_array
+
+
+if __name__ == "__main__":
+    a = np.random.rand(3, 3, 3)
+    print(a)
+    b = proj_percent_greatest(a, 0.9)
+    print(b)

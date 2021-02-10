@@ -1,0 +1,1 @@
+--sparsity-factor 3 -v palm --max-cum-batch-size 128 --nb-factor 3 --cifar100 --cifar100-resnet20-new --batch-size 128 --activations --nb-epochs 1 --nb-iteration-palm 50 --train-val-split 0.9

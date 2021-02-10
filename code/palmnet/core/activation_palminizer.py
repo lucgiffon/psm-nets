@@ -1,4 +1,5 @@
 import logging
+import pandas as pd
 
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -19,24 +20,28 @@ import time
 from keras.layers import Conv2D
 
 class ActivationPalminizer(Palminizer):
-    def __init__(self, train_data, batch_size, nb_epochs, multiprocessing=False, queue_maxisize=2, val_data=None, sample_rate_conv=None, seed=None, *args, **kwargs):
+    def __init__(self, train_data, batch_size, nb_epochs, objectives_output_file, multiprocessing=False, epsilon_learning_rate=1., queue_maxisize=2, val_data=None, sample_rate_conv=None, seed=None, full_net_approx=False, *args, **kwargs):
         self.train_data = train_data
         self.val_data = val_data
-        self.model_preprocessing = None
+        self.compressed_model_preprocessing = None
+        self.target_model_preprocessing = None
         self.sample_rate_conv = sample_rate_conv
         self.batch_size = batch_size
         self.seed = seed
         self.nb_epochs = nb_epochs
         self.queue_maxisize = queue_maxisize
         self.multiprocessing = multiprocessing
+        self.full_net_approx = full_net_approx
+        self.objectives_output_file = objectives_output_file
+        self.epsilon_learning_rate = epsilon_learning_rate
 
         self.dct_lst_objectives = dict()
 
         super().__init__(*args, **kwargs)
 
-    def batch_preprocessing(self, data, block_size, padding):
-        if self.model_preprocessing is not None:
-            processed_data = self.model_preprocessing.predict(data)
+    def batch_preprocessing(self, data, block_size, padding, model_preprocessing, seed):
+        if model_preprocessing is not None:
+            processed_data = model_preprocessing.predict(data)
         else:
             processed_data = data
 
@@ -57,20 +62,20 @@ class ActivationPalminizer(Palminizer):
             processed_data = view_as_windows(processed_data, window_shape, step=1)
             processed_data = np.reshape(processed_data, (-1, np.prod(window_shape)))
             nb_elm_to_sample = int(processed_data.shape[0] * sample_rate)
-            idx_to_keep = np.random.permutation(processed_data.shape[0])[:nb_elm_to_sample]
+            idx_to_keep = np.random.RandomState(seed).permutation(processed_data.shape[0])[:nb_elm_to_sample]
             processed_data = processed_data[idx_to_keep]
         return processed_data
 
-    def factorize_one_batch_of_activations(self, processed_data, weight_matrix, lst_init_factors, init_lambda):
-        matrix = processed_data @ weight_matrix
+    def factorize_one_batch_of_activations(self, comp_processed_data, target_processed_data, weight_matrix, lst_init_factors, init_lambda):
+        target_matrix = target_processed_data @ weight_matrix
 
-        logging.debug("Applying palm function to matrix with shape {}".format(matrix.shape))
+        logging.debug("Applying palm function to matrix with shape {}".format(target_matrix.shape))
         transposed = False
 
         # todo can be done outside the loop and function call
         if weight_matrix.shape[0] > weight_matrix.shape[1]:
             # we want the bigger dimension to be on right due to the residual computation that should remain big
-            matrix = matrix.T
+            target_matrix = target_matrix.T
             transposed = True
             weight_matrix = weight_matrix.T
 
@@ -93,9 +98,9 @@ class ActivationPalminizer(Palminizer):
         if transposed:
             if lst_init_factors is not None:
                 lst_factors = SparseFactors(lst_factors).transpose().get_list_of_factors()
-            lst_factors = lst_factors + [processed_data.T]
+            lst_factors = lst_factors + [comp_processed_data.T]
         else:
-            lst_factors = [processed_data] + lst_factors
+            lst_factors = [comp_processed_data] + lst_factors
 
         _lambda = init_lambda
 
@@ -117,17 +122,18 @@ class ActivationPalminizer(Palminizer):
 
         if self.hierarchical:
             final_lambda, final_factors, final_X, _, _ = hierarchical_palm4msa(
-                arr_X_target=matrix,
+                arr_X_target=target_matrix,
                 lst_S_init=lst_factors,
                 lst_dct_projection_function=lst_proj_op_by_fac_step,
                 f_lambda_init=_lambda,
                 nb_iter=self.nb_iter,
                 update_right_to_left=True,
                 residual_on_right=True,
-                delta_objective_error_threshold_palm=self.delta_threshold_palm,)
+                delta_objective_error_threshold_palm=self.delta_threshold_palm,
+            epsilon_learning_rate=self.epsilon_learning_rate)
         else:
             final_lambda, final_factors, final_X, _, _ = \
-                palm4msa(arr_X_target=matrix,
+                palm4msa(arr_X_target=target_matrix,
                          lst_S_init=lst_factors,
                          nb_factors=len(lst_factors),
                          lst_projection_functions=lst_proj_op_by_fac_step,
@@ -135,33 +141,30 @@ class ActivationPalminizer(Palminizer):
                          nb_iter=self.nb_iter,
                          update_right_to_left=True,
                          delta_objective_error_threshold=self.delta_threshold_palm,
-                         track_objective=False)
+                         track_objective=False,
+            epsilon_learning_rate=self.epsilon_learning_rate)
             final_X *= final_lambda  # added later because palm4msa actually doesn't return the final_X multiplied by lambda contrary to hierarchical
 
         if transposed:
             final_lambda, final_factors, final_X = final_lambda, final_factors.transpose(), final_X.T
             weight_matrix = weight_matrix.T
-            matrix = matrix.T
+            target_matrix = target_matrix.T
 
         lst_factors_final = final_factors.get_list_of_factors(copy=True)[1:]
         final_factors = SparseFactors(lst_factors_final)
         final_X = final_lambda * final_factors.compute_product()
 
-        return final_lambda, final_factors, final_X
+        return final_lambda, final_factors, final_X, target_matrix
 
     @staticmethod
-    def wrap_factorize_one_batch_of_activations(fct_factorize_one_batch_of_activations, target_weight_matrix, processed_batch, current_factors, current_lambda, processed_validation_data, validation_target, validation_target_norm):
-
-
-
+    def wrap_factorize_one_batch_of_activations(fct_factorize_one_batch_of_activations, comp_processed_batch, target_processed_batch, current_factors, current_lambda, comp_processed_validation_data, validation_target, validation_target_norm):
         logger.debug("Found one batch to process in factorize_one_batch_of_activations.")
-        current_lambda, current_factors, current_X = fct_factorize_one_batch_of_activations(processed_batch, current_factors, current_lambda)
+        current_lambda, current_factors, current_X, batch_target = fct_factorize_one_batch_of_activations(comp_processed_batch, target_processed_batch, current_factors, current_lambda)
         current_factors = current_factors.get_list_of_factors()
-        batch_target = processed_batch @ target_weight_matrix
 
-        objective_value_batch = np.linalg.norm(processed_batch @ current_X - batch_target) / np.linalg.norm(batch_target)
-        if processed_validation_data is not None:
-            objective_value_val = np.linalg.norm(processed_validation_data @ current_X - validation_target) / validation_target_norm
+        objective_value_batch = np.linalg.norm(comp_processed_batch @ current_X - batch_target) / np.linalg.norm(batch_target)
+        if comp_processed_validation_data is not None:
+            objective_value_val = np.linalg.norm(comp_processed_validation_data @ current_X - validation_target) / validation_target_norm
         else:
             objective_value_val = None
 
@@ -228,20 +231,26 @@ class ActivationPalminizer(Palminizer):
         nb_iter_by_epoch = self.train_data.shape[0] // self.batch_size
 
         if self.val_data is not None:
-            processed_val_data = self.batch_preprocessing(self.val_data, block_size, padding)
-            logger.info(f"Shape validation data: {processed_val_data.shape}")
-            val_target = processed_val_data @ weight_matrix
+            seed_sampling = np.random.randint(0, 10^6)
+            comp_processed_val_data = self.batch_preprocessing(self.val_data, block_size, padding, self.compressed_model_preprocessing, seed_sampling)
+            if self.full_net_approx:
+                target_processed_val_data = self.batch_preprocessing(self.val_data, block_size, padding, self.target_model_preprocessing, seed_sampling)
+            else:
+                target_processed_val_data = comp_processed_val_data
+            logger.info(f"Shape validation data: {comp_processed_val_data.shape}")
+            val_target = target_processed_val_data @ weight_matrix
             val_target_norm = np.linalg.norm(val_target)
             # val_activations = processed_val_data @ weight_matrix
             # val_activations_norm = np.linalg.norm(val_activations)
             # lst_diff = []
             # print("After join")
         else:
-            processed_val_data = None
+            comp_processed_val_data = None
+            target_processed_val_data = None
             val_target = None
             val_target_norm = None
 
-        lambda_factorize_one_batch_of_activations = lambda processed_batch, current_factors, current_lambda: self.factorize_one_batch_of_activations(processed_batch, weight_matrix,
+        lambda_factorize_one_batch_of_activations = lambda comp_processed_batch, target_processed_batch, current_factors, current_lambda: self.factorize_one_batch_of_activations(comp_processed_batch, target_processed_batch, weight_matrix,
                                                                                                                                                             current_factors, current_lambda)
 
         current_factors = None
@@ -256,17 +265,22 @@ class ActivationPalminizer(Palminizer):
                 logger.debug(f"Process batch {i_iter}/{nb_iter_by_epoch}")
                 id_batch += 1
                 time_start_preprocess = time.time()
-                processed_batch = self.batch_preprocessing(batch, block_size, padding)
+                seed_sampling = np.random.randint(0, 10 ^ 6)
+                comp_processed_batch = self.batch_preprocessing(batch, block_size, padding, self.compressed_model_preprocessing, seed_sampling)
+                if self.full_net_approx:
+                    target_processed_batch = self.batch_preprocessing(batch, block_size, padding, self.target_model_preprocessing, seed_sampling)
+                else:
+                    target_processed_batch = comp_processed_batch
                 time_stop_preprocess = time.time()
                 time_preprocess = time_stop_preprocess - time_start_preprocess
                 time_start_approx = time.time()
                 current_factors, current_lambda, current_X, objective_value_batch, objective_value_val = self.wrap_factorize_one_batch_of_activations(
                     fct_factorize_one_batch_of_activations=lambda_factorize_one_batch_of_activations,
-                    target_weight_matrix=weight_matrix,
-                    processed_batch=processed_batch,
+                    comp_processed_batch=comp_processed_batch,
+                    target_processed_batch=target_processed_batch,
                     current_factors=current_factors,
                     current_lambda=current_lambda,
-                    processed_validation_data=processed_val_data,
+                    comp_processed_validation_data=comp_processed_val_data,
                     validation_target=val_target,
                     validation_target_norm=val_target_norm)
                 time_stop_approx = time.time()
@@ -274,7 +288,7 @@ class ActivationPalminizer(Palminizer):
 
                 lst_objs.append((id_batch, objective_value_batch, objective_value_val, time_preprocess, time_approx))
 
-                if i_iter + 1 > nb_iter_by_epoch:
+                if i_iter + 1 >= nb_iter_by_epoch:
                     break
 
 
@@ -353,7 +367,6 @@ class ActivationPalminizer(Palminizer):
         current_factors = SparseFactors(current_factors)
         return current_lambda, current_factors, current_X, lst_objs
 
-
     def factorize_layer(self, layer_obj, apply_weights=True):
         """
         Takes a keras layer object as entry and modify its weights as reconstructed by the palm approximation. (works with conv2D and dense layers)
@@ -392,13 +405,42 @@ class ActivationPalminizer(Palminizer):
         self.dct_lst_objectives[self.layer_to_factorize] = lst_objs
         return _lambda, op_sparse_factors, new_layer_weights
 
+    def save_objectives_layer_to_factorize(self):
+        try:
+            lst_obj = self.dct_lst_objectives[self.layer_to_factorize]
+        except KeyError:
+            return
+
+
+        lst_rows = []
+        for obj_entry in lst_obj:
+            tpl_row = (self.layer_to_factorize, *obj_entry)
+            lst_rows.append(tpl_row)
+        array_obj = np.array(lst_rows)
+        df = pd.DataFrame(array_obj, columns=["layer_name", "id_batch", "obj_batch", "obj_val", "time_preprocess", "time_approx"])
+        try:
+            old_df = pd.read_csv(self.objectives_output_file)
+            new_df = pd.concat([old_df, df])
+        except FileNotFoundError:
+            new_df = df
+
+        new_df.to_csv(self.objectives_output_file, mode='w', index=False)
+
+
 
     def set_layer_to_factorize_name(self, name):
         self.layer_to_factorize = name
 
-    def set_preprocessing_model(self, model):
+    def set_comp_preprocessing_model(self, model):
         if model is not None:
             model.compile("adam", loss="mse")
-            self.model_preprocessing = model
+            self.compressed_model_preprocessing = model
         else:
-            self.model_preprocessing = None
+            self.compressed_model_preprocessing = None
+
+    def set_target_preprocessing_model(self, model):
+        if model is not None:
+            model.compile("adam", loss="mse")
+            self.target_model_preprocessing = model
+        else:
+            self.target_model_preprocessing = None

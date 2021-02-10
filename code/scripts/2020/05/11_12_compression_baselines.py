@@ -303,15 +303,15 @@ def get_params_optimizer():
             dct_config_lr = yaml.full_load(f)
 
         params_optimizer["lr"] = load_function_lr(dct_res_new=dct_config_lr,
-                         dataset=str_data_param,
-                         model=str_model_param,
-                         compression=str_method,
-                         sparsity_value_magnitude=paraman["--final-sparsity"],
-                         sparsity_value_random=paraman["--sparsity-factor"],
-                         nb_fac_random=paraman["--nb-factor"],
-                         order_value_tensortrain=paraman["--order"],
-                         rank_value_tensortrain=paraman["--rank-value"],
-                         rank_value_tucker=paraman["--rank-percentage-dense"])
+                                                  dataset=str_data_param,
+                                                  model=str_model_param,
+                                                  compression=str_method,
+                                                  sparsity_value_magnitude=paraman["--final-sparsity"],
+                                                  sparsity_value_random=paraman["--sparsity-factor"],
+                                                  nb_fac_random=paraman["--nb-factor"],
+                                                  order_value_tensortrain=paraman["--order"],
+                                                  rank_value_tensortrain=paraman["--rank-value"],
+                                                  rank_value_tucker=paraman["--rank-percentage-dense"])
     else:
         params_optimizer["lr"] = paraman["--lr"] if paraman["--lr"] is not None else params_optimizer["lr"]
 

@@ -1,0 +1,17 @@
+cifar100:
+  resnet20:
+    palm:
+      weighted:
+        3:
+          3: 0.001
+  vgg19:
+    palm:
+      weighted:
+        3:
+          3: 0.0001
+mnist:
+  lenet:
+    palm:
+      weighted:
+        3:
+          3: 0.001

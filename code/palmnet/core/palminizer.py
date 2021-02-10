@@ -8,9 +8,10 @@ import numpy as np
 
 
 class Palminizer(SparseFactorizer):
-    def __init__(self, delta_threshold_palm=1e-6, fast_unstable_proj=False, *args, **kwargs):
+    def __init__(self, delta_threshold_palm=1e-6, fast_unstable_proj=False, epsilon_learning_rate=1., *args, **kwargs):
         self.delta_threshold_palm = delta_threshold_palm
         self.fast_unstable_proj = fast_unstable_proj
+        self.epsilon_learning_rate = epsilon_learning_rate
         super().__init__(*args, **kwargs)
 
     @staticmethod
@@ -67,7 +68,8 @@ class Palminizer(SparseFactorizer):
                 nb_iter=self.nb_iter,
                 update_right_to_left=True,
                 residual_on_right=True,
-                delta_objective_error_threshold_palm=self.delta_threshold_palm,)
+                delta_objective_error_threshold_palm=self.delta_threshold_palm,
+            epsilon_learning_rate=self.epsilon_learning_rate)
         else:
             final_lambda, final_factors, final_X, _, _ = \
                 palm4msa(arr_X_target=matrix,
@@ -78,7 +80,8 @@ class Palminizer(SparseFactorizer):
                          nb_iter=self.nb_iter,
                          update_right_to_left=True,
                          delta_objective_error_threshold=self.delta_threshold_palm,
-                         track_objective=False)
+                         track_objective=False,
+            epsilon_learning_rate=self.epsilon_learning_rate)
             final_X *= final_lambda  # added later because palm4msa actually doesn't return the final_X multiplied by lambda contrary to hierarchical
 
         if transposed:

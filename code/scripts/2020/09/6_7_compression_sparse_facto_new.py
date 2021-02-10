@@ -85,6 +85,7 @@ sys.modules["palmnet.core.palminize"] = palminizable
 
 import warnings
 warnings.filterwarnings("ignore", message=".*values to real discards the imaginary part")
+warnings.filterwarnings("ignore", message=".*skimage.util.pad is deprecated")
 
 class ParameterManagerCompressionFaust(ParameterManager):
     def __init__(self, dct_params, **kwargs):
@@ -339,7 +340,7 @@ def save_objectives(layer_replacer):
                 lst_rows.append(tpl_row)
         array_obj = np.array(lst_rows)
         df = pd.DataFrame(array_obj)
-        df.to_csv(paraman["ouput_file_objectives"])
+        df.to_csv(paraman["ouput_file_objectives"], header=["layer_name", "id_batch", "obj_batch", "obj_val", "time_preprocess", "time_approx"])
 
 
 def main():
