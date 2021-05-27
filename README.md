@@ -6,7 +6,12 @@ Compressing Neural network architectures by replacing Conv and Dense layer with 
 Notebook example
 ----------------
 
-A notebook example is available in `code/notebooks/POC PSM layers with pyfaust library.ipynb`. This notebook should be self contained with software requirements directly specified in.
+A notebook example is available in `code/notebooks/POC PSM layers with pyfaust library.ipynb`. This notebook should be self contained with software requirements directly specified in. If you want to understand how to make your own PSM-nets, this is the goto destination.
+
+Reference paper
+---------------
+
+Giffon, L., Ayache, S., Kadri, H., Artières, T., & Sicre, R. (2021). PSM-nets: Compressing Neural Networks with Product of Sparse Matrices. In 2021 international joint conference on neural networks (IJCNN). IEEE.
 
 Important Notes
 ---------------
