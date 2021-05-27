@@ -326,7 +326,7 @@ if __name__ == "__main__":
     from pprint import pprint
     pprint(dict_algo_data_perf)
 
-    array_str = np.empty((14, 4), dtype=object)
+    # array_str = np.empty((14, 4), dtype=object)
     lst_elm = [
 'Base',
 'PYQALM Q=2 K=2',
@@ -359,25 +359,26 @@ if __name__ == "__main__":
     }
 
     lst_base_models = [
-        # 'mnist_lenet',
-        # "svhn_vgg19",
-        # "cifar10_vgg19",
+        'mnist_lenet',
+        "svhn_vgg19",
+        "cifar10_vgg19",
         "cifar100_vgg19",
         "cifar100_resnet20",
         "cifar100_resnet50"
     ]
     dct_str_fancy = {
-        # 'mnist_lenet': "MNIST Lenet",
-        # "svhn_vgg19": "SVHN Vgg19",
-        # "cifar10_vgg19": "Cifar10 Vgg19",
+        'mnist_lenet': "MNIST Lenet",
+        "svhn_vgg19": "SVHN Vgg19",
+        "cifar10_vgg19": "Cifar10 Vgg19",
         "cifar100_vgg19": r"\texttt{Vgg19}",
         "cifar100_resnet20": r"\texttt{Resnet20}",
         "cifar100_resnet50": r"\texttt{Resnet50}",
     }
+    array_str = np.empty((14, len(lst_base_models) + 1), dtype=object)
 
     for i_d, dataname in enumerate(dict_algo_data_perf):
-        if "cifar100" not in dataname:
-            continue
+        # if "cifar100" not in dataname:
+        #     continue
         for i_m, base_model in enumerate(dict_algo_data_perf[dataname]):
 
             for i_c, compression in enumerate(dict_algo_data_perf[dataname][base_model]):
