@@ -13,7 +13,7 @@ AUTHOR = 'Luc Giffon'
 AUTHOR_EMAIL = ('luc.giffon@lis-lab.fr')
 INSTALL_REQUIRES = ['numpy', 'daiquiri', 'matplotlib', 'pandas',
                     'docopt', 'pillow', 'scikit-learn', 'psutil', 'yafe', "click", "python-dotenv",
-                    'xarray', 'keras', 'scipy==1.2.1', 'scikit-luc==2', 'tensorflow-model-optimization', 'scikit-image',
+                    'xarray', 'keras', 'scipy==1.2.1', 'tensorflow-model-optimization', 'scikit-image',
                     'pyfaust']
 EXTRAS_REQUIRE = {
     'dev': ['coverage', 'pytest', 'pytest-cov', 'pytest-randomly'],
