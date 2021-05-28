@@ -18,6 +18,7 @@ Important Notes
 * This code is provided as is. No particular effort have been made to make it easily readable and understandable for new users. Feel free to open an issue to ask any question on how to read/use our code.
 It will be useful to others as well. I will answer shortly.
 * Most of the code needs this other project: https://github.com/lucgiffon/qkmeans to be installed to work. (**Not the notebook example** which relies on a most modern and stable implementation of PALM4MSA, see the notebook directly in the `code/notebooks` folder)
+* An other necessary dependencie is my toolbox: https://github.com/lucgiffon/scikit-luc 
 * Base data and models can be generated using `make data` and `make models` from the root directory of the project
 * To understand how to call the various utilities, you can have a look at the test directory. All the tests should pass.... in theory
 * To understand the scripts for the experiments I recommend you take a look at `code/scripts/2021/01/14_15_compression_baselines.py` for the baselines, `code/scripts/2020/09/9_10_compression_sparse_facto_new.py` for the compression and `code/scripts/2020/11/13_15_finetune_sparsefacto.py` for the fine tuning.
